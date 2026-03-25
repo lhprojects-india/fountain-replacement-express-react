@@ -1,0 +1,482 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #1a1a1a;
+
+    --card: #ffffff;
+    --card-foreground: #1a1a1a;
+
+    --popover: #ffffff;
+    --popover-foreground: #1a1a1a;
+
+    --primary: #0890F1;
+    --primary-foreground: #ffffff;
+
+    --secondary: #93ECE5;
+    --secondary-foreground: #1a1a1a;
+
+    --muted: #F5F5F5;
+    --muted-foreground: #6B7280;
+
+    --accent: #FFD06D;
+    --accent-foreground: #1a1a1a;
+
+    --destructive: #EF8EA2;
+    --destructive-foreground: #ffffff;
+
+    --border: #E5E7EB;
+    --input: #E5E7EB;
+    --ring: #0890F1;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: #ffffff;
+
+    --sidebar-foreground: #1a1a1a;
+
+    --sidebar-primary: #0890F1;
+
+    --sidebar-primary-foreground: #ffffff;
+
+    --sidebar-accent: #BAEBFF;
+
+    --sidebar-accent-foreground: #1a1a1a;
+
+    --sidebar-border: #E5E7EB;
+
+    --sidebar-ring: #0890F1;
+  }
+
+  .dark {
+    --background: #222;
+    --foreground: #d2d2d2;
+
+    --card: #222;
+    --card-foreground: #d2d2d2;
+
+    --popover: #222;
+    --popover-foreground: #d2d2d2;
+
+    --primary: #d2d2d2;
+    --primary-foreground: #222;
+
+    --secondary: #d2d2d2;
+    --secondary-foreground: #d2d2d2;
+
+    --muted: #d2d2d2;
+    --muted-foreground: #d2d2d2;
+
+    --accent: #d2d2d2;
+    --accent-foreground: #d2d2d2;
+
+    --destructive: #ff4d4d;
+    --destructive-foreground: #d2d2d2;
+
+    --border: #d2d2d2;
+    --input: #d2d2d2;
+    --ring: #d2d2d2;
+    --sidebar-background: #1a1a1a;
+    --sidebar-foreground: #f2f2f2;
+    --sidebar-primary: #e0e0e0;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #d2d2d2;
+    --sidebar-accent-foreground: #f2f2f2;
+    --sidebar-border: #d2d2d2;
+    --sidebar-ring: #d2d2d2;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-in-out;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Screenshot prevention styles */
+  body {
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Enable text selection for admin pages */
+  body.admin-page,
+  body.admin-page * {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+    -webkit-touch-callout: default !important;
+  }
+
+  /* Allow text selection in input fields and textareas */
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+  }
+
+  /* Prevent image dragging */
+  img {
+    -webkit-user-drag: none !important;
+    -khtml-user-drag: none !important;
+    -moz-user-drag: none !important;
+    -o-user-drag: none !important;
+    user-drag: none !important;
+  }
+
+  /* Prevent text selection highlighting */
+  ::selection {
+    background: transparent !important;
+  }
+
+  ::-moz-selection {
+    background: transparent !important;
+  }
+
+  /* Enable visible selection highlighting for admin pages */
+  body.admin-page ::selection {
+    background: rgba(59, 130, 246, 0.3) !important;
+    color: inherit !important;
+  }
+
+  body.admin-page ::-moz-selection {
+    background: rgba(59, 130, 246, 0.3) !important;
+    color: inherit !important;
+  }
+}
+
+@layer components {
+  .laundryheap-btn {
+    @apply flex items-center justify-between gap-2 px-6 py-3 bg-brand-yellow text-gray-900 font-semibold rounded-full hover:bg-brand-shadeYellow shadow-md hover:shadow-lg transition-all duration-300 animate-fade-in transform hover:scale-[1.02];
+  }
+
+  .input-container {
+    @apply w-full max-w-sm mx-auto mt-4;
+  }
+
+  .laundryheap-input {
+    @apply w-full p-3 text-center text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition-all duration-200 shadow-sm hover:shadow-md;
+  }
+
+  .otp-input {
+    @apply w-12 h-12 text-center text-lg text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition-all duration-200 shadow-sm hover:shadow-md;
+  }
+
+  .laundryheap-switch {
+    @apply relative inline-flex h-7 w-12 items-center rounded-full border-2 border-transparent bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue shadow-sm;
+  }
+
+  .laundryheap-switch-checked {
+    @apply bg-brand-teal;
+  }
+
+  .laundryheap-switch-thumb {
+    @apply pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform;
+  }
+
+  .laundryheap-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .laundryheap-page {
+    @apply min-h-screen w-full bg-gradient-to-br from-brand-blue via-brand-shadeBlue to-brand-blue text-white flex flex-col items-center px-4 md:px-6 pt-4 md:pt-12 pb-6 animate-fade-in;
+  }
+
+  /* PhoneInput styling */
+  .phone-input-wrapper {
+    @apply w-full;
+    display: flex !important;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Ensure PhoneInputCountry is visible and shows flag */
+  .phone-input-wrapper>.PhoneInputCountry {
+    display: flex !important;
+    visibility: visible !important;
+  }
+
+  .phone-input-wrapper .PhoneInputInput {
+    @apply flex-1 h-[48px] p-3 text-left text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition-all duration-200 shadow-sm hover:shadow-md;
+    flex: 1;
+    text-align: left !important;
+  }
+
+  .phone-input-wrapper .PhoneInputCountry {
+    @apply h-[48px] flex items-center;
+    margin-right: 0;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .phone-input-wrapper .PhoneInputCountrySelect {
+    @apply h-[48px] min-w-[140px] px-3 bg-white border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+    padding-left: 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+
+  .phone-input-wrapper .PhoneInputCountrySelect>* {
+    text-align: left !important;
+    justify-content: flex-start !important;
+  }
+
+  .phone-input-wrapper .PhoneInputCountryIcon {
+    margin-right: 0.5rem !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    width: calc(36px * 1.5) !important;
+    height: 36px !important;
+    background-color: white !important;
+    border-radius: 0.5rem !important;
+    padding: 0.5rem !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .phone-input-wrapper .PhoneInputCountryIcon--square {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Remove border styling but keep the element visible with white background */
+  .phone-input-wrapper .PhoneInputCountryIcon--border {
+    box-shadow: none !important;
+    background-color: white !important;
+    display: flex !important;
+    visibility: visible !important;
+    border-radius: 0.5rem !important;
+    padding: 0.5rem !important;
+    width: calc(36px * 1.5) !important;
+    height: 36px !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .phone-input-wrapper .PhoneInputCountryIconImg,
+  .phone-input-wrapper .PhoneInputCountryIcon img {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    object-fit: contain !important;
+  }
+
+  .phone-input-wrapper .PhoneInputCountry img,
+  .phone-input-wrapper .PhoneInputCountrySelect img {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Ensure flag icon container in country selector is visible */
+  .phone-input-wrapper .PhoneInputCountrySelect .PhoneInputCountryIcon {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-right: 0.5rem !important;
+    width: calc(1.2em * 1.5) !important;
+    height: 1.2em !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Ensure flag image inside country selector is visible */
+  .phone-input-wrapper .PhoneInputCountrySelect .PhoneInputCountryIcon img,
+  .phone-input-wrapper .PhoneInputCountrySelect .PhoneInputCountryIconImg {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  /* Ensure the country selector shows the flag */
+  .phone-input-wrapper .PhoneInputCountrySelect::before {
+    content: '';
+    display: none;
+  }
+
+  .phone-input-wrapper .PhoneInputCountrySelectArrow {
+    @apply opacity-50;
+    margin-left: auto !important;
+    margin-right: 0.5rem !important;
+  }
+
+  .phone-input-wrapper .PhoneInputCountrySelectArrow--arrow {
+    margin-left: auto !important;
+  }
+
+  .phone-number-input {
+    @apply text-center;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  body {
+    visibility: hidden;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  /* Ensure the dialog content is visible OR the dedicated print page */
+  [role="dialog"],
+  [role="dialog"] *,
+  .printable-report-container,
+  .printable-report-container * {
+    visibility: visible;
+  }
+
+  /* Reset the dialog container to standard document flow */
+  div[role="dialog"],
+  div[data-state="open"] {
+    position: static !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    inset: auto !important;
+  }
+
+  /* Hide the overlay/backdrop */
+  [data-radix-dialog-overlay] {
+    display: none !important;
+  }
+
+  /* Target the content wrapper inside the dialog */
+  [role="dialog"]>div,
+  [data-radix-dialog-content] {
+    position: static !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Hide close button and other non-printable elements */
+  button[type="button"],
+  .print-hide {
+    display: none !important;
+  }
+
+  /* Style headings for print */
+  h2,
+  h3,
+  .text-lg,
+  .text-xl {
+    color: black !important;
+    page-break-after: avoid;
+  }
+
+  /* Reset grid layouts to simple block or flex for print consistency */
+  .grid {
+    display: block !important;
+  }
+
+  /* For 2-column grids, make them flex row with wrap */
+  .grid-cols-2 {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
+  }
+
+  .grid-cols-2>* {
+    width: 48% !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  /* Reset cards to be simple bordered blocks */
+  .card,
+  .rounded-lg,
+  .border {
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    border-radius: 4px !important;
+    margin-bottom: 1rem !important;
+    break-inside: avoid !important;
+  }
+
+  /* Ensure text is black */
+  p,
+  span,
+  div {
+    color: black !important;
+  }
+
+  /* Keep badges visible but with print-safe colors */
+  .badge,
+  [class*="badge"] {
+    border: 1px solid #ddd !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Links */
+  a {
+    text-decoration: none !important;
+    color: black !important;
+  }
+}
