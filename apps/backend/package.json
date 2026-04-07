@@ -4,7 +4,8 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "prisma:generate": "prisma generate --schema ./prisma/schema.prisma",
+    "start": "npm run prisma:generate && node src/index.js",
     "dev": "nodemon src/index.js"
   },
   "dependencies": {

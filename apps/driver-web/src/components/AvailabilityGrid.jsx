@@ -1,5 +1,3 @@
-import Switch from "./Switch";
-
 const DAYS_ORDER = ['Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays', 'Sundays'];
 
 function AvailabilityGrid({ availability, onAvailabilityChange }) {

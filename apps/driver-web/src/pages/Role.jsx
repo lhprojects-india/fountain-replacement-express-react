@@ -6,7 +6,7 @@ import { PageLayout } from "@lh/shared";
 import { Button } from "@lh/shared";
 import { CheckboxWithLabel } from "@lh/shared";
 import { useToast } from "@lh/shared";
-import roleExplanationImage from "@/assets/driver-role-vertical.png";
+import roleExplanationImage from "@lh/shared/assets/driver-role-vertical.png";
 
 const Role = () => {
   const navigate = useNavigate();
