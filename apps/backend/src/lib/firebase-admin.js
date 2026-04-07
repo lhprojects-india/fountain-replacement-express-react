@@ -10,12 +10,15 @@ const require = createRequire(import.meta.url);
 let firebaseAdminApp;
 
 if (!getApps().length) {
-  // Resolve service account path relative to the backend root
-  const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH
-    ? path.resolve(__dirname, '../../../../', process.env.FIREBASE_SERVICE_ACCOUNT_PATH)
-    : path.resolve(__dirname, '../../driver-onboarding-lh-firebase-adminsdk-fbsvc-51cf561c46.json');
-
-  const serviceAccount = require(serviceAccountPath);
+  // Prefer JSON secret in hosted environments; fallback to local file path for development.
+  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
+    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON)
+    : (() => {
+        const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH
+          ? path.resolve(__dirname, '../../../../', process.env.FIREBASE_SERVICE_ACCOUNT_PATH)
+          : path.resolve(__dirname, '../../driver-onboarding-lh-firebase-adminsdk-fbsvc-51cf561c46.json');
+        return require(serviceAccountPath);
+      })();
 
   firebaseAdminApp = initializeApp({
     credential: cert(serviceAccount),
