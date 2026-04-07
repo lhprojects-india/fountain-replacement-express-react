@@ -1,444 +1,192 @@
-# Laundryheap Driver Onboarding
+# Laundryheap Driver Onboarding Monorepo
 
-A React-based driver onboarding application for Laundryheap with Firebase backend integration and Fountain webhook support.
+Monorepo for Laundryheap driver onboarding:
 
-## Architecture Overview
+- `apps/backend`: Express API with Prisma + Postgres
+- `apps/driver-web`: Driver onboarding frontend (React + Vite)
+- `apps/admin-web`: Admin dashboard frontend (React + Vite)
+- `packages/shared`: Shared API client/utilities/components
 
-This application follows a complete workflow:
+## Architecture
 
-1. **Fountain Webhook** → Receives applicant data from Fountain ATS
-2. **Driver Login** → Driver logs in with email and phone verification
-3. **Onboarding Flow** → Driver completes onboarding steps
-4. **Report Generation** → Comprehensive report created upon completion
+1. Fountain sends applicant data to the backend webhook.
+2. Drivers log in with email + phone verification (no OTP flow).
+3. Driver onboarding data is saved via API endpoints.
+4. Admin app reviews and manages onboarding data.
 
-## Features
+## Repository Structure
 
-- **Fountain Integration** - Webhook receives and stores applicant data
-- **Phone Verification** - Verifies driver against Fountain data (no OTP required)
-- **Complete Onboarding Flow** - Step-by-step driver information collection
-- **Firestore Database** - Real-time data persistence
-- **Report Generation** - Automated report creation with acknowledgements
-- **Form Validation** - Client-side validation with sanitization
-- **Responsive Design** - Mobile-first responsive layout with Tailwind CSS
-- **Progress Tracking** - Step-by-step progress saving
+```text
+.
+├── apps/
+│   ├── backend/
+│   ├── driver-web/
+│   └── admin-web/
+├── packages/
+│   └── shared/
+├── render.yaml
+└── package.json
+```
 
-## Browser Support
+## Tech Stack
 
-This application is tested and supported on the following browsers:
+- **Backend**: Node.js, Express, Prisma, PostgreSQL, JWT, Firebase Admin SDK
+- **Frontend**: React, Vite, Tailwind CSS
+- **Deployment**: Render (backend + two static apps)
 
-### ✅ Fully Supported Browsers
+## Prerequisites
 
-- **Google Chrome** (version 90 and above) - Recommended
-- **Mozilla Firefox** (version 88 and above)
-- **Microsoft Edge** (version 90 and above)
-- **Safari** (version 14 and above) - macOS and iOS
-- **Opera** (version 76 and above)
+- Node.js 18+
+- npm 9+
+- PostgreSQL database URL
+- Firebase service account credentials (for admin auth verification)
 
-### ⚠️ Limited Support / Known Issues
+## Environment Variables
 
-- **Brave Browser** - May experience issues due to privacy shields blocking Firebase and third-party services
-  - **Solution**: Disable Brave Shields for this application
-    - Click the Brave Shields icon in the address bar
-    - Toggle "Shields" to "Down" for this site
-    - Refresh the page
-  - **Alternative**: Use Chrome, Firefox, Edge, or Safari for optimal experience
+The backend loads environment variables from the root `.env` file.
 
-### ❌ Unsupported Browsers
+Create `.env` in the repository root:
 
-- Internet Explorer 11 and below
-- Legacy browsers without ES2020 support
-- Browsers without JavaScript enabled
+```env
+# Backend
+PORT=5001
+DATABASE_URL=postgresql://user:password@host:5432/dbname
+JWT_SECRET=replace-with-strong-secret
 
-### Browser Requirements
+# Option A: inline JSON (recommended for hosted envs)
+FIREBASE_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
 
-- JavaScript must be enabled
-- Cookies and LocalStorage must be enabled (required for Firebase authentication)
-- Third-party cookies may be required for Firebase services
-- Modern ES2020+ JavaScript support
+# Option B: local file path relative to repo root
+# FIREBASE_SERVICE_ACCOUNT_PATH=driver-onboarding-lh-firebase-adminsdk-fbsvc-51cf561c46.json
 
-### Troubleshooting Browser Issues
+# Frontend API base URL (used by driver/admin web apps)
+VITE_API_URL=http://localhost:5001/api
 
-If you experience issues with the application:
+# Firebase web app config (admin auth only)
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_APP_ID=...
+```
 
-1. **Clear browser cache and cookies** for this site
-2. **Disable browser extensions** that may interfere (ad blockers, privacy tools)
-3. **Check browser console** for error messages (F12 → Console tab)
-4. **Ensure JavaScript is enabled** in browser settings
-5. **Try a different supported browser** if issues persist
+Notes:
+- `apps/backend/src/index.js` explicitly loads `../../../.env` (repo root).
+- `VITE_*` Firebase vars are only needed by `admin-web` for Google sign-in.
 
-For Brave Browser specifically:
-- Disable Brave Shields for the application domain
-- Allow third-party cookies for Firebase services
-- Disable aggressive privacy settings that may block Firebase requests
-
-## Setup Instructions
-
-### 1. Firebase Configuration
-
-1. **Create a Firebase Project:**
-   - Go to [Firebase Console](https://console.firebase.google.com/)
-   - Create a new project or use existing one
-   - Enable Authentication and Firestore Database
-
-2. **Configure Authentication:**
-   - Go to Authentication > Sign-in method
-   - Enable Email/Password provider (for demo purposes)
-
-3. **Configure Firestore:**
-   - Go to Firestore Database
-   - Create a Firestore database in production mode
-   - Set up security rules (see below)
-
-4. **Get Firebase Configuration:**
-   - Go to Project Settings > General
-   - Scroll down to "Your apps" section
-   - Add a web app or use existing one
-   - Copy the configuration values
-
-5. **Create Environment Variables:**
-   Create a `.env` file in the root directory with your Firebase config:
-
-   ```env
-   # Firebase Configuration
-   VITE_FIREBASE_API_KEY=your_api_key_here
-   VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-   VITE_FIREBASE_PROJECT_ID=your-project-id
-   VITE_FIREBASE_STORAGE_BUCKET=your-project-id.firebasestorage.app
-   VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-   VITE_FIREBASE_APP_ID=your_app_id
-
-   # EmailJS Configuration (for OTP emails)
-   VITE_EMAILJS_SERVICE_ID=your_emailjs_service_id
-   VITE_EMAILJS_TEMPLATE_ID=your_emailjs_template_id
-   VITE_EMAILJS_PUBLIC_KEY=your_emailjs_public_key
-   ```
-
-### 2. Backend API and Fountain Webhook
-
-The onboarding API lives in `apps/backend` (Express). Fountain should send applicant webhooks to:
-
-- **Production:** `https://<your-api-host>/api/webhooks/fountain`
-- **Local:** `http://localhost:5001/api/webhooks/fountain` (default `PORT`; override with `PORT` in `.env`)
-
-Configure in Fountain Dashboard → Settings → Webhooks:
-
-- Method: POST
-- Content-Type: application/json
-- Set the trigger stage as needed (e.g., "Application Approved")
-
-Run the API locally:
+## Install
 
 ```bash
 npm install
+```
+
+## Run Locally
+
+Start each app in separate terminals:
+
+```bash
+# Backend API
+npm run dev:backend
+
+# Driver app
+npm run dev:driver
+
+# Admin app
+npm run dev:admin
+```
+
+Equivalent workspace commands:
+
+```bash
 npm run dev -w backend
+npm run dev -w driver-web
+npm run dev -w admin-web
 ```
 
-### 3. Firestore Security Rules
+## Build
 
-Create the following security rules in your Firestore database:
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Drivers collection - only authenticated users can access their own data
-    match /drivers/{email} {
-      allow read, write: if request.auth != null &&
-        request.auth.token.email == email;
-    }
-
-    // Availability collection
-    match /availability/{email} {
-      allow read, write: if request.auth != null &&
-        request.auth.token.email == email;
-    }
-
-    // Verification collection
-    match /verification/{email} {
-      allow read, write: if request.auth != null &&
-        request.auth.token.email == email;
-    }
-  }
-}
-```
-
-### 4. Installation and Development
+Build all workspaces:
 
 ```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
 npm run build
 ```
 
-## Database Structure
+Build individual apps:
 
-The application uses the following Firestore collections:
-
-### 1. `fountain_applicants` Collection
-Stores applicant data received from Fountain webhooks.
-
-**Document ID:** Email address (normalized to lowercase)
-
-```javascript
-{
-  email: "driver@example.com",
-  phone: "+353123456789",
-  name: "John Doe",
-  applicantId: "FOUNTAIN_ABC123",
-  stage: "ready_for_onboarding",
-  status: "active",
-  city: "Dublin",
-  fountainData: { /* Complete webhook payload */ },
-  createdAt: timestamp,
-  updatedAt: timestamp,
-  webhookReceivedAt: "2024-01-15T10:30:00Z",
-  isActive: true
-}
+```bash
+npm run build -w driver-web
+npm run build -w admin-web
 ```
 
-### 2. `drivers` Collection
-Stores driver information and onboarding progress.
+## API Overview
 
-```javascript
-{
-  email: "driver@example.com",
-  name: "John Doe",
-  phone: "+353123456789",
-  city: "Dublin",
-  smokingStatus: "non-smoker",
-  hasPhysicalDifficulties: false,
-  onboardingStatus: "completed",
-  
-  // Acknowledgements
-  cancellationPolicyAcknowledged: true,
-  cancellationPolicyAcknowledgedAt: "2024-01-15T11:00:00Z",
-  feeStructureAcknowledged: true,
-  feeStructureAcknowledgedAt: "2024-01-15T11:05:00Z",
-  
-  // Progress tracking
-  progress_personal_details: { /* step data */ },
-  progress_liabilities: { confirmed: true, confirmedAt: "..." },
-  progress_availability: { /* step data */ },
-  progress_verification: { /* step data */ },
-  
-  createdAt: timestamp,
-  updatedAt: timestamp,
-  completedAt: timestamp,
-  reportId: "REPORT_..."
-}
-```
+Base URL (local): `http://localhost:5001/api`
 
-### 3. `availability` Collection
-```javascript
-{
-  email: "driver@example.com",
-  availability: {
-    Mondays: { noon: true, evening: false },
-    Tuesdays: { noon: false, evening: true },
-    // ... other days
-  },
-  createdAt: timestamp,
-  updatedAt: timestamp
-}
-```
+### Auth
 
-### 4. `verification` Collection
-```javascript
-{
-  email: "driver@example.com",
-  vehicle: "Toyota Camry 2020",
-  licensePlate: "12-D-1234",
-  address: "123 Main St, Dublin",
-  city: "Dublin",
-  createdAt: timestamp,
-  updatedAt: timestamp
-}
-```
+- `POST /auth/check-email`
+- `POST /auth/verify-phone`
+- `POST /auth/admin-login`
+- `POST /auth/admin-google-login`
 
-### 5. `reports` Collection
-Comprehensive onboarding reports generated upon completion.
+### Driver (JWT required)
 
-**Document ID:** Auto-generated report ID
+- `GET /drivers/me`
+- `PUT /drivers/personal-details`
+- `POST /drivers/availability`
+- `POST /drivers/verification`
+- `POST /drivers/progress`
+- `POST /drivers/acknowledge/:policy`
+- `POST /drivers/complete-onboarding`
+- `GET /drivers/facilities`
 
-```javascript
-{
-  reportId: "REPORT_1234567890_driver_example_com",
-  email: "driver@example.com",
-  generatedAt: timestamp,
-  generatedDate: "2024-01-15T12:00:00Z",
-  personalInfo: { name, email, phone, city },
-  verificationDetails: { vehicle, licensePlate, address, city },
-  availability: { /* weekly availability */ },
-  acknowledgements: {
-    liabilities: true,
-    liabilitiesDate: "...",
-    cancellationPolicy: true,
-    cancellationPolicyDate: "...",
-    feeStructure: true,
-    feeStructureDate: "..."
-  },
-  healthAndSafety: {
-    smokingStatus: "non-smoker",
-    hasPhysicalDifficulties: false
-  },
-  onboardingStatus: {
-    status: "completed",
-    completedAt: timestamp,
-    startedAt: timestamp
-  }
-}
-```
+### Admin (JWT + admin role required)
 
-## Complete Workflow
+- `GET /admin/me`
+- `GET /admin/dashboard`
+- `PUT /admin/update-status`
+- `DELETE /admin/application/:email`
+- `GET /admin/admins`
+- `POST /admin/set-admin`
+- `GET /admin/fee-structures`
+- `PUT /admin/fee-structures`
+- `DELETE /admin/fee-structures/:city`
+- `GET /admin/facilities`
 
-### 1. Fountain Webhook (Backend)
-- Fountain sends a webhook when an applicant reaches a specific stage
-- The Express backend receives applicant data (email, phone, name, etc.) at `POST /api/webhooks/fountain`
-- Data is stored (see Prisma schema / database used by `apps/backend`)
+### Webhooks
 
-### 2. Driver Authentication (Frontend)
-- Driver enters email on Welcome page
-- System checks if the email exists for an applicant
-- If found, driver enters phone number on Verify page
-- System verifies the phone matches Fountain data via the backend auth API
-- Upon successful verification, driver is authenticated
+- `POST /webhooks/fountain`
 
-### 3. Onboarding Flow (Frontend)
-1. **Welcome** - Email input
-2. **Phone Verification** - Phone number verification against Fountain data
-3. **Confirm Details** - Name, phone, city selection
-4. **Introduction** - Company overview
-5. **About** - Company information
-6. **Onboarding Stages** - Process explanation
-7. **Role** - Driver responsibilities
-8. **Availability** - Weekly availability selection (with grid)
-9. **Intro Complete** - Midpoint confirmation
-10. **Liabilities** - Policy acknowledgment with checkbox
-11. **Smoking/Fitness Check** - Health status confirmation
-12. **Blocks Classification** - Route information
-13. **Cancellation Policy** - 48-hour policy acknowledgment
-14. **Fee Structure** - Payment structure acknowledgment
-15. **Completion** - Thank you page
+## Healthcheck
 
-### 4. Report Generation (Backend)
-- Upon onboarding completion, the backend generates the onboarding report
-- Collects driver data and acknowledgements
-- Persists the report according to your deployed data model
-- Report references are stored on the driver record as applicable
+- `GET /health`
 
-## Features Implemented
-
-✅ **Fountain Webhook Integration** - Receives and stores applicant data
-✅ **Phone Verification** - Verifies driver against Fountain data (no OTP)
-✅ **Express backend** - Webhook, auth, and driver APIs
-✅ **Firestore Integration** - Real-time data persistence across 5 collections
-✅ **Form Validation** - Client-side validation with sanitization
-✅ **Error Handling** - Comprehensive error management
-✅ **Progress Tracking** - Step-by-step progress saving
-✅ **Acknowledgement Tracking** - Tracks policy acknowledgements with timestamps
-✅ **Report Generation** - Automated comprehensive report creation
-✅ **Responsive Design** - Mobile-first responsive layout
-✅ **Loading States** - User feedback during operations
-✅ **Security Rules** - Proper Firestore security rules
-
-## Testing
-
-### Test Fountain Webhook
-
-With the backend running (`npm run dev -w backend`), send a minimal payload:
+## Quick Webhook Test
 
 ```bash
 curl -sS -X POST "http://localhost:5001/api/webhooks/fountain" \
+curl -sS -X POST "https://lh-onboarding-backend.onrender.com/api/webhooks/fountain"
   -H "Content-Type: application/json" \
   -d '{"email":"driver@test.com","phone":"+353123456789","name":"Jane Smith"}'
 ```
 
-### Test Complete Flow
+## Deployment (Render)
 
-1. **Send Webhook:** Use the `curl` example above with the email and phone you will use in the app.
+`render.yaml` defines three services:
 
-2. **Login to Web App:**
-   - Open http://localhost:3000 (driver app default port) or your deployed URL
-   - Enter: `your-email@example.com`
-   - Click Continue
+1. `lh-onboarding-backend` (Node web service)
+2. `lh-driver-web` (static site)
+3. `lh-admin-web` (static site)
 
-3. **Verify Phone:**
-   - Enter: `+353123456789`
-   - Click Continue
+Production backend health endpoint: `/health`.
 
-4. **Complete Onboarding:**
-   - Fill in all steps
-   - Complete until the end
+## Common Scripts (root)
 
-5. **Check Results:**
-   - Firebase Console → Firestore → Check collections:
-     - `fountain_applicants` - Webhook data
-     - `drivers` - Driver profile with progress
-     - `availability` - Weekly availability
-     - `verification` - Vehicle details
-     - `reports` - Generated report
-
-### Local Development
-
-```bash
-# Terminal 1: API (webhook + REST)
-npm run dev -w backend
-
-# Terminal 2: driver or admin web app
-npm run dev -w driver-web
-# or: npm run dev -w admin-web
-```
-
-Send a test webhook with `curl` or your HTTP client to `http://localhost:5001/api/webhooks/fountain` using the payload shape Fountain uses.
-
-## Development Notes
-
-- Admin app uses the Firebase JS SDK for Auth/Firestore where configured; driver flows call the REST API via `@lh/shared`
-- Authentication uses phone verification against Fountain data (no OTP/email needed)
-- All form data is validated and sanitized before saving
-- Progress is saved at each step for recovery
-- Error messages are user-friendly and specific
-- Acknowledgements are tracked with timestamps
-- Reports are generated automatically upon completion
-- Phone numbers are normalized for flexible matching
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Firebase Connection Issues:**
-   - Verify Firebase configuration in `.env`
-   - Check Firebase project settings
-   - Ensure Firestore is enabled
-
-2. **Authentication Problems:**
-   - Check authentication provider settings
-   - Verify security rules allow access
-   - Check browser console for errors
-
-3. **EmailJS Issues:**
-   - Verify EmailJS configuration
-   - Check email service setup
-   - Test email template
-
-4. **Build Issues:**
-   - Clear node_modules and reinstall
-   - Check for environment variable issues
-   - Verify all dependencies are installed
-
-## Production Deployment
-
-1. **Environment Variables:** Ensure all production environment variables are set
-2. **Security Rules:** Update Firestore security rules for production
-3. **Authentication:** Configure proper authentication providers
-4. **Email Service:** Set up production email service
-5. **Build:** Run `npm run build` and deploy the dist folder
+- `npm run dev:backend`
+- `npm run dev:driver`
+- `npm run dev:admin`
+- `npm run build`
+- `npm run lint`
 
 ## License
 
-This project is proprietary to Laundryheap.
+Proprietary - Laundryheap

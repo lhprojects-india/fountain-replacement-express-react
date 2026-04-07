@@ -6,7 +6,8 @@ import {
   saveVerification, 
   updateProgress, 
   acknowledgePolicy, 
-  completeOnboarding 
+  completeOnboarding,
+  getFacilitiesByCity,
 } from '../controllers/driverController.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 
@@ -22,5 +23,6 @@ router.post('/verification', saveVerification);
 router.post('/progress', updateProgress);
 router.post('/acknowledge/:policy', acknowledgePolicy);
 router.post('/complete-onboarding', completeOnboarding);
+router.get('/facilities', getFacilitiesByCity);
 
 export default router;

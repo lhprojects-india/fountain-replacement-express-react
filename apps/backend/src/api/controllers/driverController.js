@@ -285,3 +285,37 @@ export const completeOnboarding = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
+export const getFacilitiesByCity = async (req, res) => {
+  const { city } = req.query;
+
+  try {
+    let rows;
+
+    if (city) {
+      rows = await prisma.$queryRaw`
+        SELECT facility_code, city, address
+        FROM facilities
+        WHERE city ILIKE ${`%${city}%`}
+        ORDER BY facility_code ASC
+      `;
+    } else {
+      rows = await prisma.$queryRaw`
+        SELECT facility_code, city, address
+        FROM facilities
+        ORDER BY facility_code ASC
+      `;
+    }
+
+    const mapped = rows.map((r) => ({
+      Facility: r.facility_code,
+      Address: r.address || '',
+      City: r.city || '',
+    }));
+
+    return res.status(200).json({ success: true, facilities: mapped });
+  } catch (error) {
+    console.error('Error fetching facilities by city:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};

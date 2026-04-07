@@ -20,31 +20,31 @@ const ProgressBar = () => {
   const location = useLocation();
   const currentPath = location.pathname;
   
-  // Find the current step index within the progress routes
   const currentStepIndex = PROGRESS_ROUTES.findIndex(route => route === currentPath);
   const currentStep = currentStepIndex >= 0 ? currentStepIndex + 1 : 1;
   const totalSteps = PROGRESS_ROUTES.length;
-  
-  // Calculate progress percentage
   const progressPercentage = (currentStep / totalSteps) * 100;
 
   return (
-    <div className="w-full px-4 py-4">
-      <div className="max-w-4xl mx-auto border-2 border-white/30 rounded-2xl p-5 bg-white/10 backdrop-blur-sm shadow-lg">
-        {/* Progress text showing current step in X/Y format */}
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-base font-semibold text-white">
-            {currentStep}/{totalSteps}
+    <div className="w-full px-4 pb-2">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-1.5">
+          <span className="text-xs font-semibold uppercase tracking-widest text-brand-shadeBlue/60">
+            Onboarding Progress
           </span>
-          <span className="text-sm font-medium text-white/90">
-            {Math.round(progressPercentage)}% Complete
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-brand-shadeBlue">
+              {currentStep}/{totalSteps}
+            </span>
+            <span className="text-xs font-medium text-brand-shadeBlue/60">
+              {Math.round(progressPercentage)}% Complete
+            </span>
+          </div>
         </div>
-        
-        {/* Progress bar */}
-        <div className="relative w-full h-3 bg-white/20 rounded-full overflow-hidden shadow-inner">
+
+        <div className="relative w-full h-2 bg-white/60 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-brand-yellow to-brand-shadeYellow transition-all duration-500 ease-out rounded-full shadow-md"
+            className="h-full bg-brand-teal transition-all duration-500 ease-out rounded-full"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>

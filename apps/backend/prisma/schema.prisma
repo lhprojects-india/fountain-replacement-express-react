@@ -72,7 +72,7 @@ model DriverFacility {
   driverId     Int    @map("driver_id")
   facilityCode String @map("facility_code")
   driver       Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  facility     Facility @relation(fields: [facilityCode], references: [facility], onDelete: Cascade)
+  facility     Facility @relation(fields: [facilityCode], references: [facilityCode], onDelete: Cascade)
 
   @@id([driverId, facilityCode])
   @@map("driver_facilities")
@@ -133,11 +133,11 @@ model BlockData {
 }
 
 model Facility {
-  facility  String   @id
-  city      String?
-  address   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  facilityCode String   @id @map("facility_code")
+  city         String?
+  address      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   drivers DriverFacility[]
 

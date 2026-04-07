@@ -27,7 +27,7 @@ function Input({
         className={`laundryheap-input ${className}`}
       />
       {required && (
-        <p className="text-xs text-center mt-1 text-white opacity-70">*This field is mandatory</p>
+        <p className="text-xs text-center mt-1 text-gray-500">*This field is mandatory</p>
       )}
     </div>
   );
