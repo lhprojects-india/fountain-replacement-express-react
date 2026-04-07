@@ -1,0 +1,186 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model FountainApplicant {
+  email             String   @id
+  phone             String?
+  name              String?
+  applicantId       String?
+  funnelId          String?
+  funnelTitle       String?  @map("funnel_title")
+  mot               String?
+  address           String?
+  stage             String?
+  status            String?
+  city              String?
+  country           String?
+  fountainData      Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  webhookReceivedAt String?
+  isActive          Boolean  @default(true)
+
+  @@map("fountain_applicants")
+}
+
+/// Core driver profile (normalized — no JSON progress blobs on this table).
+model Driver {
+  id                       Int       @id @default(autoincrement())
+  email                    String    @unique
+  name                     String?
+  phone                    String?
+  city                     String?
+  onboardingStatus         String    @default("started") @map("onboarding_status")
+  status                   String?   @default("pending")
+  smokingStatus            String?   @map("smoking_status")
+  hasPhysicalDifficulties  Boolean?  @map("has_physical_difficulties")
+  lastRoute                String?   @map("last_route")
+  lastRouteUpdatedAt       DateTime? @map("last_route_updated_at")
+  adminNotes               String?   @map("admin_notes")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+  completedAt              DateTime? @map("completed_at")
+  statusUpdatedAt          DateTime? @map("status_updated_at")
+
+  availabilities    DriverAvailability[]
+  facilities        DriverFacility[]
+  onboardingSteps   DriverOnboardingStep[]
+
+  @@map("drivers")
+}
+
+model DriverAvailability {
+  id          Int    @id @default(autoincrement())
+  driverId    Int    @map("driver_id")
+  dayOfWeek   String @map("day_of_week")
+  shiftPeriod String @map("shift_period")
+  driver      Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@unique([driverId, dayOfWeek, shiftPeriod])
+  @@map("driver_availabilities")
+}
+
+model DriverFacility {
+  driverId     Int    @map("driver_id")
+  facilityCode String @map("facility_code")
+  driver       Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  facility     Facility @relation(fields: [facilityCode], references: [facility], onDelete: Cascade)
+
+  @@id([driverId, facilityCode])
+  @@map("driver_facilities")
+}
+
+model DriverOnboardingStep {
+  id          Int       @id @default(autoincrement())
+  driverId    Int       @map("driver_id")
+  stepName    String    @map("step_name")
+  isConfirmed Boolean   @default(false) @map("is_confirmed")
+  confirmedAt DateTime? @map("confirmed_at")
+  driver      Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@unique([driverId, stepName])
+  @@map("driver_onboarding_steps")
+}
+
+model Verification {
+  email        String   @id
+  vehicle      String?
+  licensePlate String?
+  address      String?
+  city         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("verification")
+}
+
+/// One row per (city, vehicle_type). Summary rates as display strings; granular rules live in BlockData rows.
+model FeeStructure {
+  id           Int       @id @default(autoincrement())
+  city         String    @db.VarChar(255)
+  vehicleType  String    @map("vehicle_type") @db.VarChar(50)
+  perHour      String?   @map("per_hour") @db.VarChar(100)
+  perTask      String?   @map("per_task") @db.VarChar(100)
+  updatedAt    DateTime? @updatedAt @map("updated_at")
+
+  details BlockData[]
+
+  @@unique([city, vehicleType])
+  @@map("fee_structures")
+}
+
+/// Density / shift / task fee rows (normalized `block_data` table — not a JSON column on fee_structures).
+model BlockData {
+  id                Int      @id @default(autoincrement())
+  feeStructureId    Int      @map("fee_structure_id")
+  density           String   @db.VarChar(50)
+  minimumFee        Decimal  @map("minimum_fee") @db.Decimal(10, 2)
+  shiftLength       Int      @map("shift_length")
+  includedTasks     Int      @map("included_tasks")
+  additionalTaskFee Decimal  @map("additional_task_fee") @db.Decimal(10, 2)
+
+  feeStructure FeeStructure @relation(fields: [feeStructureId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("block_data")
+}
+
+model Facility {
+  facility  String   @id
+  city      String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  drivers DriverFacility[]
+
+  @@map("facilities")
+}
+
+model AuthorizedEmail {
+  email     String   @id
+  createdAt DateTime @default(now())
+  addedAt   DateTime @default(now())
+
+  @@map("authorized_emails")
+}
+
+model Admin {
+  email     String   @id
+  role      String   @default("admin")
+  name      String?
+  password  String? // Optional password for admin login
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Report {
+  id                      String   @id @default(cuid())
+  reportId                String   @unique
+  email                   String
+  driverEmail             String
+  generatedAt             DateTime @default(now())
+  generatedDate           String?
+  personalInfo            Json?
+  driverInfo              Json?
+  verificationDetails     Json?
+  availability            Json?
+  acknowledgements        Json?
+  healthAndSafety         Json?
+  facilityPreferences     Json?
+  onboardingStatus        String?
+  onboardingStatusDetails Json?
+  progress                Json?
+  createdAt               DateTime @default(now())
+
+  @@map("reports")
+}

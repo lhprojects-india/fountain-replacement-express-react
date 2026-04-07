@@ -113,37 +113,25 @@ For Brave Browser specifically:
    VITE_EMAILJS_PUBLIC_KEY=your_emailjs_public_key
    ```
 
-### 2. Firebase Functions Setup
+### 2. Backend API and Fountain Webhook
 
-1. **Install Firebase CLI:**
-   ```bash
-   npm install -g firebase-tools
-   firebase login
-   ```
+The onboarding API lives in `apps/backend` (Express). Fountain should send applicant webhooks to:
 
-2. **Install Functions Dependencies:**
-   ```bash
-   cd functions
-   npm install
-   cd ..
-   ```
+- **Production:** `https://<your-api-host>/api/webhooks/fountain`
+- **Local:** `http://localhost:5001/api/webhooks/fountain` (default `PORT`; override with `PORT` in `.env`)
 
-3. **Deploy Functions:**
-   ```bash
-   firebase deploy --only functions
-   ```
+Configure in Fountain Dashboard → Settings → Webhooks:
 
-4. **Configure Fountain Webhook:**
-   - Webhook URL: `https://us-central1-driver-onboarding-lh.cloudfunctions.net/fountainWebhook`
-   - Configure in Fountain Dashboard → Settings → Webhooks
-   - Set trigger stage (e.g., "Application Approved")
-   - Method: POST
-   - Content-Type: application/json
+- Method: POST
+- Content-Type: application/json
+- Set the trigger stage as needed (e.g., "Application Approved")
 
-5. **Test Webhook:**
-   ```bash
-   ./test-webhook.sh test@example.com "+353123456789" "Test Driver"
-   ```
+Run the API locally:
+
+```bash
+npm install
+npm run dev -w backend
+```
 
 ### 3. Firestore Security Rules
 
@@ -309,16 +297,15 @@ Comprehensive onboarding reports generated upon completion.
 ## Complete Workflow
 
 ### 1. Fountain Webhook (Backend)
-- Fountain sends webhook when applicant reaches specific stage
-- Cloud Function receives applicant data (email, phone, name, etc.)
-- Data stored in `fountain_applicants` collection
-- Webhook URL: `https://us-central1-driver-onboarding-lh.cloudfunctions.net/fountainWebhook`
+- Fountain sends a webhook when an applicant reaches a specific stage
+- The Express backend receives applicant data (email, phone, name, etc.) at `POST /api/webhooks/fountain`
+- Data is stored (see Prisma schema / database used by `apps/backend`)
 
 ### 2. Driver Authentication (Frontend)
 - Driver enters email on Welcome page
-- System checks if email exists in `fountain_applicants` collection
+- System checks if the email exists for an applicant
 - If found, driver enters phone number on Verify page
-- System verifies phone matches Fountain data using `verifyApplicant` Cloud Function
+- System verifies the phone matches Fountain data via the backend auth API
 - Upon successful verification, driver is authenticated
 
 ### 3. Onboarding Flow (Frontend)
@@ -339,17 +326,16 @@ Comprehensive onboarding reports generated upon completion.
 15. **Completion** - Thank you page
 
 ### 4. Report Generation (Backend)
-- Upon onboarding completion, `generateOnboardingReport` Cloud Function is called
-- Collects all driver data from multiple collections
-- Creates comprehensive report with acknowledgements
-- Stores report in `reports` collection
-- Report ID saved in driver's record
+- Upon onboarding completion, the backend generates the onboarding report
+- Collects driver data and acknowledgements
+- Persists the report according to your deployed data model
+- Report references are stored on the driver record as applicable
 
 ## Features Implemented
 
 ✅ **Fountain Webhook Integration** - Receives and stores applicant data
 ✅ **Phone Verification** - Verifies driver against Fountain data (no OTP)
-✅ **Firebase Cloud Functions** - Backend webhook and callable functions
+✅ **Express backend** - Webhook, auth, and driver APIs
 ✅ **Firestore Integration** - Real-time data persistence across 5 collections
 ✅ **Form Validation** - Client-side validation with sanitization
 ✅ **Error Handling** - Comprehensive error management
@@ -364,25 +350,20 @@ Comprehensive onboarding reports generated upon completion.
 
 ### Test Fountain Webhook
 
-Use the provided test script to simulate a Fountain webhook:
+With the backend running (`npm run dev -w backend`), send a minimal payload:
 
 ```bash
-# Test with default values
-./test-webhook.sh
-
-# Test with custom values
-./test-webhook.sh "driver@test.com" "+353987654321" "Jane Smith"
+curl -sS -X POST "http://localhost:5001/api/webhooks/fountain" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"driver@test.com","phone":"+353123456789","name":"Jane Smith"}'
 ```
 
 ### Test Complete Flow
 
-1. **Send Webhook:**
-   ```bash
-   ./test-webhook.sh your-email@example.com "+353123456789" "Your Name"
-   ```
+1. **Send Webhook:** Use the `curl` example above with the email and phone you will use in the app.
 
 2. **Login to Web App:**
-   - Open http://localhost:5173 (or your deployed URL)
+   - Open http://localhost:3000 (driver app default port) or your deployed URL
    - Enter: `your-email@example.com`
    - Click Continue
 
@@ -402,23 +383,22 @@ Use the provided test script to simulate a Fountain webhook:
      - `verification` - Vehicle details
      - `reports` - Generated report
 
-### Local Development with Firebase Emulators
+### Local Development
 
 ```bash
-# Start Firebase emulators
-firebase emulators:start
+# Terminal 1: API (webhook + REST)
+npm run dev -w backend
 
-# In another terminal, start the web app
-npm run dev
-
-# Test webhook locally
-./test-webhook.sh
-# (Make sure to update WEBHOOK_URL in script to use localhost)
+# Terminal 2: driver or admin web app
+npm run dev -w driver-web
+# or: npm run dev -w admin-web
 ```
+
+Send a test webhook with `curl` or your HTTP client to `http://localhost:5001/api/webhooks/fountain` using the payload shape Fountain uses.
 
 ## Development Notes
 
-- Uses Firebase v9+ modular SDK with Cloud Functions
+- Admin app uses the Firebase JS SDK for Auth/Firestore where configured; driver flows call the REST API via `@lh/shared`
 - Authentication uses phone verification against Fountain data (no OTP/email needed)
 - All form data is validated and sanitized before saving
 - Progress is saved at each step for recovery

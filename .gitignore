@@ -34,3 +34,5 @@ serviceAccountKey.json
 # Downloaded documents from downloadDoc.js script
 downloads/
 backups/
+
+/src/generated/prisma
