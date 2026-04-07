@@ -13,12 +13,12 @@ const About = () => {
   return (
     <PageLayout compact title="">
       <div className="w-full flex flex-col items-center">
-        <h2 className="text-center text-3xl font-bold mb-6 animate-slide-down">
+        <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down">
           About Laundryheap
         </h2>
         
       
-        <div className="text-center space-y-6 max-w-md animate-fade-in">
+        <div className="space-y-4 max-w-md text-sm text-gray-600 leading-relaxed animate-fade-in">
           <p>
           Operating across 14 countries and 23 cities, we’ve achieved over 150,000 app downloads and successfully completed more than 2 million orders.
           </p>

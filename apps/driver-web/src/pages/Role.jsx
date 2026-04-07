@@ -59,11 +59,11 @@ const Role = () => {
   return (
     <PageLayout compact title="">
       <div className="w-full flex flex-col items-center">
-        <h2 className="text-center text-3xl font-bold mb-6 animate-slide-down">
+        <h2 className="text-2xl font-bold mb-3 text-brand-shadeBlue animate-slide-down">
           Driver role
         </h2>
         
-        <p className="text-center text-base mb-6 max-w-2xl px-4 animate-fade-in">
+        <p className="text-sm text-gray-500 mb-6 max-w-md leading-relaxed animate-fade-in">
           As a Laundryheap Partner Driver, you will be responsible for completing a series of essential delivery and collection tasks that ensure smooth daily operations and excellent customer experience. Your main responsibilities include:
         </p>
         

@@ -76,35 +76,32 @@ const Availability = () => {
 
   return (
     <PageLayout compact title="">
-      <div className="w-full flex flex-col items-center">
-        <h2 className="text-center text-3xl font-bold mb-6 animate-slide-down">
-          Availability Check
-        </h2>
-
-        <div className="w-full max-w-lg animate-fade-in">
-          <p className="text-center mb-6">
-            We offer our blocks in 3 windows: 8 AM - 12 PM, 12 PM - 5 PM, and 5 PM - 10 PM. We are operational 7 days a week.
+      <div className="w-full max-w-sm mx-auto flex flex-col gap-4 pb-6">
+        {/* Left-aligned heading */}
+        <div>
+          <h2 className="text-2xl font-bold text-brand-shadeBlue animate-slide-down">
+            Availability Check
+          </h2>
+          <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+            Define your working rhythm. Select the time windows where you're ready to hit the road. We operate in three primary shifts across the week.
           </p>
-
-          <p className="text-center mb-6">
-            Please share your general availability by making the appropriate selections
-          </p>
-
-          <AvailabilityGrid
-            availability={availability}
-            onAvailabilityChange={handleAvailabilityChange}
-          />
         </div>
 
+        <AvailabilityGrid
+          availability={availability}
+          onAvailabilityChange={handleAvailabilityChange}
+        />
+
         {!hasAtLeastOneSelection() && (
-          <p className="text-center text-sm text-red-500 mt-4">
-            Please select at least one availability slot to continue
-          </p>
+          <div className="error-box">
+            <span className="flex-shrink-0 text-brand-shadePink font-bold text-base">i</span>
+            <span>Please select at least one availability slot to continue</span>
+          </div>
         )}
 
         <Button
           onClick={handleContinue}
-          className="w-full max-w-xs mt-4 md:mt-8"
+          className="w-full mt-2"
           disabled={isButtonDisabled}
         >
           {isSaving ? "Saving..." : "I confirm my weekly availability"}

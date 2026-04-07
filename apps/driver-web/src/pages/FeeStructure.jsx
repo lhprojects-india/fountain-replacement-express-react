@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { PageLayout } from "@lh/shared";
 import { Button } from "@lh/shared";
-import { Button as UIButton } from "@lh/shared";
+import { UIButton } from "@lh/shared";
 import { CheckboxWithLabel } from "@lh/shared";
 import { useToast } from "@lh/shared";
 import { useState, useEffect } from "react";
@@ -251,7 +251,7 @@ const FeeStructure = () => {
     return (
       <PageLayout compact title="">
         <div className="w-full flex flex-col items-center px-4">
-          <h2 className="text-center text-3xl font-bold mb-6">Fee Structure</h2>
+          <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue">Fee Structure</h2>
           <Card className="w-full max-w-2xl">
             <CardContent className="p-6">
               <p className="text-center text-muted-foreground">Loading fee information...</p>
@@ -265,7 +265,7 @@ const FeeStructure = () => {
   return (
     <PageLayout compact title="">
       <div className="w-full flex flex-col items-center px-4">
-        <h2 className="text-center text-3xl font-bold mb-6 animate-fade-in">Fee Structure</h2>
+        <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-fade-in">Fee Structure</h2>
 
         <div className="grid w-full max-w-4xl gap-6">
           <Card>

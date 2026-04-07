@@ -119,21 +119,21 @@ const ConfirmDetails = () => {
   };
 
   return (
-    <PageLayout title="Confirm your details">
+    <PageLayout title="Confirm your details" compact>
       <div className="w-full flex flex-col items-center space-y-6">
         <div className="text-center mb-2">
-          <p className="text-sm text-white">
+          <p className="text-sm text-gray-600">
             Please review and confirm your details from your Fountain application.
           </p>
-          <p className="text-xs text-white opacity-80 mt-2">
+          <p className="text-xs text-gray-500 mt-2">
             If any information is incorrect, please report an issue and our team will assist you.
           </p>
         </div>
 
         <div className="w-full max-w-xs space-y-4">
           <div>
-            <label className="block text-sm font-medium text-white mb-1">
-              Full Name <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Full Name <span className="text-brand-pink">*</span>
             </label>
             <Input
               value={name}
@@ -145,8 +145,8 @@ const ConfirmDetails = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white mb-1">
-              Email <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email <span className="text-brand-pink">*</span>
             </label>
             <Input
               value={email}
@@ -158,8 +158,8 @@ const ConfirmDetails = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white mb-1">
-              Phone Number <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Phone Number <span className="text-brand-pink">*</span>
             </label>
             <Input
               value={phone}
@@ -171,8 +171,8 @@ const ConfirmDetails = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white mb-1">
-              City <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              City <span className="text-brand-pink">*</span>
             </label>
             <Input
               value={city}
@@ -185,7 +185,7 @@ const ConfirmDetails = () => {
 
           {vehicleType && (
             <div>
-              <label className="block text-sm font-medium text-white mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Vehicle Type
               </label>
               <Input
@@ -220,7 +220,7 @@ const ConfirmDetails = () => {
           </Button>
         </div>
 
-        <p className="text-xs text-center text-white opacity-80 max-w-xs mt-4">
+        <p className="text-xs text-center text-gray-500 max-w-xs mt-4">
           By confirming, you verify that all the information displayed above is accurate and matches your Fountain application.
         </p>
       </div>

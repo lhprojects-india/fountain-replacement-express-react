@@ -242,8 +242,11 @@ export const feeStructureServices = {
 export const facilityServices = {
   async getFacilitiesByCity(city) {
     try {
-      return [];
+      const params = city ? `?city=${encodeURIComponent(city)}` : '';
+      const result = await apiClient.get(`/drivers/facilities${params}`);
+      return result.facilities || [];
     } catch (error) {
+      console.error('Error fetching facilities:', error);
       return [];
     }
   },

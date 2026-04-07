@@ -19,7 +19,7 @@ const ThankYou = () => {
     <PageLayout compact title="">
       <div className="w-full flex flex-col items-center">
         <div className="text-center space-y-6 max-w-md animate-fade-in">
-          <h2 className="text-2xl font-bold mb-4 md:mb-8">
+          <h2 className="text-2xl font-bold mb-4 md:mb-8 text-brand-shadeBlue">
             Thank you for completing the welcome section of the onboarding stage!
           </h2>
 

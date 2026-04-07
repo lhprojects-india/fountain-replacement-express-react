@@ -4,33 +4,33 @@
 
 @layer base {
   :root {
-    --background: #ffffff;
-    --foreground: #1a1a1a;
+    --background: #BAEBFF;
+    --foreground: #202B93;
 
     --card: #ffffff;
-    --card-foreground: #1a1a1a;
+    --card-foreground: #202B93;
 
     --popover: #ffffff;
-    --popover-foreground: #1a1a1a;
+    --popover-foreground: #202B93;
 
     --primary: #0890F1;
     --primary-foreground: #ffffff;
 
     --secondary: #93ECE5;
-    --secondary-foreground: #1a1a1a;
+    --secondary-foreground: #202B93;
 
     --muted: #F5F5F5;
     --muted-foreground: #6B7280;
 
     --accent: #FFD06D;
-    --accent-foreground: #1a1a1a;
+    --accent-foreground: #202B93;
 
     --destructive: #EF8EA2;
     --destructive-foreground: #ffffff;
 
     --border: #E5E7EB;
     --input: #E5E7EB;
-    --ring: #0890F1;
+    --ring: #04B4A8;
 
     --radius: 0.75rem;
 
@@ -187,15 +187,15 @@
   }
 
   .laundryheap-input {
-    @apply w-full p-3 text-center text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply w-full p-3 text-left text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-shadeTeal focus:border-brand-shadeTeal transition-all duration-200 shadow-sm hover:shadow-md;
   }
 
   .otp-input {
-    @apply w-12 h-12 text-center text-lg text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply w-12 h-12 text-center text-lg text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-shadeTeal focus:border-brand-shadeTeal transition-all duration-200 shadow-sm hover:shadow-md;
   }
 
   .laundryheap-switch {
-    @apply relative inline-flex h-7 w-12 items-center rounded-full border-2 border-transparent bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue shadow-sm;
+    @apply relative inline-flex h-7 w-12 items-center rounded-full border-2 border-transparent bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-shadeTeal shadow-sm;
   }
 
   .laundryheap-switch-checked {
@@ -211,7 +211,15 @@
   }
 
   .laundryheap-page {
-    @apply min-h-screen w-full bg-gradient-to-br from-brand-blue via-brand-shadeBlue to-brand-blue text-white flex flex-col items-center px-4 md:px-6 pt-4 md:pt-12 pb-6 animate-fade-in;
+    @apply min-h-screen w-full bg-gradient-to-br from-brand-lightBlue to-brand-lightTeal text-brand-shadeBlue flex flex-col items-center px-4 md:px-6 pt-4 md:pt-12 pb-6 animate-fade-in;
+  }
+
+  .info-box {
+    @apply flex items-start gap-3 p-4 rounded-xl bg-brand-lightBlue text-brand-shadeBlue text-sm;
+  }
+
+  .error-box {
+    @apply flex items-center gap-3 p-4 rounded-xl bg-brand-lightPink text-brand-shadePink text-sm;
   }
 
   /* PhoneInput styling */
@@ -229,7 +237,7 @@
   }
 
   .phone-input-wrapper .PhoneInputInput {
-    @apply flex-1 h-[48px] p-3 text-left text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply flex-1 h-[48px] p-3 text-left text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-shadeTeal focus:border-brand-shadeTeal transition-all duration-200 shadow-sm hover:shadow-md;
     flex: 1;
     text-align: left !important;
   }
@@ -242,7 +250,7 @@
   }
 
   .phone-input-wrapper .PhoneInputCountrySelect {
-    @apply h-[48px] min-w-[140px] px-3 bg-white border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply h-[48px] min-w-[140px] px-3 bg-white border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-shadeTeal focus:border-brand-shadeTeal hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md;
     display: flex !important;
     align-items: center !important;
     justify-content: flex-start !important;

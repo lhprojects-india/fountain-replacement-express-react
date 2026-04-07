@@ -148,11 +148,11 @@ const FacilityLocations = () => {
     return (
       <PageLayout compact title="">
         <div className="w-full flex flex-col items-center">
-          <h2 className="text-center text-3xl font-bold mb-6 animate-slide-down">
+          <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down self-start max-w-sm mx-auto w-full">
             Facility Locations
           </h2>
           <div className="w-full max-w-md animate-fade-in">
-            <p className="text-center text-muted-foreground">
+            <p className="text-sm text-gray-500">
               Loading facility information...
             </p>
           </div>
@@ -167,16 +167,16 @@ const FacilityLocations = () => {
     return (
       <PageLayout compact title="">
         <div className="w-full flex flex-col items-center">
-          <h2 className="text-center text-3xl font-bold mb-6 animate-slide-down">
+          <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down self-start max-w-sm mx-auto w-full">
             Facility Locations
           </h2>
           <div className="w-full max-w-md animate-fade-in">
             {city ? (
-              <p className="text-center text-muted-foreground">
+              <p className="text-sm text-gray-500">
                 No facilities found for {city}. Please contact support.
               </p>
             ) : (
-              <p className="text-center text-muted-foreground">
+              <p className="text-sm text-gray-500">
                 Unable to load facility information. Please try again.
               </p>
             )}
@@ -189,12 +189,12 @@ const FacilityLocations = () => {
   return (
     <PageLayout compact title="">
       <div className="w-full flex flex-col items-center">
-        <h2 className="text-center text-3xl font-bold mb-6 animate-slide-down">
+        <h2 className="text-2xl font-bold mb-3 text-brand-shadeBlue animate-slide-down self-start max-w-sm mx-auto w-full">
           Facility Locations
         </h2>
         
         <div className="w-full max-w-md animate-fade-in">
-          <p className="text-center mb-6">
+          <p className="text-sm text-gray-500 mb-4">
             Please select the facility locations you're comfortable working with in your city.
           </p>
           
@@ -213,9 +213,10 @@ const FacilityLocations = () => {
           </div>
 
           {selectedFacilities.length === 0 && (
-            <p className="text-center text-sm text-red-500 mt-4">
-              Please select at least one facility location to continue
-            </p>
+            <div className="error-box mt-2">
+              <span className="flex-shrink-0 text-brand-shadePink font-bold text-base">i</span>
+              <span>Please select at least one facility location to continue</span>
+            </div>
           )}
         </div>
         

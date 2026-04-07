@@ -62,12 +62,12 @@ const Verify = () => {
   return (
     <PageLayout title="Laundryheap Driver onboarding">
       <div className="w-full flex flex-col items-center">
-        <h2 className="text-center text-2xl font-bold mb-6 animate-slide-down">
+        <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down self-start w-full max-w-xs">
           Verify your mobile number
         </h2>
         
         <div className="w-full max-w-xs space-y-4 animate-fade-in">
-          <p className="text-center text-sm text-white mb-4">
+          <p className="text-center text-sm text-gray-500 mb-4">
             We will match the mobile number with the email ID you entered to verify your identity.
           </p>
           
@@ -86,10 +86,10 @@ const Verify = () => {
                 style: { textAlign: 'left' }
               }}
             />
-            <p className="text-xs text-center mt-1 text-white opacity-70">*This field is mandatory</p>
+            <p className="text-xs text-center mt-1 text-gray-500">*This field is mandatory</p>
           </div>
           
-          <p className="text-center text-xs text-white opacity-80 mt-2">
+          <p className="text-center text-xs text-gray-500 mt-2">
             Enter the mobile number you registered with on Fountain
           </p>
         </div>

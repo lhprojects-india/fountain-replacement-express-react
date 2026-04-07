@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { PageLayout } from "@lh/shared";
 import { Button } from "@lh/shared";
-import { Button as UIButton } from "@lh/shared";
+import { UIButton } from "@lh/shared";
 import { CheckboxWithLabel } from "@lh/shared";
 import { useToast } from "@lh/shared";
 import { Card, CardContent, CardHeader, CardTitle } from "@lh/shared";
@@ -112,7 +112,7 @@ const AcknowledgementsSummary = () => {
       <div className="w-full flex flex-col items-center px-4">
         <div className="w-full max-w-3xl space-y-6 animate-fade-in">
           <div className="text-center">
-            <h2 className="text-3xl font-bold mb-4">
+            <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue">
               Review Your Acknowledgements
             </h2>
             <p className="text-lg text-muted-foreground mb-2">

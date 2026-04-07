@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail } from "lucide-react";
+import { Mail, ShieldCheck, Zap, Info } from "lucide-react";
 import { PageLayout } from "@lh/shared";
 import { Button } from "@lh/shared";
-import { Input } from "@lh/shared";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "@lh/shared";
 import { getNextRoute } from "@lh/shared";
@@ -14,33 +13,24 @@ const Welcome = () => {
   const { checkEmail, isLoading, currentUser, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
-  // Redirect if user is already authenticated and has progress
-  // BUT: Don't redirect if onboarding is completed - they should logout and start fresh
   useEffect(() => {
     if (!isLoading && isAuthenticated && currentUser) {
-      // If onboarding is completed, don't redirect - let them see welcome page
-      // They should logout and start fresh
       if (currentUser.onboardingStatus === 'completed') {
         return;
       }
-      
-      // Check if user has any actual progress (not just mock data fields)
-      // If they have no progress flags, they should stay on welcome page
-      const hasActualProgress = 
+
+      const hasActualProgress =
         currentUser.progress_confirm_details?.confirmed === true ||
         currentUser.progress_verify?.confirmed === true ||
         currentUser.phoneVerified === true ||
         currentUser.detailsConfirmed === true ||
         currentUser.lastRoute;
-      
-      // If no actual progress, don't redirect - let them start from welcome
+
       if (!hasActualProgress) {
         return;
       }
-      
+
       const nextRoute = getNextRoute(currentUser);
-      // If user should be on a different page, redirect them
-      // But don't redirect if they have no progress
       if (nextRoute !== '/' && nextRoute !== '/verify') {
         navigate(nextRoute, { replace: true });
       }
@@ -49,7 +39,7 @@ const Welcome = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!email) {
       toast({
         title: "Email Required",
@@ -58,12 +48,11 @@ const Welcome = () => {
       });
       return;
     }
-    
-    // Clear the completed onboarding flag if user is starting fresh
+
     if (localStorage.getItem('mock_onboarding_completed') === 'true') {
       localStorage.removeItem('mock_onboarding_completed');
     }
-    
+
     const result = await checkEmail(email);
     if (result.success) {
       navigate("/verify");
@@ -71,38 +60,71 @@ const Welcome = () => {
   };
 
   return (
-    <PageLayout title="Laundryheap Driver onboarding">
-      <div className="flex-1 text-center">
-        <span>
-          Welcome to Laundryheap's partner onboarding process. This is an introduction to your Onboarding process.
-          <br />
-          By proceeding, you should be able to understand the key aspects of the job.
-        </span>
-      </div>
+    <PageLayout title="">
+      <div className="w-full max-w-sm mx-auto flex flex-col gap-6 pb-6">
+        {/* Welcome heading with yellow left-border accent */}
+        <div className="border-l-4 border-brand-yellow pl-4">
+          <h1 className="text-2xl font-bold text-brand-shadeBlue leading-tight">
+            Welcome to the{" "}
+            <span className="text-brand-blue">Laundryheap</span> Team
+          </h1>
+          <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+            Ready to hit the road? Let's get your onboarding finished so you can start earning.
+          </p>
+        </div>
 
-      <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
-              <Input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="example@laundryheap.com"
-                type="email"
-                required
-              />
-              
-              <p className="text-center text-sm mt-4 md:mt-6 mb-4 md:mb-6 max-w-xs animate-fade-in">
-                Please enter your registered email address provided with your Fountain application
-              </p>
-      
-              <Button 
-                type="submit" 
-                className="mt-4 w-full max-w-xs"
-                showArrow={true}
-              >
-                <Mail size={18} />
-                {isLoading ? "Checking..." : "Continue"}
-              </Button>
-            </form>
+        {/* Email input card */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
+                Registered Email
+              </label>
+              <div className="relative">
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="example@laundryheap.com"
+                  type="email"
+                  required
+                  className="w-full px-4 py-3 pr-10 text-gray-700 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-shadeTeal focus:border-brand-shadeTeal transition-all duration-200 text-sm"
+                />
+                <Mail size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              </div>
+            </div>
+
+            {/* Info box */}
+            <div className="info-box">
+              <Info size={16} className="flex-shrink-0 mt-0.5 text-brand-blue" />
+              <span>
+                Please enter your registered email address provided with your Fountain application.
+              </span>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full mt-1"
+              showArrow={true}
+            >
+              {isLoading ? "Checking..." : "Continue"}
+            </Button>
+          </form>
+        </div>
+
+        {/* Secure Verification + Fast Approval badges */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white rounded-xl p-4 flex items-center gap-3 shadow-sm">
+            <ShieldCheck size={20} className="text-brand-shadeTeal flex-shrink-0" />
+            <span className="text-xs font-semibold text-brand-shadeBlue">Secure Verification</span>
+          </div>
+          <div className="bg-white rounded-xl p-4 flex items-center gap-3 shadow-sm">
+            <Zap size={20} className="text-brand-shadeYellow flex-shrink-0" />
+            <span className="text-xs font-semibold text-brand-shadeBlue">Fast Approval</span>
+          </div>
+        </div>
+      </div>
     </PageLayout>
   );
 };
+
 export default Welcome;

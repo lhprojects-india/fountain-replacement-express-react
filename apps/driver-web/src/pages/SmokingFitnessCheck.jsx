@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { pageContent } from "@/data/page-content";
 import { PageLayout } from "@lh/shared";
 import { Button } from "@lh/shared";
-import { Button as UIButton } from "@lh/shared";
+import { UIButton } from "@lh/shared";
 import { CheckboxWithLabel } from "@lh/shared";
 import { useToast } from "@lh/shared";
 import { useMinimumReadTime } from "@lh/shared";
@@ -124,7 +124,7 @@ const SmokingFitnessCheck = () => {
   return (
     <PageLayout compact title="">
       <div className="w-full flex flex-col items-center">
-        <h2 className="text-center text-3xl font-bold mb-6 animate-slide-down">
+        <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down">
           {pageContent.smokingFitnessCheck.title}
         </h2>
 
@@ -190,7 +190,7 @@ const SmokingFitnessCheck = () => {
 
         {physicalFitness === false ? (
           <div className="w-full flex flex-col items-center space-y-4 mt-6">
-            <p className="text-sm text-white text-center max-w-md">
+            <p className="text-sm text-gray-600 text-center max-w-md">
               {pageContent.smokingFitnessCheck.fitness.withdrawMessage}
             </p>
             <AlertDialog>
