@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Logistics - Document Review</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .glass-overlay {
+            backdrop-filter: blur(12px);
+            background-color: rgba(25, 28, 30, 0.4);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#772d40",
+                      "surface": "#f7f9fb",
+                      "surface-container-low": "#f2f4f6",
+                      "on-tertiary-container": "#fffbff",
+                      "on-secondary": "#ffffff",
+                      "on-primary-fixed": "#001c37",
+                      "inverse-on-surface": "#eff1f3",
+                      "tertiary-fixed-dim": "#ffb1c0",
+                      "on-tertiary-fixed": "#3f0116",
+                      "error-container": "#ffdad6",
+                      "on-surface-variant": "#404752",
+                      "surface-container": "#eceef0",
+                      "on-secondary-container": "#006f68",
+                      "background": "#f7f9fb",
+                      "surface-tint": "#0061a5",
+                      "outline": "#707884",
+                      "on-secondary-fixed-variant": "#00504b",
+                      "secondary": "#006a63",
+                      "primary-fixed": "#d2e4ff",
+                      "error": "#ba1a1a",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed": "#00201d",
+                      "on-primary-container": "#fdfcff",
+                      "on-background": "#191c1e",
+                      "outline-variant": "#bfc7d4",
+                      "tertiary-fixed": "#ffd9df",
+                      "secondary-container": "#67f5e8",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-container": "#b05a6d",
+                      "surface-bright": "#f7f9fb",
+                      "on-primary-fixed-variant": "#00497e",
+                      "on-surface": "#191c1e",
+                      "primary-fixed-dim": "#a0caff",
+                      "surface-variant": "#e0e3e5",
+                      "primary": "#005ea1",
+                      "surface-dim": "#d8dadc",
+                      "primary-container": "#0078ca",
+                      "on-primary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "on-tertiary": "#ffffff",
+                      "inverse-primary": "#a0caff",
+                      "inverse-surface": "#2d3133",
+                      "surface-container-high": "#e6e8ea",
+                      "surface-container-highest": "#e0e3e5",
+                      "secondary-fixed-dim": "#47dbcf",
+                      "tertiary": "#924255",
+                      "secondary-fixed": "#6af8eb"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Inter"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface overflow-hidden">
+<!-- Background Pipeline (Dimmed Context) -->
+<div class="flex h-screen overflow-hidden opacity-30 grayscale pointer-events-none">
+<!-- Sidebar Shell -->
+<aside class="h-screen w-64 left-0 sticky flex flex-col p-4 gap-2 bg-[#202B93] shadow-xl">
+<div class="flex items-center gap-3 px-2 py-4 mb-4">
+<div class="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-white">shield</span>
+</div>
+<div>
+<h1 class="text-lg font-black text-white leading-tight">Guardian Admin</h1>
+<p class="text-xs text-white/70">Operational Control</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<div class="flex items-center gap-3 px-4 py-3 bg-[#d2e4ff]/10 text-white rounded-lg">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-medium text-sm">Dashboard</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-white/70">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+<span class="font-medium text-sm">Verification</span>
+</div>
+</nav>
+</aside>
+<!-- Main Content Shell -->
+<main class="flex-1 flex flex-col">
+<header class="flex justify-between items-center px-8 h-16 w-full bg-[#f7f9fb] top-0 sticky">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-[#202B93]">Admin Logistics</span>
+<div class="flex gap-6">
+<span class="text-[#005ea1] border-b-2 border-[#005ea1] pb-1 font-semibold text-sm">Pipeline</span>
+<span class="text-[#404752] font-semibold text-sm">Documents</span>
+</div>
+</div>
+</header>
+<section class="p-8 space-y-6">
+<div class="grid grid-cols-4 gap-6">
+<div class="h-32 bg-surface-container rounded-xl"></div>
+<div class="h-32 bg-surface-container rounded-xl"></div>
+<div class="h-32 bg-surface-container rounded-xl"></div>
+<div class="h-32 bg-surface-container rounded-xl"></div>
+</div>
+<div class="h-[500px] bg-surface-container rounded-2xl w-full"></div>
+</section>
+</main>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center glass-overlay">
+<!-- Document Reviewer Modal -->
+<div class="bg-surface-container-lowest w-[1100px] h-[819px] rounded-xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300">
+<!-- Modal Header -->
+<header class="h-20 px-8 flex items-center justify-between bg-surface-container-lowest border-b border-outline-variant/10">
+<div>
+<h3 class="text-xl font-bold text-on-surface tracking-tight">Review Document</h3>
+<p class="text-sm text-on-surface-variant font-medium">Driving Licence — James Okonkwo</p>
+</div>
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-low flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-outline">close</span>
+</button>
+</header>
+<!-- Main Modal Body -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Left: Document Preview (65%) -->
+<div class="w-[65%] bg-surface-container-low flex flex-col relative">
+<!-- Toolbar -->
+<div class="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-on-surface/90 backdrop-blur-md rounded-full px-4 py-2 shadow-lg z-10">
+<button class="p-2 text-white hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="zoom_in">zoom_in</span>
+</button>
+<button class="p-2 text-white hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="zoom_out">zoom_out</span>
+</button>
+<div class="w-px h-4 bg-white/20 mx-1"></div>
+<button class="p-2 text-white hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="rotate_right">rotate_right</span>
+</button>
+<div class="w-px h-4 bg-white/20 mx-1"></div>
+<button class="p-2 text-white hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+</button>
+</div>
+<!-- Preview Area -->
+<div class="flex-1 p-12 flex items-center justify-center overflow-auto">
+<div class="bg-white shadow-2xl rounded shadow-on-surface/5 max-w-full">
+<img alt="Driving License Document Preview" class="w-full h-auto object-contain" data-alt="Photocopy of a driving license with portrait of a man, official government seals and text labels in a professional document scanner view style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGG_YVDF98VJl5HqSg18nBjb5fhuzciKz6Nl0BCPpP867Wz6Ec4-s2drLdxJOTh8VQcnT1uPVvLU2CUngEI9iqVayDvyjp6FTR1qfuv7JbEfGmasVhz451MK9dxemScTt0dMsHlM4aLYSNgn7m4-fLFcI0h8w11AA5TRR-uo1uOW0C9o6ub6_OHrsX68A384UeZXOE9-ok08FumzNK3MJtEOx2-Hca7Y3WcFlBAb7-jURhFeHXgkz6dAJZjGY_RWoXSzfbqTjPm7vH"/>
+</div>
+</div>
+</div>
+<!-- Right: Content & Decision (35%) -->
+<div class="w-[35%] bg-white border-l border-outline-variant/10 overflow-y-auto custom-scrollbar">
+<div class="p-8 space-y-8">
+<!-- Metadata Section -->
+<div class="space-y-6">
+<div class="flex justify-between items-start">
+<h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Document Details</h4>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Pending Review</span>
+</div>
+<div class="grid grid-cols-2 gap-y-4">
+<div class="space-y-1">
+<p class="text-[10px] text-outline font-bold uppercase tracking-tight">Driver</p>
+<p class="text-sm font-semibold text-on-surface">James Okonkwo</p>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] text-outline font-bold uppercase tracking-tight">Type</p>
+<p class="text-sm font-semibold text-on-surface">Licence Class B</p>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] text-outline font-bold uppercase tracking-tight">Uploaded</p>
+<p class="text-sm font-semibold text-on-surface">Oct 24, 14:22</p>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] text-outline font-bold uppercase tracking-tight">Size</p>
+<p class="text-sm font-semibold text-on-surface">2.4 MB</p>
+</div>
+</div>
+</div>
+<!-- Decision Cards -->
+<div class="space-y-4">
+<h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Decision</h4>
+<div class="space-y-3">
+<!-- Approve -->
+<button class="w-full flex items-center gap-4 p-4 rounded-xl border border-outline-variant/30 hover:border-secondary transition-all text-left">
+<div class="w-10 h-10 rounded-full bg-secondary-container/30 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Approve Document</p>
+<p class="text-xs text-on-surface-variant">Verified and valid</p>
+</div>
+</button>
+<!-- Reject (Selected State) -->
+<div class="w-full rounded-xl border-2 border-error bg-error-container/10 p-4 space-y-4">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-error text-white flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="cancel" data-weight="fill" style="font-variation-settings: 'FILL' 1;">cancel</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Reject Document</p>
+<p class="text-xs text-on-surface-variant">Document does not meet criteria</p>
+</div>
+</div>
+<div class="pt-2">
+<label class="block text-[10px] font-black text-error uppercase mb-2">Rejection Reason</label>
+<textarea class="w-full h-24 rounded-lg border-error/30 focus:border-error focus:ring-error text-sm text-on-surface placeholder:text-on-surface-variant/50 resize-none p-3 bg-white" placeholder="Explain why this document was rejected...">Image is too blurry to read the driver ID number and expiration date clearly.</textarea>
+<!-- Reason Chips -->
+<div class="mt-3 flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-white border border-error/20 text-error text-[10px] font-bold rounded-full cursor-pointer hover:bg-error hover:text-white transition-colors">Image too blurry</span>
+<span class="px-3 py-1 bg-white border border-error/20 text-error text-[10px] font-bold rounded-full cursor-pointer hover:bg-error hover:text-white transition-colors">Incorrect document</span>
+<span class="px-3 py-1 bg-white border border-error/20 text-error text-[10px] font-bold rounded-full cursor-pointer hover:bg-error hover:text-white transition-colors">Expired</span>
+</div>
+</div>
+</div>
+<!-- Request Re-upload -->
+<button class="w-full flex items-center gap-4 p-4 rounded-xl border border-outline-variant/30 hover:border-primary transition-all text-left">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="replay">replay</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Request Re-upload</p>
+<p class="text-xs text-on-surface-variant">Ask user for a better scan</p>
+</div>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<footer class="h-20 px-8 flex items-center justify-end gap-6 bg-surface-container-low">
+<button class="text-primary font-bold text-sm hover:underline">Cancel</button>
+<button class="h-12 px-8 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-transform active:scale-95 shadow-lg shadow-primary/20">
+                    Submit Decision
+                </button>
+</footer>
+</div>
+</div>
+</body></html>

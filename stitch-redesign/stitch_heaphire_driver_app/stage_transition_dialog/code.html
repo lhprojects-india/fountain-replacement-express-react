@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#772d40",
+                    "surface": "#f7f9fb",
+                    "surface-container-low": "#f2f4f6",
+                    "on-tertiary-container": "#fffbff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#001c37",
+                    "inverse-on-surface": "#eff1f3",
+                    "tertiary-fixed-dim": "#ffb1c0",
+                    "on-tertiary-fixed": "#3f0116",
+                    "error-container": "#ffdad6",
+                    "on-surface-variant": "#404752",
+                    "surface-container": "#eceef0",
+                    "on-secondary-container": "#006f68",
+                    "background": "#f7f9fb",
+                    "surface-tint": "#0061a5",
+                    "outline": "#707884",
+                    "on-secondary-fixed-variant": "#00504b",
+                    "secondary": "#006a63",
+                    "primary-fixed": "#d2e4ff",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed": "#00201d",
+                    "on-primary-container": "#fdfcff",
+                    "on-background": "#191c1e",
+                    "outline-variant": "#bfc7d4",
+                    "tertiary-fixed": "#ffd9df",
+                    "secondary-container": "#67f5e8",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#b05a6d",
+                    "surface-bright": "#f7f9fb",
+                    "on-primary-fixed-variant": "#00497e",
+                    "on-surface": "#191c1e",
+                    "primary-fixed-dim": "#a0caff",
+                    "surface-variant": "#e0e3e5",
+                    "primary": "#005ea1",
+                    "surface-dim": "#d8dadc",
+                    "primary-container": "#0078ca",
+                    "on-primary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "inverse-primary": "#a0caff",
+                    "inverse-surface": "#2d3133",
+                    "surface-container-high": "#e6e8ea",
+                    "surface-container-highest": "#e0e3e5",
+                    "secondary-fixed-dim": "#47dbcf",
+                    "tertiary": "#924255",
+                    "secondary-fixed": "#6af8eb"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- Application Detail Page (Dimmed Background) -->
+<div class="fixed inset-0 overflow-hidden flex grayscale-[0.2] opacity-40 pointer-events-none">
+<!-- SideNavBar Shared Component (Blueprint Mapping) -->
+<aside class="h-screen w-64 left-0 sticky bg-[#202B93] flex flex-col p-4 gap-2 shadow-xl">
+<div class="flex flex-col mb-8 px-2">
+<span class="text-lg font-black text-white">Guardian Admin</span>
+<span class="text-[10px] text-white/60 tracking-widest uppercase">Operational Control</span>
+</div>
+<nav class="flex-1 flex flex-col gap-2">
+<div class="text-white/70 flex items-center gap-3 px-3 py-2 text-sm font-medium"><span class="material-symbols-outlined">dashboard</span>Dashboard</div>
+<div class="bg-[#d2e4ff]/10 text-white rounded-lg flex items-center gap-3 px-3 py-2 text-sm font-medium"><span class="material-symbols-outlined">fact_check</span>Verification</div>
+<div class="text-white/70 flex items-center gap-3 px-3 py-2 text-sm font-medium"><span class="material-symbols-outlined">local_shipping</span>Logistics</div>
+<div class="text-white/70 flex items-center gap-3 px-3 py-2 text-sm font-medium"><span class="material-symbols-outlined">inventory_2</span>Archives</div>
+<div class="text-white/70 flex items-center gap-3 px-3 py-2 text-sm font-medium"><span class="material-symbols-outlined">headset_mic</span>Support</div>
+</nav>
+</aside>
+<main class="flex-1 flex flex-col">
+<!-- TopNavBar Shared Component -->
+<header class="flex justify-between items-center px-8 h-16 w-full bg-[#f7f9fb] top-0 sticky font-['Inter'] font-semibold tracking-tight">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-[#202B93]">Admin Logistics</span>
+<nav class="flex gap-6">
+<span class="text-[#005ea1] border-b-2 border-[#005ea1] pb-1">Pipeline</span>
+<span class="text-[#404752]">Documents</span>
+<span class="text-[#404752]">Team</span>
+<span class="text-[#404752]">Insights</span>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#404752]">notifications</span>
+<span class="material-symbols-outlined text-[#404752]">settings</span>
+<div class="w-8 h-8 rounded-full bg-surface-container"></div>
+</div>
+</header>
+<!-- Main Content Skeleton -->
+<div class="p-12 max-w-5xl w-full mx-auto space-y-8">
+<div class="flex justify-between items-end">
+<div class="space-y-2">
+<div class="h-4 w-24 bg-surface-container rounded"></div>
+<div class="h-12 w-64 bg-surface-container-high rounded-lg"></div>
+</div>
+<div class="h-10 w-32 bg-primary rounded-lg"></div>
+</div>
+<div class="grid grid-cols-3 gap-6">
+<div class="col-span-2 h-96 bg-surface-container-low rounded-xl"></div>
+<div class="h-96 bg-surface-container-low rounded-xl"></div>
+</div>
+</div>
+</main>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 bg-[#191c1e]/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+<!-- Stage Transition Dialog -->
+<section class="w-full max-w-[520px] bg-surface-container-lowest rounded-xl shadow-[0_4px_12px_rgba(26,26,46,0.08)] overflow-hidden border border-outline-variant/10">
+<!-- Modal Header -->
+<header class="px-8 pt-8 pb-6 text-center">
+<h2 class="text-2xl font-bold text-on-surface tracking-tight mb-1">Move Application</h2>
+<h3 class="text-sm font-medium text-on-surface-variant">James Okonkwo — currently in <span class="text-primary">Screening</span></h3>
+</header>
+<!-- Visual Transition -->
+<div class="px-8 pb-8">
+<div class="bg-surface-container-low rounded-2xl p-6 flex items-center justify-between relative overflow-hidden">
+<!-- Subtle Admin Hero Gradient Masking -->
+<div class="absolute inset-0 opacity-5 pointer-events-none bg-gradient-to-r from-[#202B93] to-[#2FCCC0]"></div>
+<div class="flex flex-col items-center gap-2 relative z-10">
+<span class="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant opacity-60">Current</span>
+<div class="px-4 py-1.5 bg-primary-fixed text-on-primary-fixed rounded-full text-xs font-bold">Screening</div>
+</div>
+<div class="flex-1 flex justify-center items-center">
+<span class="material-symbols-outlined text-outline-variant text-4xl">arrow_forward</span>
+</div>
+<div class="flex flex-col items-center gap-2 relative z-10">
+<span class="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant opacity-60">Target</span>
+<div class="px-4 py-1.5 bg-tertiary-fixed text-on-tertiary-fixed rounded-full text-xs font-bold">Documents</div>
+</div>
+</div>
+</div>
+<!-- Content -->
+<div class="px-8 pb-8 space-y-6">
+<!-- Move to stage selection -->
+<div class="space-y-3">
+<label class="text-[11px] uppercase tracking-widest font-bold text-on-surface-variant block">Move to stage:</label>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 bg-surface-container rounded-lg text-sm font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors">Screening</button>
+<button class="px-4 py-2 bg-primary-fixed border-2 border-primary text-primary rounded-lg text-sm font-bold">Documents</button>
+<button class="px-4 py-2 bg-surface-container rounded-lg text-sm font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors opacity-50 cursor-not-allowed">Onboarding</button>
+</div>
+</div>
+<!-- Checklist Card -->
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<label class="text-[11px] uppercase tracking-widest font-bold text-on-surface-variant">Checklist before advancing</label>
+<span class="text-[10px] font-bold text-secondary">2 of 3 Complete</span>
+</div>
+<div class="bg-surface-container-low/50 rounded-xl p-4 space-y-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary text-xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm font-medium text-on-surface">Identity verified (Passbase)</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary text-xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm font-medium text-on-surface">Right to work documented</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary text-xl" style="font-variation-settings: 'FILL' 1;">cancel</span>
+<span class="text-sm font-medium text-on-surface">Driving licence approved</span>
+</div>
+</div>
+</div>
+<!-- Warning Box -->
+<div class="bg-tertiary-fixed/30 p-4 rounded-xl flex gap-3 border border-tertiary-fixed-dim/20">
+<span class="material-symbols-outlined text-tertiary-container mt-0.5">warning</span>
+<p class="text-sm text-on-tertiary-fixed-variant leading-relaxed">
+                        Some requirements are not met. You can still advance, but this may require follow-up.
+                    </p>
+</div>
+</div>
+<!-- Footer Actions -->
+<footer class="px-8 pb-8 flex flex-col gap-4">
+<button class="w-full h-12 bg-primary text-white rounded-lg font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-primary/10">
+                    Confirm Move to Documents
+                </button>
+<button class="w-full h-10 text-on-surface-variant font-semibold text-sm hover:text-on-surface transition-colors">
+                    Cancel
+                </button>
+</footer>
+</section>
+</div>
+</body></html>

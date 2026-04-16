@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#00504b",
+                        "surface-tint": "#0061a5",
+                        "outline": "#707884",
+                        "on-secondary-container": "#006f68",
+                        "background": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "secondary": "#006a63",
+                        "primary-fixed": "#d2e4ff",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#00201d",
+                        "on-primary-container": "#fdfcff",
+                        "outline-variant": "#bfc7d4",
+                        "on-background": "#191c1e",
+                        "surface": "#f7f9fb",
+                        "on-tertiary-fixed-variant": "#772d40",
+                        "tertiary-fixed-dim": "#ffb1c0",
+                        "on-tertiary-fixed": "#3f0116",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-container-low": "#f2f4f6",
+                        "on-tertiary-container": "#fffbff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#001c37",
+                        "surface-container": "#eceef0",
+                        "on-surface-variant": "#404752",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "inverse-primary": "#a0caff",
+                        "secondary-fixed-dim": "#47dbcf",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-container-high": "#e6e8ea",
+                        "secondary-fixed": "#6af8eb",
+                        "tertiary": "#924255",
+                        "secondary-container": "#67f5e8",
+                        "tertiary-fixed": "#ffd9df",
+                        "on-surface": "#191c1e",
+                        "tertiary-container": "#b05a6d",
+                        "surface-bright": "#f7f9fb",
+                        "on-primary-fixed-variant": "#00497e",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "primary": "#005ea1",
+                        "primary-fixed-dim": "#a0caff",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#0078ca",
+                        "surface-dim": "#d8dadc"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-surface flex min-h-screen">
+<!-- SideNavBar (As defined in JSON) -->
+<aside class="h-screen sticky left-0 w-64 bg-[#202B93] dark:bg-slate-950 flex flex-col py-6 px-4 gap-4 shadow-xl z-50">
+<div class="mb-6 px-2">
+<h1 class="text-white font-bold text-lg">RecruitFlow</h1>
+<p class="text-slate-300 text-xs font-medium uppercase tracking-widest opacity-70">Enterprise Admin</p>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-200 font-inter text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 bg-white/10 text-white rounded-lg transition-all duration-200 font-inter text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span> Candidates
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-200 font-inter text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span> Jobs
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-200 font-inter text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span> Analytics
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-200 font-inter text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span> Reports
+            </a>
+</nav>
+<div class="mt-auto border-t border-white/10 pt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-200 font-inter text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span> Sign Out
+            </a>
+</div>
+</aside>
+<main class="flex-1 overflow-y-auto">
+<!-- TopNavBar (As defined in JSON) -->
+<header class="bg-slate-50 dark:bg-slate-900 w-full sticky top-0 z-40 flex justify-between items-center px-6 h-16 w-full font-inter tracking-tight">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg" data-icon="search">search</span>
+<input class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500" placeholder="Search application numbers..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4 ml-6">
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-xs font-bold text-slate-900 dark:text-white leading-none">ATS Admin Portal</p>
+<p class="text-[10px] text-slate-500 uppercase tracking-tighter mt-1">Super Admin</p>
+</div>
+<img alt="Administrator Profile" class="w-10 h-10 rounded-full object-cover ring-2 ring-slate-100" data-alt="Close-up portrait of a professional male administrator in a light blue shirt, clean studio lighting, high trust professional look" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhxtzn4h3HhHITK7lDmQ6GZUZsY-N4tCyQ6Cws-1UsADyg7PMmctGQ7FOi1lMSPZ2UuDBmjOsprS6-6RTU8cYCzuFC0zv30798vZ8I9mOC4CJsf-rGX9gHhEjWluMBaXdW9Kb7EgCziDDI-qYKkNXV4Hu7MKtLwVgIYv4yaeoHA8NKFZgIqCAFSaqRTBwGZ4oEQoo534F-MSk6v3FsAHHKt84ukS8qECKR45DtRMz1WowVB8sx3H0EbOqnLZPy6_dI-wKkUNBkEKK1"/>
+</div>
+</div>
+</header>
+<div class="p-8 max-w-7xl mx-auto">
+<!-- Profile Card -->
+<div class="bg-surface-container-lowest rounded-xl p-8 mb-8 flex flex-col md:flex-row gap-8 items-start relative overflow-hidden">
+<!-- Velocity Blue Accent Gradient -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#202B93]/10 to-transparent rounded-full -mr-20 -mt-20"></div>
+<div class="relative">
+<img alt="James Okonkwo" class="w-32 h-32 rounded-xl object-cover shadow-lg border-4 border-white" data-alt="Headshot of a friendly confident black man in his 30s with short hair, wearing a white polo shirt, natural soft outdoor lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACROP3uHnCLZd6Sz0gftCyf-oOfTnQqBBn3TW8IlYEPMQt3ne16Gl95fYelhJdNcV7t870BvDHX5NVACzw1Kp_nw7Q2Wxap2LDzCLVrRDWdA9LftJ8xOwWGtkkR9abX6FTDCEnYnpGzkPC1jYA1IQ9teV_KmZ0aRPEN6yvBzSGCVp3CigKf_Kfga7FWSuLtfnGnWmlZhSO_t-GTUZGo12PNK2qJ3KhaZCwwCPZMqK59KnRkmHmWDQgdcN5-_C1vl9U_vGaJljnWVhB"/>
+<span class="absolute -bottom-2 -right-2 bg-secondary text-white p-1.5 rounded-full border-4 border-white">
+<span class="material-symbols-outlined text-sm" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</span>
+</div>
+<div class="flex-1 space-y-4">
+<div class="flex justify-between items-start">
+<div>
+<h2 class="text-3xl font-bold text-on-background tracking-tight">James Okonkwo</h2>
+<p class="text-on-surface-variant font-medium flex items-center gap-2 mt-1">
+<span class="material-symbols-outlined text-lg" data-icon="location_on">location_on</span> Lagos, Nigeria • Heavy Duty Driver
+                            </p>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 bg-surface-container-high text-primary font-semibold rounded-lg hover:bg-surface-container-highest transition-colors">
+                                Message
+                            </button>
+<button class="px-6 py-2 bg-primary text-white font-semibold rounded-lg shadow-sm hover:opacity-90 transition-opacity">
+                                Hire Candidate
+                            </button>
+</div>
+</div>
+<div class="flex gap-12 pt-2">
+<div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-1">Application ID</p>
+<p class="font-semibold text-on-surface">#APP-998231</p>
+</div>
+<div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-1">Experience</p>
+<p class="font-semibold text-on-surface">12 Years</p>
+</div>
+<div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-1">Compliance</p>
+<p class="font-semibold text-secondary flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span> 85% Verified
+                            </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Tabs -->
+<div class="flex border-b border-outline-variant/30 mb-8 gap-8">
+<a class="px-4 py-4 text-on-surface-variant font-medium hover:text-primary transition-colors" href="#">Overview</a>
+<a class="px-4 py-4 text-primary font-bold border-b-2 border-primary relative" href="#">
+                    Documents
+                    <span class="absolute top-3 -right-1 bg-primary-fixed text-primary text-[10px] px-1.5 py-0.5 rounded-full">4</span>
+</a>
+<a class="px-4 py-4 text-on-surface-variant font-medium hover:text-primary transition-colors flex items-center gap-2" href="#">
+                    Notes
+                    <span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+</a>
+<a class="px-4 py-4 text-on-surface-variant font-medium hover:text-primary transition-colors" href="#">History</a>
+</div>
+<!-- Documents View -->
+<div class="space-y-6">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-xl font-bold text-on-background">Verification Documents</h3>
+<button class="flex items-center gap-2 text-primary font-semibold text-sm">
+<span class="material-symbols-outlined text-lg" data-icon="file_upload">file_upload</span> Upload Document
+                    </button>
+</div>
+<!-- Document Rows -->
+<div class="grid gap-4">
+<!-- Row 1: Approved -->
+<div class="bg-surface-container-lowest p-5 rounded-xl flex items-center justify-between transition-all hover:bg-white hover:shadow-md">
+<div class="flex items-center gap-5">
+<div class="w-16 h-12 bg-surface-container-high rounded-lg overflow-hidden flex-shrink-0">
+<img alt="Driving Licence" class="w-full h-full object-cover opacity-80" data-alt="Blurred macro of a plastic driving license card with identifying text and small photo placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwGIiSgFj7DGzpTdLU_xCqANLdz8d3yjjocy6qPIOoE_L6UKC_auOxlwOfJucXgtBF9372pXUnwsrsp_AYm_LFMezlJ5Lrqda95tSRhtueU8_WxJht1ym1JR21EOIQivSWNPsGIzKQsFkz1AkauKbv5fa6kqb9G-JtHmGOWJQkxXCc8f7FkqM4wQ_1TYrEshUuGg5ilEpGVqmSdvGtMQBu-wdrJBlfi-nsP2rVh7BGljaHLcppSVrgMfSDOYD_4qWF1TmL7oFiy1Sf"/>
+</div>
+<div>
+<h4 class="font-bold text-on-background">Driving Licence (Class A)</h4>
+<p class="text-xs text-on-surface-variant mt-0.5">Uploaded on Oct 12, 2023 • 2.4 MB</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="relative">
+<select class="appearance-none bg-secondary/10 text-secondary border-none text-xs font-bold py-1.5 pl-3 pr-8 rounded-full focus:ring-0 cursor-pointer">
+<option selected="">Approved</option>
+<option>Pending</option>
+<option>Rejected</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-secondary text-sm pointer-events-none" data-icon="expand_more">expand_more</span>
+</div>
+<button class="px-4 py-1.5 border border-outline-variant/50 text-on-surface-variant text-xs font-bold rounded-lg hover:bg-surface-container-low">Review</button>
+</div>
+</div>
+<!-- Row 2: Rejected -->
+<div class="bg-surface-container-lowest p-5 rounded-xl border-l-4 border-error flex items-center justify-between transition-all hover:bg-white hover:shadow-md">
+<div class="flex items-center gap-5">
+<div class="w-16 h-12 bg-error-container/20 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-error" data-icon="image_not_supported">image_not_supported</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-bold text-on-background">Proof of Address (Utility Bill)</h4>
+<span class="bg-error-container text-on-error-container text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Image blurry</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-0.5">Uploaded on Oct 14, 2023 • 1.1 MB</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="relative">
+<select class="appearance-none bg-error-container text-on-error-container border-none text-xs font-bold py-1.5 pl-3 pr-8 rounded-full focus:ring-0 cursor-pointer">
+<option>Approved</option>
+<option>Pending</option>
+<option selected="">Rejected</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-error-container text-sm pointer-events-none" data-icon="expand_more">expand_more</span>
+</div>
+<button class="px-4 py-1.5 border border-error/30 text-error text-xs font-bold rounded-lg hover:bg-error/5">Review</button>
+</div>
+</div>
+<!-- Row 3: Pending -->
+<div class="bg-surface-container-lowest p-5 rounded-xl flex items-center justify-between transition-all hover:bg-white hover:shadow-md">
+<div class="flex items-center gap-5">
+<div class="w-16 h-12 bg-surface-container-high rounded-lg overflow-hidden flex-shrink-0">
+<img alt="MOT Certificate" class="w-full h-full object-cover" data-alt="Digital scan of an official vehicle inspection report with stamps and tabular data, high resolution document" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhwVyhaFApgrXD8DkdD_D9CBFl3Y6UAcC_M45tPKnssfpzAeqaAu7dyS-pG2SEQA7kDaMCGY4aAf9xntzNVjJQhw9crdDorVI5LWPuimuH7fWradS2UcQeAKeIujRw3YrMuMGU0F2qTtElcQsEptJbulapWLfMN_CA2FONFctbn0pbif8ivejMPX-DWpmY1C_zF5duisLtAfiujD-V98YJhYlQQnXb_5u8RMrKd-HyWUFzO0lTyKv1rUb6SSPM2iOtD8CZMU7PppXa"/>
+</div>
+<div>
+<h4 class="font-bold text-on-background">Vehicle MOT Certificate</h4>
+<p class="text-xs text-on-surface-variant mt-0.5">Uploaded on Oct 15, 2023 • 4.8 MB</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="relative">
+<select class="appearance-none bg-surface-container-high text-on-surface-variant border-none text-xs font-bold py-1.5 pl-3 pr-8 rounded-full focus:ring-0 cursor-pointer">
+<option>Approved</option>
+<option selected="">Pending</option>
+<option>Rejected</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm pointer-events-none" data-icon="expand_more">expand_more</span>
+</div>
+<button class="px-4 py-1.5 border border-outline-variant/50 text-on-surface-variant text-xs font-bold rounded-lg hover:bg-surface-container-low">Review</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Notes Tab (Section Divider for Demo) -->
+<div class="mt-16 pt-8 border-t border-outline-variant/20">
+<h3 class="text-xl font-bold text-on-background mb-6">Internal Recruiting Notes</h3>
+<div class="grid md:grid-cols-3 gap-8">
+<!-- Note Editor -->
+<div class="md:col-span-1">
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/10">
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Add a note</p>
+<textarea class="w-full h-32 bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary mb-4 placeholder:text-outline-variant" placeholder="Add an internal note about James..."></textarea>
+<div class="flex items-center justify-between">
+<div class="flex gap-2">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="attach_file">attach_file</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="alternate_email">alternate_email</span>
+</button>
+</div>
+<button class="px-6 py-2 bg-primary text-white font-bold text-xs rounded-lg uppercase tracking-tight">Post Note</button>
+</div>
+</div>
+</div>
+<!-- Note Timeline -->
+<div class="md:col-span-2 space-y-6">
+<!-- Note 1 -->
+<div class="flex gap-4 group">
+<img alt="Sarah A." class="w-10 h-10 rounded-full object-cover" data-alt="Modern professional woman avatar, soft focus background, business casual, friendly expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCgmiMQj7HyY9fkfDt-tvL8T_oJ2QTcyirYQ8fFawsgk780VTkS-wD3CD3pYmgSdIdN3MDmwVj57CfbOJLLESJaaoRmvIF--6aUc4rivX4580lxiTHfOGYoNYeUzXRZ7S-YawINjylbl0pdVVAR0DXmZY6JrI6QA52K5Un8RZcwagHOpLIR8yqqszOf4PoIxFWtKS4jvaEqYPs5qlTt9_VvByZGRcZjScidssOlJEj3u-KtYmyMRqEKmfscDzDG9dCLYleSr5z2Lxt"/>
+<div class="flex-1">
+<div class="bg-surface-container-lowest p-5 rounded-xl rounded-tl-none border border-outline-variant/10 group-hover:shadow-md transition-shadow">
+<div class="flex justify-between items-center mb-2">
+<h5 class="font-bold text-on-background text-sm">Sarah Atkinson <span class="text-on-surface-variant font-normal text-xs ml-2">Lead Recruiter</span></h5>
+<span class="text-[10px] text-on-surface-variant font-medium">Oct 16, 2023 • 09:42 AM</span>
+</div>
+<p class="text-sm text-on-surface leading-relaxed">
+                                        Spoke with James today. He has extensive experience in long-haul logistics. I’m concerned about the blurred Proof of Address—I've asked him to re-upload via the portal. Highly recommended for the West Route.
+                                    </p>
+</div>
+</div>
+</div>
+<!-- Note 2 -->
+<div class="flex gap-4 group">
+<img alt="Michael R." class="w-10 h-10 rounded-full object-cover" data-alt="Professional man avatar, wearing glasses, soft office lighting, friendly and authoritative look" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvZlWa-3n9hqNf-b_a2F5pq0LzeGNLdLXCrVep7PhZuk_4zphJmOkCC-80iygtnK4aAPIVXwHr6SAyRTaMU0u4yvpUeXSI9BGUeDVY6jbBMqvDy1srDWKnXcJhirvAiI8J2resKK7nRzzPOSGm-FpvCtI0i6xfoyIWtz4hS0ke-3fc_fBFIdp3pvWaHNBsBiviZfwAlvwK9JH_TXBPvHIsNVNmXsAXx8ZOilAcVGaMKDihJqr66cmbmXpGH6dfyFlHpcRlKwWIpptX"/>
+<div class="flex-1">
+<div class="bg-surface-container-lowest p-5 rounded-xl rounded-tl-none border border-outline-variant/10 group-hover:shadow-md transition-shadow">
+<div class="flex justify-between items-center mb-2">
+<h5 class="font-bold text-on-background text-sm">Michael Reed <span class="text-on-surface-variant font-normal text-xs ml-2">Compliance Officer</span></h5>
+<span class="text-[10px] text-on-surface-variant font-medium">Oct 14, 2023 • 02:15 PM</span>
+</div>
+<p class="text-sm text-on-surface leading-relaxed italic text-on-surface-variant/80">
+                                        Rejected "Proof of Address" document. Reason: Image blurry and edges are cut off. Not readable for verification.
+                                    </p>
+</div>
+</div>
+</div>
+<!-- Note 3 -->
+<div class="flex gap-4 group">
+<img alt="Sarah A." class="w-10 h-10 rounded-full object-cover" data-alt="Modern professional woman avatar, soft focus background, business casual, friendly expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBp6mXgcTAQ9oPiVlIEw4RCxQq25tjDGyldTUwxXK_xyfjAWhdb_0gzMWB52bt-M3tABExeItXVZEfKyIOzHtgpqL30wFVFpju6Rv4no126gpdEt8f4s18VM5CGvO7KHfx63_WqtgYJfZrNMsiLKvY8axdEhpgaj6BScuKdUEaGQtJUyPzKQKs5IfrWNFRidGq2HlKRa8BAA2JReyXNsFloEr1tJqusZhbYFySy1ZaMhhlapmYybyBoiKm5a6L3KVGA0w_2F3P2OBM6"/>
+<div class="flex-1">
+<div class="bg-surface-container-lowest p-5 rounded-xl rounded-tl-none border border-outline-variant/10 group-hover:shadow-md transition-shadow">
+<div class="flex justify-between items-center mb-2">
+<h5 class="font-bold text-on-background text-sm">Sarah Atkinson <span class="text-on-surface-variant font-normal text-xs ml-2">Lead Recruiter</span></h5>
+<span class="text-[10px] text-on-surface-variant font-medium">Oct 12, 2023 • 11:30 AM</span>
+</div>
+<p class="text-sm text-on-surface leading-relaxed">
+                                        Initial screening complete. Candidate possesses all necessary heavy-duty endorsements. Ready for document verification.
+                                    </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

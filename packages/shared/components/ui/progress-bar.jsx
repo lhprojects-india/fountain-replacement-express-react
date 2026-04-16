@@ -16,13 +16,13 @@ const PROGRESS_ROUTES = [
   '/liabilities',                // Step 12
 ];
 
-const ProgressBar = () => {
+const ProgressBar = ({ routes = PROGRESS_ROUTES, label = "Onboarding Progress" }) => {
   const location = useLocation();
   const currentPath = location.pathname;
   
-  const currentStepIndex = PROGRESS_ROUTES.findIndex(route => route === currentPath);
+  const currentStepIndex = routes.findIndex(route => route === currentPath);
   const currentStep = currentStepIndex >= 0 ? currentStepIndex + 1 : 1;
-  const totalSteps = PROGRESS_ROUTES.length;
+  const totalSteps = routes.length;
   const progressPercentage = (currentStep / totalSteps) * 100;
 
   return (
@@ -30,7 +30,7 @@ const ProgressBar = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-1.5">
           <span className="text-xs font-semibold uppercase tracking-widest text-brand-shadeBlue/60">
-            Onboarding Progress
+            {label}
           </span>
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-brand-shadeBlue">

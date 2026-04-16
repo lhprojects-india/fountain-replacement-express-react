@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import LaundryheapLogo from "../assets/logo";
+import { ProductBrandHeading } from "./ProductBrandHeading";
 import ProgressBar from "./ui/progress-bar";
 
 // Routes that should show the progress bar (from confirm-details to liabilities)
@@ -19,7 +20,7 @@ const PROGRESS_BAR_ROUTES = [
   '/liabilities',
 ];
 
-// Routes that show "Driver Onboarding" nav header (not the logo-only welcome page)
+// Routes that show the product name in the nav header (not the logo-only welcome page)
 const NAV_HEADER_ROUTES = [
   '/verify',
   '/confirm-details',
@@ -38,13 +39,26 @@ const NAV_HEADER_ROUTES = [
   '/thank-you',
 ];
 
-function PageLayout({ children, title, subtitle, compact = false }) {
+function PageLayout({
+  children,
+  title,
+  subtitle,
+  compact = false,
+  routes = PROGRESS_BAR_ROUTES,
+  basePath = "/",
+}) {
   const location = useLocation();
   const navigate = useNavigate();
   const isAdminPage = location.pathname.startsWith('/admin');
-  
-  const showProgressBar = PROGRESS_BAR_ROUTES.includes(location.pathname) && !isAdminPage;
-  const showNavHeader = NAV_HEADER_ROUTES.includes(location.pathname) && !isAdminPage;
+  const isScreeningFlow = basePath === "/screening";
+
+  const navRoutes = isScreeningFlow
+    ? ["/screening", ...routes]
+    : NAV_HEADER_ROUTES;
+  const progressRoutes = routes;
+
+  const showProgressBar = progressRoutes.includes(location.pathname) && !isAdminPage;
+  const showNavHeader = navRoutes.includes(location.pathname) && !isAdminPage;
 
   return (
     <div className="laundryheap-page min-h-screen flex flex-col">
@@ -57,14 +71,20 @@ function PageLayout({ children, title, subtitle, compact = false }) {
           >
             <ArrowLeft size={20} />
           </button>
-          <span className="text-base font-semibold text-brand-shadeBlue">Driver Onboarding</span>
+          <ProductBrandHeading
+            className="items-center text-center max-w-[min(100%,14rem)]"
+            mainClassName="text-base font-semibold text-brand-shadeBlue"
+            bylineClassName="text-xs font-medium text-brand-shadeBlue/80 mt-0.5"
+          />
           <div className="w-9" />
         </div>
       ) : (
         <LaundryheapLogo />
       )}
 
-      {showProgressBar && <ProgressBar />}
+      {showProgressBar && (
+        <ProgressBar routes={progressRoutes} label={isScreeningFlow ? "Screening Progress" : "Onboarding Progress"} />
+      )}
       
       {title && (
         <h1 className={`text-center text-lg md:text-xl mt-2 md:mt-6 mb-4 md:mb-8 font-semibold text-brand-shadeBlue animate-slide-up ${compact ? "text-2xl md:text-3xl" : ""}`}>

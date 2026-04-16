@@ -97,7 +97,6 @@ export default function AdminManager() {
       const adminsData = await adminServices.getAllAdmins();
       setAdmins(adminsData);
     } catch (error) {
-      console.error('Error loading admins:', error);
       toast({
         title: "Error loading admins",
         description: "Unable to load admins. Please try again.",
@@ -114,7 +113,6 @@ export default function AdminManager() {
       const cities = Object.keys(structures).sort();
       setAvailableCities(cities);
     } catch (error) {
-      console.error('Error loading cities:', error);
     }
   };
 
@@ -124,7 +122,6 @@ export default function AdminManager() {
       const admin = await adminServices.getAdminByEmail(currentUser.email);
       setCurrentUserRole(admin?.role || null);
     } catch (error) {
-      console.error('Error loading current user role:', error);
     }
   };
 
@@ -217,7 +214,6 @@ export default function AdminManager() {
       loadAdmins();
       loadCurrentUserRole();
     } catch (error) {
-      console.error('Error saving admin:', error);
       toast({
         title: "Save failed",
         description: error.message || "Unable to save admin. Please try again.",
@@ -236,7 +232,6 @@ export default function AdminManager() {
       loadAdmins();
       loadCurrentUserRole();
     } catch (error) {
-      console.error('Error deleting admin:', error);
       toast({
         title: "Delete failed",
         description: error.message || "Unable to delete admin. Please try again.",
@@ -281,7 +276,7 @@ export default function AdminManager() {
 
   if (!canManageAdmins) {
     return (
-      <Card className="border-0 shadow-sm">
+      <Card className="adm-card">
         <CardContent className="text-center py-12">
           <ShieldCheck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 mb-2">Access Denied</p>
@@ -293,7 +288,7 @@ export default function AdminManager() {
 
   return (
     <div className="space-y-6">
-      <Card className="border-0 shadow-sm">
+      <Card className="adm-card">
         <CardContent className="pt-6">
           <div className="flex justify-between items-center">
             <div>
@@ -308,7 +303,7 @@ export default function AdminManager() {
                     Add Admin
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl z-[200]">
+                <DialogContent className="adm-modal max-w-2xl z-[200]">
                   <DialogHeader>
                     <DialogTitle>
                       {editingAdmin ? 'Edit Admin' : 'Create New Admin'}

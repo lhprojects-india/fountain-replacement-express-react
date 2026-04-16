@@ -4,7 +4,7 @@ services:
     env: node
     plan: free
     rootDir: .
-    buildCommand: npm ci
+    buildCommand: npm ci && npx prisma generate --schema=apps/backend/prisma/schema.prisma
     startCommand: npm run start -w backend
     healthCheckPath: /health
     autoDeploy: true
@@ -19,6 +19,40 @@ services:
         sync: false
       - key: FIREBASE_SERVICE_ACCOUNT_JSON
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_PHONE_NUMBER
+        sync: false
+      - key: DROPBOX_SIGN_API_KEY
+        sync: false
+      - key: DROPBOX_SIGN_CLIENT_ID
+        sync: false
+      - key: DROPBOX_SIGN_WEBHOOK_SECRET
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: FROM_EMAIL
+        value: noreply@laundryheap.com
+      - key: API_BASE_URL
+        value: https://lh-onboarding-backend.onrender.com
+      - key: DRIVER_WEB_URL
+        value: https://lh-driver-web.onrender.com
+      - key: ADMIN_WEB_URL
+        value: https://lh-admin-web.onrender.com
+      - key: LOG_LEVEL
+        value: info
 
   - type: web
     name: lh-driver-web

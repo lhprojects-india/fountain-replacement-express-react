@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "surface": "#f7f9fb",
+                  "surface-container-low": "#f2f4f6",
+                  "background": "#f7f9fb",
+                  "inverse-primary": "#a0caff",
+                  "inverse-surface": "#2d3133",
+                  "secondary-container": "#67f5e8",
+                  "on-secondary": "#ffffff",
+                  "on-secondary-fixed-variant": "#00504b",
+                  "tertiary-container": "#b05a6d",
+                  "inverse-on-surface": "#eff1f3",
+                  "tertiary": "#924255",
+                  "primary": "#005ea1",
+                  "surface-container-highest": "#e0e3e5",
+                  "surface-container-high": "#e6e8ea",
+                  "on-primary-container": "#fdfcff",
+                  "on-primary": "#ffffff",
+                  "on-secondary-container": "#006f68",
+                  "secondary-fixed": "#6af8eb",
+                  "on-tertiary-fixed-variant": "#772d40",
+                  "tertiary-fixed": "#ffd9df",
+                  "surface-variant": "#e0e3e5",
+                  "on-surface-variant": "#404752",
+                  "primary-container": "#0078ca",
+                  "on-tertiary": "#ffffff",
+                  "primary-fixed": "#d2e4ff",
+                  "on-background": "#191c1e",
+                  "surface-dim": "#d8dadc",
+                  "surface-tint": "#0061a5",
+                  "on-tertiary-container": "#fffbff",
+                  "on-surface": "#191c1e",
+                  "primary-fixed-dim": "#a0caff",
+                  "on-primary-fixed": "#001c37",
+                  "surface-container": "#eceef0",
+                  "surface-bright": "#f7f9fb",
+                  "error": "#ba1a1a",
+                  "secondary-fixed-dim": "#47dbcf",
+                  "on-primary-fixed-variant": "#00497e",
+                  "outline-variant": "#bfc7d4",
+                  "tertiary-fixed-dim": "#ffb1c0",
+                  "secondary": "#006a63",
+                  "outline": "#707884",
+                  "on-error-container": "#93000a",
+                  "on-error": "#ffffff",
+                  "error-container": "#ffdad6",
+                  "surface-container-lowest": "#ffffff",
+                  "on-tertiary-fixed": "#3f0116",
+                  "on-secondary-fixed": "#00201d"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "fontFamily": {
+                  "headline": ["Inter"],
+                  "body": ["Inter"],
+                  "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .glass-effect {
+      backdrop-filter: blur(12px);
+      background-color: rgba(255, 255, 255, 0.8);
+    }
+  </style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+<!-- SideNavBar (Authority Source: JSON) -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-[#202B93] dark:bg-slate-950 flex flex-col h-full p-4 z-50">
+<div class="mb-8 px-4 py-2">
+<h1 class="text-xl font-bold text-white tracking-tight">Logistics Admin</h1>
+<p class="text-xs text-[#d2e4ff]/70 font-medium">Onboarding Control</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Active navigation determined by 'Settings' logic -->
+<a class="flex items-center gap-3 px-4 py-3 text-[#d2e4ff]/70 hover:text-white hover:bg-[#202B93]/80 transition-colors scale-95 active:scale-90 transition-transform font-inter text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="pipeline">plumbing</span>
+        Pipeline
+      </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#d2e4ff]/70 hover:text-white hover:bg-[#202B93]/80 transition-colors scale-95 active:scale-90 transition-transform font-inter text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+        Open Roles
+      </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#d2e4ff]/70 hover:text-white hover:bg-[#202B93]/80 transition-colors scale-95 active:scale-90 transition-transform font-inter text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+        Interviews
+      </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#d2e4ff]/70 hover:text-white hover:bg-[#202B93]/80 transition-colors scale-95 active:scale-90 transition-transform font-inter text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+        Analytics
+      </a>
+<!-- Active Item: Settings -->
+<a class="flex items-center gap-3 px-4 py-3 bg-[#005ea1] text-white rounded-lg scale-95 active:scale-90 transition-transform font-inter text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+        Settings
+      </a>
+</nav>
+<div class="mt-auto pt-4 border-t border-white/10 flex items-center gap-3 px-4">
+<img alt="Admin User Profile" class="w-10 h-10 rounded-full border-2 border-primary-fixed" data-alt="Close-up portrait of a professional male administrator in a light grey suit with soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZ-hwxRac4TZoBJg8-TeuqZO10KM9UstIqNm8CsndEoJNAlsCi7-03YpcP_J7kT1ucdzVus3bdp3yt6C6JFDJub0jX8ftd8_8z1ZkkOKlOdcSpH6dYVu07qeD2fhAI0lj_IWy2fgY03yn4df_rXt4PpXZ-vmn2uNd3wJGTlVRnaFgcYvBgfV_liO7UxYiaKgQhDgoyhyLQt4y6L28DccJIuAbgbasm7bH9_6qDdBb9BVZwuAbSTVPMS2LY-t-Lg1GwYt2jCzf-75yN"/>
+<div class="overflow-hidden">
+<p class="text-white text-sm font-bold truncate">Admin User</p>
+<p class="text-[#d2e4ff]/60 text-xs truncate">Head of Logistics</p>
+</div>
+</div>
+</aside>
+<!-- TopNavBar (Authority Source: JSON) -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex justify-between items-center px-8 z-40 shadow-sm border-b border-gray-100 dark:border-slate-800">
+<div class="flex items-center gap-6">
+<span class="text-lg font-bold text-[#1A1A2E] dark:text-white">ATS Terminal</span>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">search</span>
+<input class="bg-surface-container-low border-none rounded-full pl-10 pr-4 py-1.5 text-sm w-64 focus:ring-2 focus:ring-[#2FCCC0]/30 transition-all outline-none" placeholder="Quick search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-gray-500 hover:text-[#005ea1] opacity-80 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-gray-500 hover:text-[#005ea1] opacity-80 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="h-8 w-[1px] bg-gray-200 mx-2"></div>
+<img alt="Administrator Avatar" class="w-8 h-8 rounded-lg object-cover" data-alt="Professional corporate headshot of a senior administrator with neutral background and soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNGYbL5WV0LHID1uOZcNaZgx280Ovz6gEmwAfJIE5d8brnd9amSRXzQwEMmklFJfrSjvOmiRrqVpuYkikuW8l_OlN4L2DsSjpQ73q0bK1z4GYLxdWsJral5peASwpeoScUb9PIgCCWlz4UD3HOkUHvdyefeoG4z_UkGiOxPotBuX9lgP6suM4osHpXIuoXOg9NFBc8TGSB1iytsAgEuQW9j6TkPXaj1gl02tSkYWtbx27qvzHs5VMFyUqfyckfgFuDXl900q3_eXR_"/>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-16 min-h-screen bg-surface">
+<!-- Settings Inner Navigation & Content Shell -->
+<div class="flex h-[calc(100vh-4rem)]">
+<!-- Secondary Sidebar (Panel 1) -->
+<aside class="w-72 bg-surface-container-low p-8 border-r border-gray-100 space-y-8">
+<div>
+<h2 class="text-2xl font-bold tracking-tight text-on-surface mb-2">Settings</h2>
+<p class="text-sm text-on-surface-variant">Manage your organization's configurations and permissions.</p>
+</div>
+<nav class="space-y-1">
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60 mb-3 ml-2">Organization</p>
+<a class="group flex items-center justify-between p-3 rounded-xl hover:bg-surface-container-high transition-all" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">business</span>
+<span class="text-sm font-semibold text-on-surface-variant group-hover:text-on-surface">Company Profile</span>
+</div>
+</a>
+<a class="group flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest shadow-sm border-l-4 border-primary transition-all" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-sm font-bold text-on-surface">Team</span>
+</div>
+<span class="bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold">Active</span>
+</a>
+<a class="group flex items-center justify-between p-3 rounded-xl hover:bg-surface-container-high transition-all" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">verified_user</span>
+<span class="text-sm font-semibold text-on-surface-variant group-hover:text-on-surface">Roles &amp; Permissions</span>
+</div>
+</a>
+<div class="pt-6">
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60 mb-3 ml-2">Personal</p>
+<a class="group flex items-center justify-between p-3 rounded-xl hover:bg-surface-container-high transition-all" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">person</span>
+<span class="text-sm font-semibold text-on-surface-variant group-hover:text-on-surface">My Account</span>
+</div>
+</a>
+<a class="group flex items-center justify-between p-3 rounded-xl hover:bg-surface-container-high transition-all" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">notifications_active</span>
+<span class="text-sm font-semibold text-on-surface-variant group-hover:text-on-surface">Notifications</span>
+</div>
+</a>
+</div>
+</nav>
+</aside>
+<!-- Main Content Panel (Panel 2) -->
+<section class="flex-1 p-12 overflow-y-auto no-scrollbar bg-surface">
+<div class="max-w-5xl mx-auto">
+<!-- Header Area -->
+<div class="flex items-end justify-between mb-12">
+<div>
+<h3 class="text-3xl font-bold tracking-tight text-on-surface">Team Members</h3>
+<p class="text-on-surface-variant mt-2 max-w-lg">Manage your logistics team's access levels. Super Admins have full system control, while Viewers can only track onboarding progress.</p>
+</div>
+<button class="bg-primary text-white px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-primary-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm">person_add</span>
+              Invite Member
+            </button>
+</div>
+<!-- Table Container (No-Line Rule: Background Shifts) -->
+<div class="bg-surface-container-lowest rounded-2xl overflow-hidden">
+<div class="p-4 border-b border-gray-100 flex items-center gap-4">
+<div class="bg-surface-container-low rounded-lg px-3 py-1.5 flex items-center gap-2 flex-1 max-w-sm">
+<span class="material-symbols-outlined text-gray-400 text-lg">filter_list</span>
+<input class="bg-transparent border-none text-sm focus:ring-0 w-full outline-none" placeholder="Filter by name or email..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">download</span>
+</button>
+<button class="p-2 hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</div>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Name</th>
+<th class="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Role</th>
+<th class="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Status</th>
+<th class="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-50">
+<!-- Row: Sarah Anderson -->
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<img alt="Sarah Anderson" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" data-alt="Close-up studio portrait of a professional woman with a warm smile, clear lighting, and a soft minimalist background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRQ3w7Zb3KlV_wEzhbfX8j9oCy8iwE_jDaDt5UlOvNxy-806ms3HgDTpm-Bqtyzp9dR-BSmPAFfwvUq1oTHKJatKTxXd9O1lXZe_QPCyrEMvmIFflUQVD6ipg77uS_rgyaSBlxkZVZFrBruhiB6tfDSOW-ZLGkxkVdnVgPL8cqtHPWPfdDjlIfhEREpwHQgQQ70afc_rRoBV1bx1zgBwAbzzaYACwJPCQdSH87dNlE2B1FahV2nGu_ZAj12xnv6RZ5cGv26LbGNGc3"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Sarah Anderson</p>
+<p class="text-xs text-on-surface-variant">sarah.a@logisticsterminal.com</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="px-3 py-1 bg-primary/10 text-primary text-[11px] font-bold rounded-full uppercase tracking-wider">Super Admin</span>
+</td>
+<td class="px-8 py-5">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#2FCCC0]"></span>
+<span class="text-xs font-medium text-on-surface">Active</span>
+</div>
+</td>
+<td class="px-8 py-5 text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit_square</span>
+</button>
+</td>
+</tr>
+<!-- Row: Michael Roberts -->
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<img alt="Michael Roberts" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" data-alt="Professional headshot of a middle-aged man with short dark hair and a confident expression, outdoor blurred office background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoyKmwBTBABprdMDRRb53zOhsMFZ5HZyePrs0tCGYxprF7c8sqXl2qBwu22RttgoDILrudZ110I4LY3-V7VfpPtAiOkjy1Dg7tGssDIF_ADgSXzTJ1G9RA_SpePUVmE9oO9vKlexDcMxYrKIvAtXQDarhw41dvTvRtm2ooNKU-cXxSMajaStDy-A0VlX3xRD6aJSuZdQusom1wh7Vxco-PPKN-uIwWf036vhiHeis3vNXZNA76Mi8CtBhsjS2ScbmoDI1zw-54ziSo"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Michael Roberts</p>
+<p class="text-xs text-on-surface-variant">m.roberts@logisticsterminal.com</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="px-3 py-1 bg-surface-container-high text-on-surface-variant text-[11px] font-bold rounded-full uppercase tracking-wider">Admin</span>
+</td>
+<td class="px-8 py-5">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#2FCCC0]"></span>
+<span class="text-xs font-medium text-on-surface">Active</span>
+</div>
+</td>
+<td class="px-8 py-5 text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit_square</span>
+</button>
+</td>
+</tr>
+<!-- Row: Priya Sharma -->
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<img alt="Priya Sharma" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" data-alt="Elegant professional woman with dark hair, looking directly at camera with friendly expression, bright office window light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDekABscDtCT6Z14PBoml4aT6CVWKgN4HKjM1eC88eq9AnMNSIBM7RyuDz3_3CTW6ssTsFUJnjI-AFUtoD18rqHOjGceEDfGRcI-qsM8XU7MSugQChztd5ydlMVvUazRaBjvK6AZB5YjbYXRq2SkMxra4QMiOA9IKkfCKimji3-Q5kZjfowED206PYiSmsH0_lROfgac13SyfaUpMScQma2A_mp7l2EifggR7kgIxr---JG86xzVj59gPjE7vOkCOczxc0EyqxniHWb"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Priya Sharma</p>
+<p class="text-xs text-on-surface-variant">p.sharma@logisticsterminal.com</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="px-3 py-1 bg-surface-container-high text-on-surface-variant text-[11px] font-bold rounded-full uppercase tracking-wider">Admin</span>
+</td>
+<td class="px-8 py-5">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#2FCCC0]"></span>
+<span class="text-xs font-medium text-on-surface">Active</span>
+</div>
+</td>
+<td class="px-8 py-5 text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit_square</span>
+</button>
+</td>
+</tr>
+<!-- Row: Tom Wilson -->
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<img alt="Tom Wilson" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" data-alt="Young professional man in casual office attire, standing in a brightly lit modern workspace with plants in the background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCm-wPuXVy8OVmj2EX_n3p5iGDhtcf2KmMfTZ6fNiNbbuZWF38xFFh793ST60pNuegMosWwZWexO1up1pGmiujd5wlLVszlgJ9kHDMipJFa4UH_VwSQhJinzmUFLru2ynWhcWCsyyMjfUoIOFsZS3dtuY_YyWHFnQ7Hg8qhvKL5r5quRIFCbLA-FseRXA3p4WWErT1UjXB6KEd3QSwfJ56AAnuG4ytrWW5WbMELXq5LFqvJXmKuM_MdJqJT6kgmvztHkla5R3AXmsF"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Tom Wilson</p>
+<p class="text-xs text-on-surface-variant">t.wilson@logisticsterminal.com</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="px-3 py-1 bg-surface-container-low text-on-surface-variant/70 text-[11px] font-bold rounded-full uppercase tracking-wider">Viewer</span>
+</td>
+<td class="px-8 py-5">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-gray-300"></span>
+<span class="text-xs font-medium text-on-surface-variant">Inactive</span>
+</div>
+</td>
+<td class="px-8 py-5 text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit_square</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Overlay: Invite Team Member Modal -->
+<div class="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-[#1A1A2E]/40 backdrop-blur-sm">
+<div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden scale-100 opacity-100">
+<!-- Modal Header with Brand Gradient -->
+<div class="h-24 bg-gradient-to-r from-[#202B93] to-[#2FCCC0] p-8 flex items-center justify-between">
+<h4 class="text-xl font-bold text-white tracking-tight">Invite Team Member</h4>
+<button class="text-white/80 hover:text-white transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Modal Content -->
+<div class="p-8 space-y-6">
+<p class="text-on-surface-variant text-sm leading-relaxed">
+          Send an invitation to a new team member. They will receive an email to set up their account and password.
+        </p>
+<div class="space-y-4">
+<!-- Email Input -->
+<div class="space-y-2">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Email Address</label>
+<div class="relative">
+<input class="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent focus:border-[#2FCCC0]/30 focus:bg-white rounded-xl text-sm outline-none transition-all" placeholder="e.g. colton@logisticsterminal.com" type="email"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-primary-container/40">mail</span>
+</div>
+</div>
+<!-- Role Selection Dropdown -->
+<div class="space-y-2">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Assign Role</label>
+<div class="relative">
+<select class="w-full appearance-none px-4 py-3 bg-surface-container-low border-2 border-transparent focus:border-[#2FCCC0]/30 focus:bg-white rounded-xl text-sm outline-none transition-all cursor-pointer">
+<option value="viewer">Viewer (Read-only access)</option>
+<option value="admin">Admin (Full management access)</option>
+<option value="super_admin">Super Admin (System configuration)</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 pt-4">
+<button class="flex-1 px-6 py-3 border border-outline-variant/30 text-on-surface-variant font-bold rounded-xl hover:bg-surface-container-low transition-colors">
+            Cancel
+          </button>
+<button class="flex-1 px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-container transition-all">
+            Send Invitation
+          </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

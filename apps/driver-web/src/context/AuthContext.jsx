@@ -2,16 +2,20 @@ import { createContext, useContext, useState, useEffect } from "react";
 import {
   useToast,
   getAuthToken,
+  saveAuthToken,
   clearAuthToken,
   saveLocalDriverData,
   getLocalDriverData,
+  PRODUCT_DISPLAY_NAME,
 } from "@lh/shared";
-import { authServices, driverServices } from "../lib/firebase-services";
+import { authServices, driverServices } from "../lib/api-services";
+import { publicServices } from "../lib/public-services";
 
 const AuthContext = createContext(undefined);
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
+  const [application, setApplication] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -24,14 +28,29 @@ export function AuthProvider({ children }) {
 
       if (token && storedEmail) {
         try {
-          // Attempt to fetch driver data using the token
-          const userData = await driverServices.getDriverData(storedEmail);
-          
+          let userData = null;
+
+          // Prefer new Day-1 session endpoint for OTP auth.
+          try {
+            const sessionResult = await publicServices.getDriverSession();
+            userData = sessionResult?.application
+              ? { email: sessionResult.application.email, application: sessionResult.application }
+              : null;
+          } catch (sessionError) {
+            userData = await driverServices.getDriverData(storedEmail);
+          }
+
           if (userData) {
             setCurrentUser({
               email: storedEmail,
               ...userData,
             });
+            try {
+              const appResult = await publicServices.getDriverApplication();
+              setApplication(appResult?.application || null);
+            } catch (appError) {
+              setApplication(null);
+            }
             setIsAuthenticated(true);
           } else {
             // Token might be invalid or user not found
@@ -39,7 +58,6 @@ export function AuthProvider({ children }) {
             setIsAuthenticated(false);
           }
         } catch (error) {
-          console.error("Failed to restore session:", error);
           clearAuthToken();
           setIsAuthenticated(false);
         }
@@ -50,110 +68,73 @@ export function AuthProvider({ children }) {
     restoreSession();
   }, []);
 
-  // Check if email exists in Fountain applicants
-  const checkEmail = async (email) => {
+  const requestCode = async (email) => {
     setIsLoading(true);
+    const normalizedEmail = (email || "").trim().toLowerCase();
     try {
-      const result = await authServices.checkFountainApplicant(email);
-      if (result.exists) {
-        // Store email and fountain applicant data
-        const userData = {
-          email,
-          fountainData: {
-            phone: result.phone,
-            name: result.name,
-            applicantId: result.applicantId,
-            city: result.city,
-            country: result.country,
-            funnelId: result.funnelId,
-          }
-        };
-        setCurrentUser(userData);
-
-        // Persist to localStorage
-        saveLocalDriverData({
-          email,
-          fountainData: userData.fountainData
-        });
-
-        toast({
-          title: "Email verified",
-          description: "Please enter your registered mobile number to continue.",
-        });
-        setIsLoading(false);
-        return { success: true, data: result };
-      } else {
-        toast({
-          title: "Email not found",
-          description: "No application found with this email. Please apply on Fountain first.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return { success: false };
-      }
-    } catch (error) {
-      console.error("Email check failed", error);
-      toast({
-        title: "Verification failed",
-        description: "Unable to verify email. Please try again.",
-        variant: "destructive",
-      });
+      const result = await publicServices.requestVerificationCode(normalizedEmail);
+      saveLocalDriverData({ email: normalizedEmail });
+      setCurrentUser((prev) => ({ ...prev, email: normalizedEmail }));
+      setApplication(null);
       setIsLoading(false);
-      return { success: false };
+      return result;
+    } catch (error) {
+      setIsLoading(false);
+      throw error;
     }
   };
 
-  // Verify phone number
-  const verifyPhone = async (phone) => {
-    let emailToUse = currentUser?.email || getLocalDriverData().email;
-
-    if (!emailToUse) {
-      toast({
-        title: "No email found",
-        description: "Please restart the authentication process.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
+  const verifyCode = async (email, code) => {
     setIsLoading(true);
+    const normalizedEmail = (email || "").trim().toLowerCase();
     try {
-      const result = await authServices.verifyPhoneNumber(emailToUse, phone);
-      if (result.success) {
-        // Update local state with applicant data and token is already saved in cookie
-        setCurrentUser(prev => ({
-          ...prev,
-          email: emailToUse,
-          fountainData: result.applicant,
-          phoneVerified: true,
-        }));
-        
-        setIsAuthenticated(true);
-        toast({
-          title: "Verification successful",
-          description: "Welcome to Laundryheap driver onboarding!",
-        });
-        setIsLoading(false);
-        return true;
-      } else {
-        toast({
-          title: "Verification failed",
-          description: result.message || "Mobile number does not match our records.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return false;
+      const result = await publicServices.verifyCode(normalizedEmail, code);
+      if (result?.token) {
+        saveAuthToken(result.token);
       }
-    } catch (error) {
-      console.error("Phone verification failed", error);
-      toast({
-        title: "Verification failed",
-        description: "Unable to verify mobile number. Please try again.",
-        variant: "destructive",
+      saveLocalDriverData({ email: normalizedEmail });
+      setCurrentUser({
+        email: normalizedEmail,
+        application: result?.application ?? null,
       });
+      try {
+        const appResult = await publicServices.getDriverApplication();
+        setApplication(appResult?.application || null);
+      } catch (appError) {
+        setApplication(result?.application ?? null);
+      }
+      setIsAuthenticated(true);
       setIsLoading(false);
-      return false;
+      return result;
+    } catch (error) {
+      setIsLoading(false);
+      throw error;
     }
+  };
+
+  const getSession = async () => {
+    const result = await publicServices.getDriverSession();
+    if (result?.application) {
+      setCurrentUser((prev) => ({
+        ...prev,
+        email: result.application.email || prev?.email,
+        application: result.application,
+      }));
+      try {
+        const appResult = await publicServices.getDriverApplication();
+        setApplication(appResult?.application || null);
+      } catch (appError) {
+        setApplication(result.application);
+      }
+      setIsAuthenticated(true);
+    }
+    return result;
+  };
+
+  const loadDriverApplication = async () => {
+    const result = await publicServices.getDriverApplication();
+    setApplication(result?.application || null);
+    return result;
   };
 
   // Update user data
@@ -170,7 +151,6 @@ export function AuthProvider({ children }) {
         return true;
       }
     } catch (error) {
-      console.error("Error updating user data:", error);
       toast({
         title: "Update failed",
         description: "Unable to save your information.",
@@ -191,7 +171,6 @@ export function AuthProvider({ children }) {
         return true;
       }
     } catch (error) {
-      console.error("Error saving availability:", error);
       toast({
         title: "Save failed",
         description: "Unable to save availability.",
@@ -212,7 +191,6 @@ export function AuthProvider({ children }) {
         return true;
       }
     } catch (error) {
-      console.error("Error saving verification data:", error);
       toast({
         title: "Save failed",
         description: "Unable to save verification data.",
@@ -235,12 +213,11 @@ export function AuthProvider({ children }) {
         }));
         toast({
           title: "Onboarding completed",
-          description: "Welcome to the Laundryheap driver team!",
+          description: `Welcome to the ${PRODUCT_DISPLAY_NAME} driver team!`,
         });
         return true;
       }
     } catch (error) {
-      console.error("Error completing onboarding:", error);
       toast({
         title: "Completion failed",
         description: "Unable to complete onboarding.",
@@ -254,6 +231,7 @@ export function AuthProvider({ children }) {
   const signOut = async () => {
     await authServices.signOut();
     setCurrentUser(null);
+    setApplication(null);
     setIsAuthenticated(false);
     toast({
       title: "Signed out successfully",
@@ -263,10 +241,13 @@ export function AuthProvider({ children }) {
 
   const value = {
     currentUser,
+    application,
     isAuthenticated,
     isLoading,
-    checkEmail,
-    verifyPhone,
+    requestCode,
+    verifyCode,
+    getSession,
+    loadDriverApplication,
     updateUserData,
     saveAvailability,
     saveVerificationData,

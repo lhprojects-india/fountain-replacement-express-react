@@ -10,7 +10,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
   useToast
 } from "@lh/shared";
-import { Plus, Edit, Trash2, Save, X, FileText } from "lucide-react";
+import { Plus, Edit, Trash2, Save, FileText, MapPin } from "lucide-react";
 
 export default function FacilityManager() {
   const { toast } = useToast();
@@ -49,7 +49,6 @@ export default function FacilityManager() {
         setFacilities(facilitiesData);
       }
     } catch (error) {
-      console.error('Error loading facilities:', error);
       toast({
         title: "Error loading facilities",
         description: "Unable to load facilities. Please try again.",
@@ -70,13 +69,29 @@ export default function FacilityManager() {
     setIsDialogOpen(true);
   };
 
+  const getFacilityCode = (facility) =>
+    facility?.facility_code ||
+    facility?.facilityCode ||
+    facility?.facility ||
+    facility?.Facility ||
+    facility?.name ||
+    facility?.facilityName ||
+    "";
+
+  const getFacilityAddress = (facility) =>
+    facility?.address ||
+    facility?.Address ||
+    facility?.facility_address ||
+    facility?.facilityAddress ||
+    "";
+
   const handleEdit = (facility) => {
     setFormData({
       city: facility.city || facility.City,
-      facility: facility.facility || facility.Facility,
-      address: facility.address || facility.Address
+      facility: getFacilityCode(facility),
+      address: getFacilityAddress(facility)
     });
-    setEditingFacility(facility.id || facility.Facility);
+    setEditingFacility(facility.id || getFacilityCode(facility));
     setIsDialogOpen(true);
   };
 
@@ -125,7 +140,6 @@ export default function FacilityManager() {
         });
       }
     } catch (error) {
-      console.error('Error saving facility:', error);
       toast({
         title: "Save failed",
         description: "Unable to save facility. Please try again.",
@@ -151,7 +165,6 @@ export default function FacilityManager() {
         });
       }
     } catch (error) {
-      console.error('Error deleting facility:', error);
       toast({
         title: "Delete failed",
         description: "Unable to delete facility. Please try again.",
@@ -175,7 +188,7 @@ export default function FacilityManager() {
 
   return (
     <div className="space-y-6">
-      <Card className="border-0 shadow-sm">
+      <Card className="adm-card">
         <CardContent className="pt-6">
           <div className="flex justify-between items-center">
             <div>
@@ -191,7 +204,7 @@ export default function FacilityManager() {
                       Add Facility
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl z-[200]">
+                  <DialogContent className="adm-modal max-w-2xl z-[200]">
                     <DialogHeader>
                       <DialogTitle>
                         {editingFacility ? 'Edit Facility' : 'Create New Facility'}
@@ -253,68 +266,73 @@ export default function FacilityManager() {
       <div className="space-y-4">
         {cities.length > 0 ? (
           cities.map((city) => (
-            <Card key={city} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-lg">{city}</CardTitle>
-                <CardDescription>
-                  {facilities[city].length} {facilities[city].length !== 1 ? 'facilities' : 'facility'}
-                </CardDescription>
+            <Card key={city} className="adm-card hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-2xl font-bold">{city}</CardTitle>
+                  <span className="text-xs font-bold rounded-full px-3 py-1 bg-blue-100 text-blue-700">
+                    {facilities[city].length} {facilities[city].length !== 1 ? 'UNITS' : 'UNIT'}
+                  </span>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {facilities[city].map((facility) => (
                     <div
-                      key={facility.id || facility.Facility}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                      key={facility.id || getFacilityCode(facility)}
+                      className="rounded-xl border bg-white p-5 transition-shadow hover:shadow-sm"
+                      style={{ borderLeft: "4px solid #1d8fe3" }}
                     >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <span className="font-semibold text-gray-900">
-                            {facility.facility || facility.Facility}
-                          </span>
-                          <span className="text-sm text-gray-600">
-                            {facility.address || facility.Address}
-                          </span>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Facility Code</p>
+                          <p className="text-3xl font-bold text-blue-700 leading-none">
+                            {getFacilityCode(facility) || "N/A"}
+                          </p>
+                          <div className="flex items-start gap-2 text-sm text-slate-700 pt-1">
+                            <MapPin className="h-4 w-4 mt-0.5 text-slate-400 shrink-0" />
+                            <p>{getFacilityAddress(facility) || "No address provided"}</p>
+                          </div>
                         </div>
-                      </div>
-                      {(adminRole === 'super_admin' || adminRole === 'app_admin' || adminRole === 'admin_fleet') && (
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(facility)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="destructive" size="sm" className="bg-red-600 hover:bg-red-700">
-                                <Trash2 className="h-4 w-4 mr-1" />
-                                Delete
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Facility</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete facility {facility.facility || facility.Facility} in {city}?
-                                  This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDelete(facility.id || facility.Facility, facility.facility || facility.Facility)}
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
+                        {(adminRole === 'super_admin' || adminRole === 'app_admin' || adminRole === 'admin_fleet') && (
+                          <div className="pt-2 border-t flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(facility)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="sm" className="bg-red-600 hover:bg-red-700">
+                                  <Trash2 className="h-4 w-4 mr-1" />
                                   Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      )}
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Facility</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete facility {getFacilityCode(facility)} in {city}?
+                                    This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDelete(facility.id || getFacilityCode(facility), getFacilityCode(facility))}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -322,7 +340,7 @@ export default function FacilityManager() {
             </Card>
           ))
         ) : (
-          <Card className="border-0 shadow-sm">
+          <Card className="adm-card">
             <CardContent className="text-center py-12">
               <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600 mb-2">No facilities found</p>

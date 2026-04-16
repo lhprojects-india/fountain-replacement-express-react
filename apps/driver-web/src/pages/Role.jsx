@@ -7,10 +7,15 @@ import { Button } from "@lh/shared";
 import { CheckboxWithLabel } from "@lh/shared";
 import { useToast } from "@lh/shared";
 import roleExplanationImage from "@lh/shared/assets/driver-role-vertical.png";
+import { useOptionalApplication } from "../context/ApplicationContext";
+import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
 
 const Role = () => {
   const navigate = useNavigate();
+  const appContext = useOptionalApplication();
   const { currentUser, updateUserData, isLoading } = useAuth();
+  const screeningProgress = appContext?.screeningProgress;
+  const isLoadingScreening = appContext ? appContext.isLoadingScreening : isLoading;
   const { toast } = useToast();
 
   const [roleUnderstood, setRoleUnderstood] = useState(false);
@@ -18,10 +23,11 @@ const Role = () => {
 
   // Load existing confirmation status
   useEffect(() => {
-    if (currentUser?.roleUnderstood) {
+    const roleStepConfirmed = screeningProgress?.steps?.find((step) => step.stepName === "role")?.isConfirmed;
+    if (roleStepConfirmed || currentUser?.roleUnderstood) {
       setRoleUnderstood(true);
     }
-  }, [currentUser]);
+  }, [screeningProgress, currentUser?.roleUnderstood]);
 
   const handleContinue = async () => {
     if (!roleUnderstood) {
@@ -35,17 +41,18 @@ const Role = () => {
 
     setIsSaving(true);
     try {
-      const success = await updateUserData({
-        roleUnderstood: true,
-        roleUnderstoodAt: new Date().toISOString(),
-        step: 'role'
-      });
-
-      if (success) {
+      if (appContext) {
+        await appContext.markStepCompleted("role", { roleUnderstood: true, roleUnderstoodAt: new Date().toISOString() });
+        navigate("/screening/availability");
+      } else {
+        await updateUserData({
+          roleUnderstood: true,
+          roleUnderstoodAt: new Date().toISOString(),
+          step: "role",
+        });
         navigate("/availability");
       }
     } catch (error) {
-      console.error("Error saving role acknowledgment:", error);
       toast({
         title: "Save Failed",
         description: "Unable to save acknowledgment. Please try again.",
@@ -57,20 +64,26 @@ const Role = () => {
   };
 
   return (
-    <PageLayout compact title="">
+    <PageLayout
+      compact
+      title=""
+      routes={appContext ? SCREENING_STEP_PATHS : undefined}
+      basePath={appContext ? "/screening" : "/"}
+    >
       <div className="w-full flex flex-col items-center">
         <h2 className="text-2xl font-bold mb-3 text-brand-shadeBlue animate-slide-down">
           Driver role
         </h2>
         
         <p className="text-sm text-gray-500 mb-6 max-w-md leading-relaxed animate-fade-in">
-          As a Laundryheap Partner Driver, you will be responsible for completing a series of essential delivery and collection tasks that ensure smooth daily operations and excellent customer experience. Your main responsibilities include:
+          As a partner driver for Talentrix by Laundryheap, you will be responsible for completing a series of essential delivery and collection tasks that ensure smooth daily operations and excellent customer experience. Your main responsibilities include:
         </p>
         
         <div className="w-full max-w-md animate-fade-in mb-6">
           <img 
             src={roleExplanationImage} 
             alt="Role explanation diagram" 
+            loading="lazy"
             className="w-full h-auto rounded-lg border-2 border-white mb-8"
           />
           
@@ -86,7 +99,7 @@ const Role = () => {
         <Button 
           onClick={handleContinue}
           className="w-full max-w-xs mt-6"
-          disabled={isSaving || isLoading}
+          disabled={isSaving || isLoadingScreening}
         >
           {isSaving ? "Saving..." : "Continue"}
         </Button>

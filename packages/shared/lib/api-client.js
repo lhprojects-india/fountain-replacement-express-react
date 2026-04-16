@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getAuthToken } from './cookie-utils';
+import { clearAuthToken, getAuthToken } from './cookie-utils';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
@@ -28,11 +28,22 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Handle unauthorized error (e.g., redirect to login or clear session)
-      console.warn('Unauthorized access, session might be expired');
+    const status = error.response?.status;
+    const data = error.response?.data;
+
+    if (status === 401) {
+      clearAuthToken();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
     }
-    return Promise.reject(error.response?.data || error);
+
+    return Promise.reject({
+      status,
+      message: data?.error || data?.message || error.message || 'An error occurred',
+      code: data?.code,
+      errors: data?.errors,
+    });
   }
 );
 

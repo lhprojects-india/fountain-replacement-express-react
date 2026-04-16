@@ -2,16 +2,32 @@
 import { useNavigate } from "react-router-dom";
 import { PageLayout } from "@lh/shared";
 import { Button } from "@lh/shared";
+import { useAuth } from "../context/AuthContext";
+import { useOptionalApplication } from "../context/ApplicationContext";
+import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
 
 const About = () => {
   const navigate = useNavigate();
+  const appContext = useOptionalApplication();
+  const { updateUserData } = useAuth();
 
-  const handleContinue = () => {
-    navigate("/role");
+  const handleContinue = async () => {
+    if (appContext) {
+      await appContext.markStepCompleted("about");
+      navigate("/screening/role");
+    } else {
+      await updateUserData({ step: "about" });
+      navigate("/role");
+    }
   };
 
   return (
-    <PageLayout compact title="">
+    <PageLayout
+      compact
+      title=""
+      routes={appContext ? SCREENING_STEP_PATHS : undefined}
+      basePath={appContext ? "/screening" : "/"}
+    >
       <div className="w-full flex flex-col items-center">
         <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down">
           About Laundryheap

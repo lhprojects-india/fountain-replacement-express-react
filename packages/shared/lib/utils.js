@@ -6,39 +6,6 @@ export function cn(...inputs) {
 }
 
 /**
- * Debug helper to log fountainData structure for troubleshooting
- * @param {Object} fountainData - The fountainData object from user data
- * @param {string} context - Context where this is being called (for logging)
- */
-export function debugFountainDataStructure(fountainData, context = '') {
-  const debugInfo = {
-    context,
-    hasFountainData: !!fountainData,
-    hasData: !!fountainData?.data,
-    hasApplicant: !!fountainData?.applicant,
-    // Check all possible MOT paths
-    motPaths: {
-      'fountainData.data.mot': fountainData?.data?.mot,
-      'fountainData.mot': fountainData?.mot,
-      'fountainData.applicant.data.mot': fountainData?.applicant?.data?.mot,
-    },
-    // Check all possible vehicle type paths
-    vehicleTypePaths: {
-      'fountainData.vehicle_type': fountainData?.vehicle_type,
-      'fountainData.data.vehicle_type': fountainData?.data?.vehicle_type,
-      'fountainData.vehicle': fountainData?.vehicle,
-      'fountainData.applicant.data.vehicle_type': fountainData?.applicant?.data?.vehicle_type,
-    },
-    // Structure info
-    topLevelKeys: fountainData ? Object.keys(fountainData).slice(0, 20) : [], // Limit to avoid huge logs
-    dataKeys: fountainData?.data ? Object.keys(fountainData.data).slice(0, 20) : [],
-    applicantKeys: fountainData?.applicant ? Object.keys(fountainData.applicant).slice(0, 20) : [],
-  };
-  
-  return debugInfo;
-}
-
-/**
  * Extract and categorize vehicle type from fountainData.data.mot
  * Checks multiple paths since fountainData structure may vary
  * @param {Object} fountainData - The fountainData object from user data
@@ -46,10 +13,7 @@ export function debugFountainDataStructure(fountainData, context = '') {
  * @returns {string} - "van" or "car"
  */
 export function getVehicleTypeFromMOT(fountainData, debug = false) {
-  // Debug logging if requested
-  if (debug) {
-    debugFountainDataStructure(fountainData, 'getVehicleTypeFromMOT');
-  }
+  void debug;
 
   // Check if fountainData exists
   if (!fountainData) {

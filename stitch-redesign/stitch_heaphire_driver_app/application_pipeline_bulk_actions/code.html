@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-dim": "#d8dadc",
+                    "on-primary-fixed-variant": "#00497e",
+                    "on-secondary-fixed-variant": "#00504b",
+                    "inverse-primary": "#a0caff",
+                    "surface-tint": "#0061a5",
+                    "background": "#f7f9fb",
+                    "on-error": "#ffffff",
+                    "surface-container-high": "#e6e8ea",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#b05a6d",
+                    "secondary": "#006a63",
+                    "on-tertiary-container": "#fffbff",
+                    "secondary-fixed-dim": "#47dbcf",
+                    "inverse-surface": "#2d3133",
+                    "outline": "#707884",
+                    "surface-variant": "#e0e3e5",
+                    "primary-fixed": "#d2e4ff",
+                    "surface-bright": "#f7f9fb",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed": "#6af8eb",
+                    "on-tertiary-fixed-variant": "#772d40",
+                    "outline-variant": "#bfc7d4",
+                    "on-secondary-container": "#006f68",
+                    "on-primary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#924255",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#ffd9df",
+                    "on-tertiary-fixed": "#3f0116",
+                    "on-surface-variant": "#404752",
+                    "on-surface": "#191c1e",
+                    "surface": "#f7f9fb",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb1c0",
+                    "surface-container": "#eceef0",
+                    "inverse-on-surface": "#eff1f3",
+                    "primary-container": "#0078ca",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-background": "#191c1e",
+                    "on-primary-container": "#fdfcff",
+                    "secondary-container": "#67f5e8",
+                    "primary": "#005ea1",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed": "#001c37",
+                    "on-secondary-fixed": "#00201d",
+                    "surface-container-low": "#f2f4f6",
+                    "primary-fixed-dim": "#a0caff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-[#202B93] dark:bg-slate-900 flex flex-col py-8 px-4 z-50">
+<div class="mb-10 px-2">
+<h1 class="text-xl font-bold text-white tracking-tighter">Editorial Logistics</h1>
+<p class="text-xs text-white/60 font-Inter font-semibold tracking-tight">Onboarding Control</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Pipeline is active -->
+<a class="flex items-center gap-3 px-4 py-3 bg-[#2FCCC0]/20 text-[#2FCCC0] border-r-4 border-[#2FCCC0] font-Inter font-semibold tracking-tight text-sm transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">assignment_ind</span>
+<span>Pipeline</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 font-Inter font-semibold tracking-tight text-sm transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">work</span>
+<span>Open Roles</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 font-Inter font-semibold tracking-tight text-sm transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">event</span>
+<span>Interviews</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 font-Inter font-semibold tracking-tight text-sm transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 font-Inter font-semibold tracking-tight text-sm transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-2">
+<button class="w-full py-3 px-4 bg-[#2FCCC0] text-[#1A1A2E] rounded-lg font-bold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+                Add New Applicant
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen">
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 bg-[#f7f9fb] dark:bg-slate-950 flex justify-between items-center px-8 z-40">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-[#f2f4f6] dark:bg-slate-900 border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-[#2FCCC0]/30 w-64" placeholder="Search applications..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-[#404752] dark:text-slate-400 font-Inter font-medium text-sm hover:text-primary transition-colors">Help Center</button>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="hover:bg-[#f2f4f6] p-2 rounded-lg transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:bg-[#f2f4f6] p-2 rounded-lg transition-colors">
+<span class="material-symbols-outlined">apps</span>
+</button>
+</div>
+<div class="h-8 w-8 rounded-full overflow-hidden bg-primary-fixed">
+<img alt="Administrator" class="w-full h-full object-cover" data-alt="professional portrait of a high-level logistics administrator in a clean modern office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUT9SK9DNtyVPJ264Tni6CkwOeaQi9hG9fzbFC1h1BZDrji78xt9t0ZLvAHSEhykF7JZAZxv6-mrLp9IFCe9DzNr8AbElEY5Qlmj0Jf_N-wZx4Wg3koSlCo014m_eG5OifDZ-x9NrnaEhefmgep6CjsgBJ22OrtaJX3D1bwitzEn-4dNKWBJ8LIrImb36mDMhMUQxdAPZytsNDVijY2-cA7KpATFCR3606n3zH6dGFfZMfRa8A-HUpwBncUsOlnmRRmwr4xX9sZ0mU"/>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="pt-24 px-8 pb-12">
+<!-- Page Header -->
+<div class="mb-8">
+<h2 class="text-4xl font-bold tracking-tight text-on-surface mb-2">Application Pipeline</h2>
+<p class="text-on-surface-variant max-w-2xl leading-relaxed">Manage your incoming talent stream. Currently viewing all active driver applications across 12 hubs.</p>
+</div>
+<!-- Filters & Bulk Actions Container -->
+<div class="relative mb-6">
+<!-- Bulk Action Bar (Active Overlay) -->
+<div class="absolute inset-0 z-10 glass-panel border border-primary/10 rounded-xl flex items-center justify-between px-6 shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">3 applications selected</p>
+<p class="text-xs text-on-surface-variant">Performing bulk actions on candidate group</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 text-sm font-semibold text-primary bg-primary-fixed hover:bg-primary-fixed-dim rounded-lg transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">forward</span>
+                            Advance Stage
+                        </button>
+<button class="px-4 py-2 text-sm font-semibold text-primary bg-surface-container-highest hover:bg-surface-container-high rounded-lg transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">mail</span>
+                            Send Message
+                        </button>
+<div class="w-px h-6 bg-outline-variant/30 mx-2"></div>
+<button class="px-4 py-2 text-sm font-semibold text-error hover:bg-error-container/20 rounded-lg transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">close</span>
+                            Clear
+                        </button>
+</div>
+</div>
+<!-- Hidden Filter Bar (Underneath for Structure) -->
+<div class="bg-surface-container-low rounded-xl p-6 space-y-4">
+<div class="flex items-center gap-4">
+<div class="flex-1 grid grid-cols-4 gap-4">
+<div class="space-y-1">
+<label class="block text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">CITY</label>
+<div class="bg-surface-container-lowest px-3 py-2 rounded-lg text-sm flex items-center justify-between cursor-default">
+<span>All Cities</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</div>
+</div>
+<div class="space-y-1">
+<label class="block text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">VEHICLE TYPE</label>
+<div class="bg-surface-container-lowest px-3 py-2 rounded-lg text-sm flex items-center justify-between cursor-default">
+<span>Heavy Duty</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</div>
+</div>
+<div class="space-y-1">
+<label class="block text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">DAYS IN STAGE</label>
+<div class="bg-surface-container-lowest px-3 py-2 rounded-lg text-sm flex items-center justify-between cursor-default">
+<span>5 - 10 Days</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</div>
+</div>
+<div class="space-y-1">
+<label class="block text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">FLAG FILTER</label>
+<div class="bg-surface-container-lowest px-3 py-2 rounded-lg text-sm flex items-center justify-between cursor-default">
+<span>High Priority</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Pipeline Table Area -->
+<div class="bg-surface-container-low rounded-2xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high/50 border-none">
+<th class="py-4 pl-6 w-12">
+<div class="w-5 h-5 border-2 border-primary rounded flex items-center justify-center bg-primary">
+<span class="material-symbols-outlined text-white text-xs" style="font-variation-settings: 'wght' 700;">check</span>
+</div>
+</th>
+<th class="py-4 px-4 text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">CANDIDATE</th>
+<th class="py-4 px-4 text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">STAGE</th>
+<th class="py-4 px-4 text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">HUB / CITY</th>
+<th class="py-4 px-4 text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">TIME IN STAGE</th>
+<th class="py-4 pr-6 text-right text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">ACTIONS</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Row 1: Selected -->
+<tr class="bg-primary-fixed/20 transition-colors">
+<td class="py-5 pl-6">
+<div class="w-5 h-5 border-2 border-primary rounded flex items-center justify-center bg-primary">
+<span class="material-symbols-outlined text-white text-xs" style="font-variation-settings: 'wght' 700;">check</span>
+</div>
+</td>
+<td class="py-5 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest flex items-center justify-center overflow-hidden">
+<img alt="John Smith" class="w-full h-full object-cover" data-alt="portrait of a confident delivery professional smiling at the camera in professional work attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4Pjv8i8Y3lTOBH25H1m7oOG84pbQzYWH48PRRs2dQ7o-XSs-oeGDfEg74QtT8MN4RB_6vWQL0iUHBtiwzg0CIMt87GSnAq2auG9ph0IjLy08zRikyBH3yOOJ2zR2wKHfSLdGcCZHf6MI7fpjpg6qeC1laO5_2on0YcSQXaKRRBQRObxozb1GMl7Q4LfhUGVtjC74BVOv-_b856384ZHx50RDVuor3Ce9tz6nHJkMAE9ODwlb7W0fC3V5-wu0aehfFB3cA5xqI8I-9"/>
+</div>
+<div>
+<p class="font-semibold text-on-surface">Johnathan Smith</p>
+<p class="text-xs text-on-surface-variant">Ref: #ONB-9021</p>
+</div>
+</div>
+</td>
+<td class="py-5 px-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                                    Background Check
+                                </span>
+</td>
+<td class="py-5 px-4 text-sm text-on-surface">London East Hub</td>
+<td class="py-5 px-4 text-sm font-medium text-primary">8 Days</td>
+<td class="py-5 pr-6 text-right">
+<button class="p-2 hover:bg-surface-container-high rounded-lg transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Selected -->
+<tr class="bg-primary-fixed/20 transition-colors">
+<td class="py-5 pl-6">
+<div class="w-5 h-5 border-2 border-primary rounded flex items-center justify-center bg-primary">
+<span class="material-symbols-outlined text-white text-xs" style="font-variation-settings: 'wght' 700;">check</span>
+</div>
+</td>
+<td class="py-5 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest flex items-center justify-center overflow-hidden">
+<img alt="Marcus Reed" class="w-full h-full object-cover" data-alt="professional driver wearing a polo shirt looking focused and determined" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADGiHreOmhZVHBDVNvVuVQ-VF6VWLSSsK-91g5ALf3aCP9UTd9LGw70znR5zvTEIHnFsX0c4onW4G9Ms_rlFqoCqhOV4p10wkZe-UH31hRYeU7kJ3T_QiNOd5Wm7jBfI3S-Hy-R8QSHEt0vHpSB3lqi1OnKt7ddF3_csKA6A_jN1D6-Whn7jNKniXv2NRaU6fGf3RMY7ENmv9I_x-0U3i4huMjZUf1js4aSljXA_fbvOvOVILx9TdikERgxNPC6NKu2l1OQES1rSsK"/>
+</div>
+<div>
+<p class="font-semibold text-on-surface">Marcus Reed</p>
+<p class="text-xs text-on-surface-variant">Ref: #ONB-8832</p>
+</div>
+</div>
+</td>
+<td class="py-5 px-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-fixed text-primary rounded-full text-xs font-bold">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                                    Initial Interview
+                                </span>
+</td>
+<td class="py-5 px-4 text-sm text-on-surface">Birmingham Central</td>
+<td class="py-5 px-4 text-sm font-medium text-primary">6 Days</td>
+<td class="py-5 pr-6 text-right">
+<button class="p-2 hover:bg-surface-container-high rounded-lg transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Selected -->
+<tr class="bg-primary-fixed/20 transition-colors">
+<td class="py-5 pl-6">
+<div class="w-5 h-5 border-2 border-primary rounded flex items-center justify-center bg-primary">
+<span class="material-symbols-outlined text-white text-xs" style="font-variation-settings: 'wght' 700;">check</span>
+</div>
+</td>
+<td class="py-5 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest flex items-center justify-center overflow-hidden">
+<img alt="Anita Lopez" class="w-full h-full object-cover" data-alt="friendly woman with professional attire and a warm smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfDPRcnRoAWbNQIzAUe4tMqUlx3XvMxnrwmwZfA8z4-91cVGItxCLwvNP6xHdTmxBmjhfkyvVMU81oX9Ng_LSXIvoHxv4dJ4LRH5RpTpnROZqDfSYLiOIJ4yGfP9T5DXnHkQSd2mYeAPNPizu4vkqZNe-E5WrjRpavvLT7NiGdEuHeErniLLgcS4xynfT0rHYnW8iphCIKUNl2KDB3IwYu8HFK1CCIHTfFpKnyNv3QG79DzxLD2jSSpJoU9CBofDdrrDXMBFf9X4Me"/>
+</div>
+<div>
+<p class="font-semibold text-on-surface">Anita Lopez</p>
+<p class="text-xs text-on-surface-variant">Ref: #ONB-9144</p>
+</div>
+</div>
+</td>
+<td class="py-5 px-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-tertiary-fixed text-tertiary rounded-full text-xs font-bold">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+                                    Document Verification
+                                </span>
+</td>
+<td class="py-5 px-4 text-sm text-on-surface">Manchester Hub</td>
+<td class="py-5 px-4 text-sm font-medium text-primary">9 Days</td>
+<td class="py-5 pr-6 text-right">
+<button class="p-2 hover:bg-surface-container-high rounded-lg transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Unselected -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-5 pl-6">
+<div class="w-5 h-5 border-2 border-outline-variant rounded"></div>
+</td>
+<td class="py-5 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest flex items-center justify-center overflow-hidden">
+<img alt="Thomas Hall" class="w-full h-full object-cover" data-alt="modern professional man in casual attire looking confident" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvjXttfEtu_IGIahEQlaRAwnX8r56pQC_xWP7FANI4siAc2cVQDrCDu_keqAnbLUnoIeKaw5VAQwpLyVW0aZGka7XeiDYNV4ckEX6hbtcqeWorhVUY-yqtIl3y-hEkG9uVWMZTZkMDDCHw8qBYNX-n8Evjps3Y_rs8TD-uReeeQf8ZXek8Ga1pFkZCISZar_hwqpm0vbKVz7hwUgHmiuZiV0GUaSt6dKytTlclw4ut7n69XPfgjmSzgFvjkelhK66iuE8seYx5OLFr"/>
+</div>
+<div>
+<p class="font-semibold text-on-surface">Thomas Hall</p>
+<p class="text-xs text-on-surface-variant">Ref: #ONB-9201</p>
+</div>
+</div>
+</td>
+<td class="py-5 px-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full text-xs font-bold">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+                                    Registration
+                                </span>
+</td>
+<td class="py-5 px-4 text-sm text-on-surface">Bristol South</td>
+<td class="py-5 px-4 text-sm font-medium text-on-surface-variant">2 Days</td>
+<td class="py-5 pr-6 text-right">
+<button class="p-2 hover:bg-surface-container-high rounded-lg transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Footer Pagination (Ghost Border Style) -->
+<div class="mt-8 flex items-center justify-between border-t border-outline-variant/20 pt-6">
+<p class="text-sm text-on-surface-variant font-medium">Showing 1 to 4 of 284 applications</p>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 rounded-lg bg-primary text-white font-bold text-sm">1</button>
+<button class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors text-sm font-bold">2</button>
+<button class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors text-sm font-bold">3</button>
+<span class="px-2 text-on-surface-variant">...</span>
+<button class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors text-sm font-bold">24</button>
+<button class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

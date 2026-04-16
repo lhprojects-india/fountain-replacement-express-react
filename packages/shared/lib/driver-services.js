@@ -1,62 +1,8 @@
 import apiClient from './api-client';
-import { saveAuthToken, clearAuthToken } from './cookie-utils';
-
-// Collection names (no longer needed for direct access, but kept for reference)
-const COLLECTIONS = {
-  DRIVERS: 'drivers',
-  FOUNTAIN_APPLICANTS: 'fountain_applicants',
-  ONBOARDING: 'onboarding',
-  AVAILABILITY: 'availability',
-  VERIFICATION: 'verification',
-  REPORTS: 'reports',
-  FEE_STRUCTURES: 'fee_structures',
-  FACILITIES: 'facilities'
-};
+import { clearAuthToken } from './cookie-utils';
 
 // Authentication Services
 export const authServices = {
-  // Check if email exists in Fountain applicants
-  async checkFountainApplicant(email) {
-    try {
-      const result = await apiClient.post('/auth/check-email', { email });
-      return result;
-    } catch (error) {
-      console.error('Error checking Fountain applicant:', error);
-      return { exists: false, error: error.message };
-    }
-  },
-
-  // Verify phone number against Fountain data
-  async verifyPhoneNumber(email, phone) {
-    try {
-      const result = await apiClient.post('/auth/verify-phone', { email, phone });
-
-      if (result.success && result.token) {
-        // Store email in localStorage BEFORE sign-in
-        localStorage.setItem('driver_email', email);
-        // Save token to cookie for session persistence
-        saveAuthToken(result.token);
-
-        return {
-          success: true,
-          applicant: result.applicant,
-          token: result.token,
-        };
-      }
-
-      return {
-        success: false,
-        message: result.message || "Verification failed",
-      };
-    } catch (error) {
-      console.error('Error verifying phone number:', error);
-      return {
-        success: false,
-        message: error.message || 'Unable to verify phone number.',
-      };
-    }
-  },
-
   // Sign out
   async signOut() {
     try {
@@ -164,17 +110,6 @@ export const driverServices = {
       return true;
     } catch (error) {
       console.error('Error updating onboarding progress:', error);
-      return false;
-    }
-  },
-
-  // Check if email exists (used in some places)
-  async checkEmailExists(email) {
-    try {
-      const result = await authServices.checkFountainApplicant(email);
-      return result.exists;
-    } catch (error) {
-      console.error('Error checking email:', error);
       return false;
     }
   },

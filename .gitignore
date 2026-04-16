@@ -26,13 +26,20 @@ dist-ssr
 # Environment variables
 .env
 .env.local
+.env.*
+!.env.example
 
 # Firebase Service Account Keys (if you add them later)
 serviceAccountKey.json
 *-firebase-adminsdk-*.json
+*service-account*.json
 
 # Downloaded documents from downloadDoc.js script
 downloads/
 backups/
 
 /src/generated/prisma
+
+# Build outputs
+**/dist/
+**/coverage/

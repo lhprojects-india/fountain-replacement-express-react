@@ -13,7 +13,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
   useToast
 } from "@lh/shared";
-import { Plus, Edit, Trash2, Save, X, FileText } from "lucide-react";
+import { useState as useLocalState } from "react";
+import { Plus, Edit, Trash2, Save, X, FileText, Search, ChevronRight, Settings2, Truck, Car } from "lucide-react";
 import { Skeleton } from "@lh/shared";
 
 // Currency mapping: code -> symbol
@@ -64,6 +65,8 @@ export default function FeeStructureManager() {
   const { toast } = useToast();
   const { adminRole, currentUser } = useAdminAuth();
   const [feeStructures, setFeeStructures] = useState({});
+  const [selectedCityId, setSelectedCityId] = useLocalState(null);
+  const [citySearch, setCitySearch] = useLocalState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCity, setEditingCity] = useState(null);
@@ -99,21 +102,20 @@ export default function FeeStructureManager() {
       const structures = await adminServices.getAllFeeStructures();
 
       // Filter by accessible cities if restricted
+      let finalStructures = structures;
       if (currentUser?.accessibleCities?.length > 0 && adminRole !== 'super_admin') {
         const filtered = {};
         const accessibleCitiesLower = currentUser.accessibleCities.map(c => c.toLowerCase());
-
         Object.keys(structures).forEach(city => {
           if (accessibleCitiesLower.includes(city.toLowerCase())) {
             filtered[city] = structures[city];
           }
         });
-        setFeeStructures(filtered);
-      } else {
-        setFeeStructures(structures);
+        finalStructures = filtered;
       }
+      setFeeStructures(finalStructures);
+      setSelectedCityId(prev => prev ?? Object.keys(finalStructures)[0] ?? null);
     } catch (error) {
-      console.error('Error loading fee structures:', error);
       toast({
         title: "Error loading fee structures",
         description: "Unable to load fee structures. Please try again.",
@@ -279,7 +281,6 @@ export default function FeeStructureManager() {
         });
       }
     } catch (error) {
-      console.error('Error saving fee structure:', error);
       toast({
         title: "Save failed",
         description: "Unable to save fee structure. Please try again.",
@@ -305,7 +306,6 @@ export default function FeeStructureManager() {
         });
       }
     } catch (error) {
-      console.error('Error deleting fee structure:', error);
       toast({
         title: "Delete failed",
         description: "Unable to delete fee structure. Please try again.",
@@ -458,83 +458,95 @@ export default function FeeStructureManager() {
     }
   }, [formData.blocks, formData.currency, formData.feeType]);
 
+  const citiesInView = Object.keys(feeStructures)
+    .filter(c => c.toLowerCase().includes(citySearch.toLowerCase()))
+    .sort();
+
+  const activeCity = selectedCityId && feeStructures[selectedCityId]
+    ? selectedCityId
+    : citiesInView[0] ?? null;
+  const activeStructure = activeCity ? feeStructures[activeCity] : null;
+  const sym = activeStructure ? getDisplayCurrency(activeStructure.currency) : '£';
+
+  const densityDot = (density) => {
+    const colors = { high: '#0890F1', medium: '#FFD06D', low: '#EF8EA2' };
+    return <span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: colors[density] || '#94a3b8' }} />;
+  };
+
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <Skeleton className="h-7 w-48 mb-2" /> {/* Title */}
-                <Skeleton className="h-4 w-64" /> {/* Description */}
-              </div>
-              <Skeleton className="h-10 w-40" /> {/* Add Button */}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="border-0 shadow-sm">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <Skeleton className="h-6 w-32 mb-2" /> {/* City Name */}
-                    <Skeleton className="h-4 w-24" /> {/* Fee Type */}
-                  </div>
-                  <div className="flex gap-2">
-                    <Skeleton className="h-8 w-8 rounded-md" /> {/* Edit Button */}
-                    <Skeleton className="h-8 w-8 rounded-md" /> {/* Delete Button */}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                  <div className="flex justify-between">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                  <div className="flex justify-between">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                </div>
-                <div className="pt-4 border-t border-gray-100">
-                  <div className="flex justify-between items-center">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-6 w-16" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+      <div className="flex h-[600px] rounded-xl overflow-hidden border border-slate-200 bg-white">
+        <div className="w-60 border-r p-4 space-y-3">
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-9 w-full rounded-lg" />
+          {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}
+        </div>
+        <div className="flex-1 p-8 space-y-6">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-48 w-full rounded-xl" />
+          <Skeleton className="h-48 w-full rounded-xl" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="border-0 shadow-sm">
-        <CardContent className="pt-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Fee Structures</h2>
-              <p className="text-sm text-gray-600 mt-1">Manage fee structures for different cities</p>
-            </div>
-            {(adminRole === 'super_admin' || adminRole === 'app_admin') && (
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button onClick={handleCreateNew} className="bg-brand-blue hover:bg-brand-shadeBlue">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Fee Structure
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto z-[200]">
+    <div className="flex rounded-xl overflow-hidden border border-slate-200 bg-white" style={{ minHeight: '600px' }}>
+      {/* ── Left sidebar ── */}
+      <div className="w-60 shrink-0 border-r border-slate-100 flex flex-col" style={{ background: '#f8fafc' }}>
+        <div className="px-4 pt-5 pb-3">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-3">Service Cities</p>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search cities..."
+              value={citySearch}
+              onChange={e => setCitySearch(e.target.value)}
+              className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-0.5">
+          {citiesInView.length === 0 && (
+            <p className="text-xs text-slate-400 text-center py-6">No cities found</p>
+          )}
+          {citiesInView.map(cityId => {
+            const s = feeStructures[cityId];
+            const isActive = cityId === activeCity;
+            return (
+              <button
+                key={cityId}
+                onClick={() => setSelectedCityId(cityId)}
+                className="w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition-colors"
+                style={{
+                  background: isActive ? '#e8f0fe' : 'transparent',
+                  color: isActive ? '#1d4ed8' : '#374151',
+                }}
+              >
+                <div>
+                  <p className="text-sm font-semibold">{s.city || cityId}</p>
+                  <p className="text-[11px]" style={{ color: isActive ? '#3b82f6' : '#94a3b8' }}>
+                    {s.feeType === 'vehicle-specific' ? 'Vehicle-Specific' : 'General'} · {getDisplayCurrency(s.currency)}
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 shrink-0" style={{ opacity: isActive ? 1 : 0.3 }} />
+              </button>
+            );
+          })}
+        </div>
+
+        {(adminRole === 'super_admin' || adminRole === 'app_admin') && (
+          <div className="p-3 border-t border-slate-100">
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={handleCreateNew} className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm">
+                  <Plus className="h-4 w-4 mr-1" /> Add City
+                </Button>
+              </DialogTrigger>
+                <DialogContent className="adm-modal max-w-4xl max-h-[90vh] overflow-y-auto z-[200]">
                   <DialogHeader>
                     <DialogTitle>
                       {editingCity ? 'Edit Fee Structure' : 'Create New Fee Structure'}
@@ -918,219 +930,179 @@ export default function FeeStructureManager() {
                   </div>
 
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleSave} className="bg-brand-blue hover:bg-brand-shadeBlue">
+                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
                       <Save className="h-4 w-4 mr-2" />
                       {editingCity ? 'Update' : 'Create'}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-            )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Fee Structures List */}
-      <div className="space-y-4">
-        {Object.entries(feeStructures).map(([cityId, structure]) => (
-          <Card key={cityId} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">{structure.city}</CardTitle>
-                    {structure.feeType === 'vehicle-specific' ? (
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
-                        Vehicle-Specific
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-gray-100 text-gray-800">
-                        General
-                      </Badge>
-                    )}
-                  </div>
-                  <CardDescription className="mt-1">
-                    <span className="inline-flex items-center gap-3 text-sm">
-                      <span>Currency: <strong>{getDisplayCurrency(structure.currency)}</strong></span>
-                      {structure.feeType === 'vehicle-specific' ? (
-                        <>
-                          <span>•</span>
-                          <span>Van Hourly: <strong>{cleanEarningsString(structure.averageHourlyEarnings?.van) || 'N/A'}</strong></span>
-                          <span>•</span>
-                          <span>Car Hourly: <strong>{cleanEarningsString(structure.averageHourlyEarnings?.car) || 'N/A'}</strong></span>
-                        </>
-                      ) : (
-                        <>
-                          <span>•</span>
-                          <span>Hourly: <strong>{cleanEarningsString(structure.averageHourlyEarnings)}</strong></span>
-                          <span>•</span>
-                          <span>Per Task: <strong>{cleanEarningsString(structure.averagePerTaskEarnings)}</strong></span>
-                        </>
-                      )}
-                    </span>
-                  </CardDescription>
-                </div>
-                {(adminRole === 'super_admin' || adminRole === 'app_admin') && (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(cityId, structure)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm" className="bg-brand-pink hover:bg-brand-shadePink text-white">
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Fee Structure</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete the fee structure for {structure.city}?
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(cityId, structure.city)}
-                            className="bg-brand-pink hover:bg-brand-shadePink text-white"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {structure.feeType === 'vehicle-specific' ? (
-                <div className="space-y-6">
-                  {/* Van Blocks */}
-                  <div>
-                    <h3 className="text-md font-semibold mb-3 text-gray-900">Van Fees</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {structure.blocks?.van?.map((block, index) => (
-                        <div key={index} className="border rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
-                          <h4 className="font-semibold mb-3 capitalize text-gray-900 flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${block.density === 'high' ? 'bg-brand-teal' :
-                              block.density === 'medium' ? 'bg-brand-yellow' : 'bg-brand-shadeYellow'
-                              }`} />
-                            {block.density} Density Block
-                          </h4>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Shift Length:</span>
-                              <span className="font-medium">{block.shiftLength}h</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Minimum Fee:</span>
-                              <span className="font-medium">{getDisplayCurrency(structure.currency)}{block.minimumFee}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Included Tasks:</span>
-                              <span className="font-medium">{block.includedTasks}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Additional Task:</span>
-                              <span className="font-medium">{getDisplayCurrency(structure.currency)}{block.additionalTaskFee}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Car Blocks */}
-                  <div>
-                    <h3 className="text-md font-semibold mb-3 text-gray-900">Car Fees</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {structure.blocks?.car?.map((block, index) => (
-                        <div key={index} className="border rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
-                          <h4 className="font-semibold mb-3 capitalize text-gray-900 flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${block.density === 'high' ? 'bg-green-500' :
-                              block.density === 'medium' ? 'bg-yellow-500' : 'bg-orange-500'
-                              }`} />
-                            {block.density} Density Block
-                          </h4>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Shift Length:</span>
-                              <span className="font-medium">{block.shiftLength}h</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Minimum Fee:</span>
-                              <span className="font-medium">{getDisplayCurrency(structure.currency)}{block.minimumFee}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Included Tasks:</span>
-                              <span className="font-medium">{block.includedTasks}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Additional Task:</span>
-                              <span className="font-medium">{getDisplayCurrency(structure.currency)}{block.additionalTaskFee}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {structure.blocks?.map((block, index) => (
-                    <div key={index} className="border rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
-                      <h4 className="font-semibold mb-3 capitalize text-gray-900 flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${block.density === 'high' ? 'bg-green-500' :
-                          block.density === 'medium' ? 'bg-yellow-500' : 'bg-orange-500'
-                          }`} />
-                        {block.density} Density Block
-                      </h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Shift Length:</span>
-                          <span className="font-medium">{block.shiftLength}h</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Minimum Fee:</span>
-                          <span className="font-medium">{getDisplayCurrency(structure.currency)}{block.minimumFee}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Included Tasks:</span>
-                          <span className="font-medium">{block.includedTasks}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Additional Task:</span>
-                          <span className="font-medium">{getDisplayCurrency(structure.currency)}{block.additionalTaskFee}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-
-        {Object.keys(feeStructures).length === 0 && (
-          <Card className="border-0 shadow-sm">
-            <CardContent className="text-center py-12">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 mb-2">No fee structures found</p>
-              <p className="text-sm text-gray-500">Create your first fee structure to get started.</p>
-            </CardContent>
-          </Card>
         )}
       </div>
+
+      {/* ── Main content ── */}
+      <div className="flex-1 overflow-y-auto">
+        {!activeCity || !activeStructure ? (
+          <div className="flex flex-col items-center justify-center h-full text-center py-20">
+            <FileText className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+            <p className="text-slate-500 font-medium">No fee structures yet</p>
+            <p className="text-sm text-slate-400 mt-1">Add a city using the button on the left.</p>
+          </div>
+        ) : (
+          <div className="p-8 space-y-6">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[11px] font-bold uppercase tracking-widest px-2 py-0.5 rounded text-blue-700 bg-blue-50 border border-blue-100">
+                    Configuration Mode
+                  </span>
+                </div>
+                <h1 className="text-3xl font-bold text-slate-900 mt-2">
+                  <span className="text-slate-900">{activeStructure.city}</span>{' '}
+                  <span className="font-normal text-slate-400">Fee Structure</span>
+                </h1>
+                <p className="text-sm text-slate-400 mt-1">
+                  {activeStructure.feeType === 'vehicle-specific' ? 'Vehicle-Specific · ' : 'General · '}
+                  Currency: {sym}
+                  {activeStructure.feeType !== 'vehicle-specific' && activeStructure.averageHourlyEarnings && (
+                    <> · Avg hourly: <strong>{cleanEarningsString(activeStructure.averageHourlyEarnings)}</strong></>
+                  )}
+                </p>
+              </div>
+              {(adminRole === 'super_admin' || adminRole === 'app_admin') && (
+                <div className="flex items-center gap-2 shrink-0">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="text-rose-600 border-rose-200 hover:bg-rose-50">
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Fee Structure</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete the fee structure for {activeStructure.city}? This cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(activeCity, activeStructure.city)} className="bg-rose-600 hover:bg-rose-700">
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  <Button
+                    onClick={() => handleEdit(activeCity, activeStructure)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Edit className="h-4 w-4 mr-2" /> Edit Fee Structure
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* ── General fee blocks table ── */}
+            {activeStructure.feeType !== 'vehicle-specific' && (
+              <FeeBlocksSection
+                title="General Settings"
+                icon={<Settings2 className="h-5 w-5 text-blue-600" />}
+                blocks={activeStructure.blocks || []}
+                currency={sym}
+                densityDot={densityDot}
+              />
+            )}
+
+            {/* ── Vehicle-specific: Van ── */}
+            {activeStructure.feeType === 'vehicle-specific' && (
+              <>
+                <FeeBlocksSection
+                  title="Vehicle-Specific: Large Van"
+                  subtitle="Applied to Transit &amp; Boxer models"
+                  icon={<Truck className="h-5 w-5 text-blue-600" />}
+                  blocks={activeStructure.blocks?.van || []}
+                  currency={sym}
+                  densityDot={densityDot}
+                />
+                <FeeBlocksSection
+                  title="Vehicle-Specific: Compact Car"
+                  subtitle="Applied to Hatchback &amp; Estate models"
+                  icon={<Car className="h-5 w-5 text-blue-600" />}
+                  blocks={activeStructure.blocks?.car || []}
+                  currency={sym}
+                  densityDot={densityDot}
+                />
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Reusable table section ── */
+function FeeBlocksSection({ title, subtitle, icon, blocks, currency, densityDot }) {
+  return (
+    <div className="rounded-xl border border-slate-200 overflow-hidden">
+      {/* Section header */}
+      <div className="flex items-center justify-between px-5 py-4 bg-white border-b border-slate-100">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+            {icon}
+          </div>
+          <div>
+            <p className="font-semibold text-slate-800 text-sm">{title}</p>
+            {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      {blocks.length === 0 ? (
+        <div className="py-8 text-center text-sm text-slate-400 bg-white">
+          No blocks configured for this section.
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-100">
+                <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">Density Level</th>
+                <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">Shift Length</th>
+                <th className="text-right px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">Min Fee ({currency})</th>
+                <th className="text-right px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">Included Tasks</th>
+                <th className="text-right px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">Add&apos;l Task ({currency})</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-slate-50">
+              {blocks.map((block, i) => (
+                <tr key={i} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-5 py-3.5 font-medium text-slate-700 capitalize">
+                    {densityDot(block.density)}
+                    {block.density} ({block.density === 'high' ? '1.2+' : block.density === 'medium' ? '0.8–1.2' : '0.5–0.8'})
+                  </td>
+                  <td className="px-5 py-3.5 text-slate-600">
+                    {block.shiftLength}h shift
+                  </td>
+                  <td className="px-5 py-3.5 text-right font-semibold text-slate-800">
+                    {currency}{Number(block.minimumFee).toFixed(2)}
+                  </td>
+                  <td className="px-5 py-3.5 text-right text-slate-600">
+                    {block.includedTasks}
+                  </td>
+                  <td className="px-5 py-3.5 text-right font-semibold" style={{ color: '#0890F1' }}>
+                    +{currency}{Number(block.additionalTaskFee).toFixed(2)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

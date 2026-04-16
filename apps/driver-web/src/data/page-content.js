@@ -83,14 +83,14 @@ export const pageContent = {
         },
         footer: [
             "Each block attracts a different guaranteed fee, along with a minimum number of tasks that need to be completed and a fee for any additional tasks.",
-            "All details of the fee can be viewed in the Laundryheap Driver Application."
+            "All details of the fee can be viewed in the Talentrix by Laundryheap driver application."
         ]
     },
     howRouteWorks: {
         title: "How Route Works",
         paragraphs: [
             "Please note that routes are planned by our automated system, which considers several factors such as live traffic conditions, the time required to find parking, and the estimated time needed to meet the customer and complete each task. Based on these parameters, the system calculates the estimated time of arrival (ETA) for completing the route.",
-            "As Laundryheap operates as an on-demand service, new orders may be assigned to you while you are already on your route. These additional tasks are automatically planned to fit within your booked block time. Therefore, you will not have the option to decline any tasks added to your route."
+            "As Talentrix by Laundryheap operates as an on-demand service, new orders may be assigned to you while you are already on your route. These additional tasks are automatically planned to fit within your booked block time. Therefore, you will not have the option to decline any tasks added to your route."
         ]
     },
     smokingFitnessCheck: {

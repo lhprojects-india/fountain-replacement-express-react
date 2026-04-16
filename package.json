@@ -12,6 +12,11 @@
     "dev:driver": "npm run dev -w driver-web",
     "dev:admin": "npm run dev -w admin-web",
     "build": "npm run build --workspaces",
+    "build:backend": "npx prisma generate --schema=apps/backend/prisma/schema.prisma",
+    "build:driver": "npm run build -w driver-web",
+    "build:admin": "npm run build -w admin-web",
+    "migrate": "npx prisma migrate deploy --schema=apps/backend/prisma/schema.prisma",
+    "seed": "node apps/backend/scripts/seed-test-data.js",
     "lint": "npm run lint --workspaces"
   },
   "devDependencies": {

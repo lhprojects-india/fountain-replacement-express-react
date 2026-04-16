@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
 import { auth, googleProvider } from "../lib/firebase";
 import { useToast, apiClient, saveAuthToken, clearAuthToken, getAuthToken } from "@lh/shared";
@@ -13,16 +12,13 @@ export function AdminAuthProvider({ children }) {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [adminRole, setAdminRole] = useState(null);
   const { toast } = useToast();
-  const location = useLocation();
 
-  const isAdminRoute = location.pathname.startsWith('/admin');
-
-  // Restore session
+  // Restore session on mount
   useEffect(() => {
     const restoreSession = async () => {
       const token = getAuthToken();
 
-      if (token && isAdminRoute) {
+      if (token) {
         try {
           const result = await apiClient.get('/admin/me');
           if (result.success && result.admin) {
@@ -32,21 +28,59 @@ export function AdminAuthProvider({ children }) {
             setIsAuthorized(true);
           }
         } catch (error) {
-          console.error("Failed to restore admin session:", error);
           clearAuthToken();
         }
       }
       setIsLoading(false);
     };
 
-    if (isAdminRoute) {
-      restoreSession();
-    } else {
-      setIsLoading(false);
-    }
-  }, [isAdminRoute]);
+    restoreSession();
+  }, []);
 
   // Sign in with Google via Firebase
+  const signInWithEmailPassword = async (email, password) => {
+    try {
+      setIsLoading(true);
+      const normalized = email?.toLowerCase().trim();
+      if (!normalized || !password) {
+        toast({
+          title: "Missing credentials",
+          description: "Enter email and password.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      const response = await apiClient.post("/auth/admin-login", {
+        email: normalized,
+        password,
+      });
+      if (response.success && response.token) {
+        saveAuthToken(response.token);
+        setCurrentUser(response.admin);
+        setAdminRole(response.admin.role);
+        setIsAuthenticated(true);
+        setIsAuthorized(true);
+        toast({
+          title: "Signed in",
+          description: response.admin.email,
+        });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      const description =
+        error?.message || error?.error || "Invalid email or password.";
+      toast({
+        title: "Sign in failed",
+        description,
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
@@ -70,7 +104,6 @@ export function AdminAuthProvider({ children }) {
       }
       return false;
     } catch (error) {
-      console.error('Error signing in with Google:', error);
 
       let description = "An unexpected error occurred. Please try again.";
       if (error.code === "auth/popup-closed-by-user") {
@@ -117,6 +150,7 @@ export function AdminAuthProvider({ children }) {
     isLoading,
     adminRole,
     signInWithGoogle,
+    signInWithEmailPassword,
     signOut,
   };
 

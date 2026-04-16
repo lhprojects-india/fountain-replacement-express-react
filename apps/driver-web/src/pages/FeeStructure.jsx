@@ -7,8 +7,7 @@ import { UIButton } from "@lh/shared";
 import { CheckboxWithLabel } from "@lh/shared";
 import { useToast } from "@lh/shared";
 import { useState, useEffect } from "react";
-import { feeStructureServices, acknowledgementServices } from "@/lib/firebase-services";
-import { getVehicleTypeFromMOT } from "@lh/shared";
+import { feeStructureServices, acknowledgementServices } from "@/lib/api-services";
 import { pageContent } from "@/data/page-content";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@lh/shared";
 import { useMinimumReadTime } from "@lh/shared";
@@ -23,10 +22,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@lh/shared";
+import { useOptionalApplication } from "../context/ApplicationContext";
+import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
+import { publicServices } from "../lib/public-services";
 
 const FeeStructure = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const appContext = useOptionalApplication();
   const { updateUserData, isLoading, currentUser, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [feeStructures, setFeeStructures] = useState(null);
@@ -37,8 +40,6 @@ const FeeStructure = () => {
   // Fee structure has more content, so require 45 seconds minimum read time
   const { canProceed, timeRemaining } = useMinimumReadTime(45);
 
-  // Default fee structure (fallback if no city-specific data is found)
-  // Using Birmingham as default
   const defaultFeeStructure = {
     city: "Birmingham",
     currency: "£",
@@ -59,40 +60,26 @@ const FeeStructure = () => {
   useEffect(() => {
     const fetchFeeStructures = async () => {
       try {
-        // Get city from user data (could be from fountainData or city field)
-        const city = currentUser?.fountainData?.city || currentUser?.city;
-
-        // Extract vehicle type from MOT data with debug logging
-        const vehicleType = getVehicleTypeFromMOT(currentUser?.fountainData, true);
-
-        if (!city) {
-          setFeeStructures(defaultFeeStructure);
-          setLoadingFeeStructures(false);
-          return;
-        }
-
-        const structures = await feeStructureServices.getFeeStructuresByCity(city, vehicleType);
-
-        // If no structure found for the city, use default
-        if (!structures) {
-          setFeeStructures(defaultFeeStructure);
-        } else {
-          // Check if vehicle-specific fees require MOT data (check multiple paths like the helper function)
-          if (structures.feeType === 'vehicle-specific') {
-            const hasMotData = !!(
-              currentUser?.fountainData?.data?.mot ||
-              currentUser?.fountainData?.mot ||
-              currentUser?.fountainData?.applicant?.data?.mot ||
-              currentUser?.fountainData?.vehicle_type ||
-              currentUser?.fountainData?.data?.vehicle_type ||
-              currentUser?.fountainData?.vehicle
-            );
+        if (appContext) {
+          const result = await publicServices.getApplicationFeeStructure();
+          const structure = result?.feeStructure;
+          if (!structure) {
+            setFeeStructures(defaultFeeStructure);
+          } else {
+            setFeeStructures({
+              city: structure.city,
+              currency: result?.currencySymbol || "£",
+              blocks: structure.blocks || [],
+              averageHourlyEarnings: structure.perHour || defaultFeeStructure.averageHourlyEarnings,
+              averagePerTaskEarnings: structure.perTask || defaultFeeStructure.averagePerTaskEarnings,
+            });
           }
-
-          setFeeStructures(structures);
+        } else {
+          const city = currentUser?.city;
+          const structures = await feeStructureServices.getFeeStructuresByCity(city, null);
+          setFeeStructures(structures || defaultFeeStructure);
         }
       } catch (error) {
-        console.error('❌ Error fetching fee structures:', error);
         setFeeStructures(defaultFeeStructure);
       } finally {
         setLoadingFeeStructures(false);
@@ -107,7 +94,7 @@ const FeeStructure = () => {
       setFeeStructures(defaultFeeStructure);
       setLoadingFeeStructures(false);
     }
-  }, [currentUser, isLoading, isAuthenticated]);
+  }, [appContext, currentUser, isLoading, isAuthenticated]);
 
   // Load existing acknowledgement status
   useEffect(() => {
@@ -137,7 +124,9 @@ const FeeStructure = () => {
       };
 
       // Attempt server-side immutable acknowledgement
-      const res = await acknowledgementServices.acknowledgeFeeStructure();
+      const res = appContext
+        ? { success: await appContext.acknowledgePolicy("feeStructure") }
+        : await acknowledgementServices.acknowledgeFeeStructure();
 
       // Always update local state regardless of which method was used
       if (res.success) {
@@ -152,10 +141,9 @@ const FeeStructure = () => {
       if (searchParams.get('from') === 'summary') {
         navigate("/acknowledgements-summary");
       } else {
-        navigate("/payment-cycle-schedule");
+        navigate(appContext ? "/screening/payment-cycle-schedule" : "/payment-cycle-schedule");
       }
     } catch (error) {
-      console.error("Error saving fee structure:", error);
       toast({
         title: "Save Failed",
         description: "Unable to save acknowledgement. Please try again.",
@@ -167,7 +155,7 @@ const FeeStructure = () => {
   };
 
   const handleBackToBlocks = () => {
-    navigate("/blocks-classification");
+    navigate(appContext ? "/screening/blocks-classification" : "/blocks-classification");
   };
 
   const handleWithdraw = async () => {
@@ -190,7 +178,6 @@ const FeeStructure = () => {
         });
       }
     } catch (error) {
-      console.error("Error withdrawing application:", error);
       toast({
         title: "Withdrawal Failed",
         description: "Unable to process withdrawal. Please try again.",
@@ -263,7 +250,7 @@ const FeeStructure = () => {
   }
 
   return (
-    <PageLayout compact title="">
+    <PageLayout compact title="" routes={appContext ? SCREENING_STEP_PATHS : undefined} basePath={appContext ? "/screening" : "/"}>
       <div className="w-full flex flex-col items-center px-4">
         <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-fade-in">Fee Structure</h2>
 

@@ -1,0 +1,262 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#6af8eb",
+                        "primary": "#005ea1",
+                        "inverse-on-surface": "#eff1f3",
+                        "primary-fixed-dim": "#a0caff",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#bfc7d4",
+                        "surface": "#f7f9fb",
+                        "on-secondary-fixed": "#00201d",
+                        "tertiary-fixed-dim": "#ffb1c0",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#00497e",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#772d40",
+                        "primary-fixed": "#d2e4ff",
+                        "surface-variant": "#e0e3e5",
+                        "primary-container": "#0078ca",
+                        "on-secondary-fixed-variant": "#00504b",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "secondary-container": "#67f5e8",
+                        "on-primary-container": "#fdfcff",
+                        "on-tertiary-fixed": "#3f0116",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-dim": "#d8dadc",
+                        "on-primary-fixed": "#001c37",
+                        "on-background": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "surface-container-low": "#f2f4f6",
+                        "background": "#f7f9fb",
+                        "tertiary-fixed": "#ffd9df",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-container": "#eceef0",
+                        "tertiary": "#924255",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-container": "#fffbff",
+                        "on-surface": "#191c1e",
+                        "on-surface-variant": "#404752",
+                        "on-secondary-container": "#006f68",
+                        "secondary": "#006a63",
+                        "surface-tint": "#0061a5",
+                        "secondary-fixed-dim": "#47dbcf",
+                        "tertiary-container": "#b05a6d",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#707884",
+                        "inverse-primary": "#a0caff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar Component -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-[#202B93] dark:bg-slate-950 flex flex-col py-6 px-4 z-50">
+<div class="mb-10 px-2 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#202B93] to-[#2FCCC0] flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: &quot;FILL&quot; 1;">shield_person</span>
+</div>
+<div>
+<h1 class="text-xl font-bold text-white tracking-tighter" style="">HeapHire</h1>
+<p class="text-[10px] uppercase tracking-widest text-[#2FCCC0] font-bold opacity-80" style="">BY LAUNDRYHEAP</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Pipeline: ACTIVE STATE -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-sans text-sm tracking-tight font-medium transition-colors text-white bg-white/10 border-r-2 border-[#2FCCC0] scale-95 duration-150 ease-in-out" href="#" style="">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">assignment_ind</span>
+<span class="" style="">Pipeline</span>
+</a>
+<!-- Open Roles -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-sans text-sm tracking-tight font-medium transition-colors text-indigo-200/70 hover:bg-white/5 hover:text-white" href="#" style="">
+<span class="material-symbols-outlined" style="">work</span>
+<span class="" style="">Open Roles</span>
+</a>
+<!-- Interviews -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-sans text-sm tracking-tight font-medium transition-colors text-indigo-200/70 hover:bg-white/5 hover:text-white" href="#" style="">
+<span class="material-symbols-outlined" style="">calendar_month</span>
+<span class="" style="">Interviews</span>
+</a>
+<!-- Analytics -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-sans text-sm tracking-tight font-medium transition-colors text-indigo-200/70 hover:bg-white/5 hover:text-white" href="#" style="">
+<span class="material-symbols-outlined" style="">analytics</span>
+<span class="" style="">Analytics</span>
+</a>
+<!-- Settings -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-sans text-sm tracking-tight font-medium transition-colors text-indigo-200/70 hover:bg-white/5 hover:text-white" href="#" style="">
+<span class="material-symbols-outlined" style="">settings</span>
+<span class="" style="">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-2 pt-6 border-t border-white/10">
+<div class="flex items-center gap-3 p-2 rounded-xl bg-white/5">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-white/20">
+<img alt="Admin Workspace Logo" class="w-full h-full object-cover" data-alt="professional portrait of a male corporate administrator in a modern office environment with soft focus lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmBWq7eR5FyoJFFHYETp2jH1uD50zSdZ1FgdtCAI0kq6WLbjaq7zK8h22CbSN74utRdlIy56_s4eSbymE373DecqDgZD21noJvW3CZjb-enzJbYKnko4iUEnVpIJ1kQysNPbu4JeQQTkUZ6B13wflXS-xSJ_QsuHrPW844gsMpxLn82zP8YSNpiBWZ-yAyiJH9xnDlguoA9Qi9D87Xa-3fdSFZuoqAJgOVN_hN5YjeSo1j-_91UwSvWvXBIhRQ9GotOjSpct0K7Z7w" style="">
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold text-white truncate" style="">Alex Thorne</p>
+<p class="text-[10px] text-indigo-200/50 truncate" style="">Senior Recruiter</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopNavBar Component -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md z-40 flex justify-between items-center px-8 transition-opacity active:opacity-80">
+<div class="flex items-center gap-6 flex-1">
+<nav class="flex items-center gap-2 text-sm">
+<span class="text-slate-400 font-medium" style="">Workspace</span>
+<span class="material-symbols-outlined text-slate-300 text-sm" style="">chevron_right</span>
+<span class="text-[#005ea1] font-bold" style="">Pipeline</span>
+</nav>
+<div class="max-w-md w-full ml-4">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#005ea1] transition-colors" style="">search</span>
+<input class="w-full h-10 pl-10 pr-4 bg-surface-container-low border-none rounded-lg text-sm focus:ring-2 focus:ring-[#2FCCC0]/30 transition-all placeholder:text-slate-400" placeholder="Search candidates..." type="text">
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:text-[#005ea1] transition-all relative" style="">
+<span class="material-symbols-outlined" style="">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+<button class="p-2 text-slate-500 hover:text-[#005ea1] transition-all" style="">
+<span class="material-symbols-outlined" style="">help_outline</span>
+</button>
+<div class="h-8 w-[1px] bg-slate-200 mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center">
+<span class="text-xs font-bold text-on-primary-fixed-variant" style="">AT</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-16 min-h-screen bg-surface-container-low p-8">
+<div class="max-w-7xl mx-auto space-y-8">
+<!-- Page Title & Quick Stats -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="text-3xl font-bold text-on-surface tracking-tight" style="">Candidates Pipeline</h2>
+<p class="text-on-surface-variant mt-1" style="">Managing 48 active applications across 12 roles.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-4 h-10 bg-surface-container-lowest text-primary font-medium rounded-lg text-sm transition-all hover:bg-white shadow-sm flex items-center gap-2" style="">
+<span class="material-symbols-outlined text-lg" style="">filter_list</span>
+                        Filter
+                    </button>
+<button class="px-5 h-10 bg-[#005ea1] text-white font-semibold rounded-lg text-sm transition-all hover:opacity-90 shadow-lg flex items-center gap-2" style="">
+<span class="material-symbols-outlined text-lg" style="">add</span>
+                        Add Candidate
+                    </button>
+</div>
+</div>
+<!-- Pipeline View Placeholder -->
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden">
+<div class="p-12 flex flex-col items-center justify-center text-center space-y-4 min-h-[500px]">
+<div class="w-20 h-20 rounded-full bg-primary-fixed flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: &quot;FILL&quot; 1;">view_kanban</span>
+</div>
+<div>
+<h3 class="text-xl font-bold text-on-surface" style="">Candidates Pipeline View</h3>
+<p class="text-on-surface-variant max-w-md mx-auto mt-2 leading-relaxed" style="">
+                            Your visual recruitment funnel will appear here. Drag and drop candidates between stages, view applicant health, and schedule interviews directly from this dashboard.
+                        </p>
+</div>
+<!-- Decorative Skeleton Grid -->
+<div class="grid grid-cols-4 gap-6 w-full mt-12">
+<div class="space-y-4">
+<div class="h-2 bg-slate-100 rounded-full w-1/2"></div>
+<div class="h-32 bg-slate-50 rounded-xl border border-dashed border-slate-200"></div>
+<div class="h-32 bg-slate-50 rounded-xl border border-dashed border-slate-200"></div>
+</div>
+<div class="space-y-4">
+<div class="h-2 bg-slate-100 rounded-full w-1/3"></div>
+<div class="h-32 bg-slate-50/50 rounded-xl border border-dashed border-slate-200/50"></div>
+<div class="h-32 bg-slate-50/50 rounded-xl border border-dashed border-slate-200/50"></div>
+</div>
+<div class="space-y-4">
+<div class="h-2 bg-slate-100 rounded-full w-2/3"></div>
+<div class="h-32 bg-slate-50/30 rounded-xl border border-dashed border-slate-200/30"></div>
+</div>
+<div class="space-y-4">
+<div class="h-2 bg-slate-100 rounded-full w-1/2"></div>
+<div class="h-32 bg-slate-50/10 rounded-xl border border-dashed border-slate-200/10"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Bento Cards -->
+<div class="grid grid-cols-3 gap-6">
+<div class="col-span-1 bg-surface-container-lowest p-6 rounded-2xl shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<h4 class="font-bold text-sm text-on-surface-variant uppercase tracking-wider" style="">Top Sources</h4>
+<span class="material-symbols-outlined text-slate-400" style="">more_horiz</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-[#005ea1]"></div>
+<span class="text-sm font-medium flex-1" style="">LinkedIn</span>
+<span class="text-sm font-bold" style="">42%</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-[#2FCCC0]"></div>
+<span class="text-sm font-medium flex-1" style="">Internal Referral</span>
+<span class="text-sm font-bold" style="">28%</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-primary-fixed-dim"></div>
+<span class="text-sm font-medium flex-1" style="">Direct Apply</span>
+<span class="text-sm font-bold" style="">15%</span>
+</div>
+</div>
+</div>
+<div class="col-span-2 bg-surface-container-lowest p-6 rounded-2xl shadow-sm flex items-center justify-between overflow-hidden relative">
+<div class="relative z-10">
+<h4 class="font-bold text-lg text-on-surface mb-1" style="">Time to Hire Insight</h4>
+<p class="text-sm text-on-surface-variant max-w-xs" style="">Your current average time-to-hire is 14 days, beating industry standards by 8%.</p>
+<button class="mt-4 text-[#005ea1] text-sm font-bold hover:underline" style="">View Analytics Report →</button>
+</div>
+<div class="absolute -right-12 -bottom-12 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+<div class="w-48 h-24 bg-gradient-to-r from-primary to-secondary opacity-10 rounded-2xl rotate-12 -mr-10"></div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (FAB) - Suppressed per rules on Admin shell -->
+</body></html>

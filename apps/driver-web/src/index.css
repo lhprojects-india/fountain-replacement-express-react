@@ -175,6 +175,23 @@
     background: rgba(59, 130, 246, 0.3) !important;
     color: inherit !important;
   }
+
+  /* Mobile-first usability defaults for driver web:
+     - prevent iOS zoom on focus (>=16px input text)
+     - ensure touch targets are at least 44px high */
+  @media (max-width: 640px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+
+    button,
+    [role="button"],
+    a.touch-target {
+      min-height: 44px;
+    }
+  }
 }
 
 @layer components {

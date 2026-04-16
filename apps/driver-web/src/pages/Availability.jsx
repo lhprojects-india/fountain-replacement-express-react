@@ -4,31 +4,16 @@ import { useAuth } from "../context/AuthContext";
 import { PageLayout } from "@lh/shared";
 import { Button } from "@lh/shared";
 import AvailabilityGrid from "@/components/AvailabilityGrid";
-import { useSaveProgress } from "@/hooks/useSaveProgress";
+import { useOptionalApplication } from "../context/ApplicationContext";
+import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
 
 const Availability = () => {
   const navigate = useNavigate();
-  const { currentUser, saveAvailability, isLoading, isAuthenticated } = useAuth();
-  useSaveProgress(); // Automatically save progress when user visits this page
+  const appContext = useOptionalApplication();
+  const { currentUser, saveAvailability: legacySaveAvailability, isLoading } = useAuth();
+  const screeningProgress = appContext?.screeningProgress;
+  const isLoadingScreening = appContext ? appContext.isLoadingScreening : isLoading;
   const [isSaving, setIsSaving] = useState(false);
-
-  // Debug logging
-  useEffect(() => {
-    console.log("Availability Page: Mount/Update", {
-      isLoading,
-      isAuthenticated,
-      hasCurrentUser: !!currentUser,
-      email: currentUser?.email
-    });
-  }, [isLoading, isAuthenticated, currentUser]);
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated && !currentUser?.email) {
-      console.log("Availability Page: No auth, redirecting to welcome");
-      // navigate("/", { replace: true }); // Commented out for now to allow viewing logs
-    }
-  }, [isLoading, isAuthenticated, currentUser, navigate]);
 
   const [availability, setAvailability] = useState({
     Mondays: { morning: false, noon: false, evening: false },
@@ -42,20 +27,47 @@ const Availability = () => {
 
   // Load existing availability data
   useEffect(() => {
-    if (currentUser?.availability) {
-      setAvailability(currentUser.availability);
+    if (!appContext) {
+      if (currentUser?.availability) {
+        setAvailability(currentUser.availability);
+      }
+      return;
     }
-  }, [currentUser]);
+
+    const rows = screeningProgress?.driver?.availabilities || [];
+    if (!rows.length) return;
+
+    const next = {
+      Mondays: { morning: false, noon: false, evening: false },
+      Tuesdays: { morning: false, noon: false, evening: false },
+      Wednesdays: { morning: false, noon: false, evening: false },
+      Thursdays: { morning: false, noon: false, evening: false },
+      Fridays: { morning: false, noon: false, evening: false },
+      Saturdays: { morning: false, noon: false, evening: false },
+      Sundays: { morning: false, noon: false, evening: false }
+    };
+
+    for (const row of rows) {
+      const day = row.dayOfWeek;
+      const shift = row.shiftPeriod;
+      if (next[day] && Object.prototype.hasOwnProperty.call(next[day], shift)) {
+        next[day][shift] = true;
+      }
+    }
+
+    setAvailability(next);
+  }, [appContext, currentUser, screeningProgress]);
 
   const handleContinue = async () => {
     setIsSaving(true);
     try {
-      const success = await saveAvailability(availability);
+      const success = appContext
+        ? await appContext.saveAvailability(availability)
+        : await legacySaveAvailability(availability);
       if (success) {
-        navigate("/facility-locations");
+        navigate(appContext ? "/screening/facility-locations" : "/facility-locations");
       }
     } catch (error) {
-      console.error("Error saving availability:", error);
     } finally {
       setIsSaving(false);
     }
@@ -72,10 +84,15 @@ const Availability = () => {
     );
   };
 
-  const isButtonDisabled = !hasAtLeastOneSelection() || isSaving || isLoading;
+  const isButtonDisabled = !hasAtLeastOneSelection() || isSaving || isLoadingScreening;
 
   return (
-    <PageLayout compact title="">
+    <PageLayout
+      compact
+      title=""
+      routes={appContext ? SCREENING_STEP_PATHS : undefined}
+      basePath={appContext ? "/screening" : "/"}
+    >
       <div className="w-full max-w-sm mx-auto flex flex-col gap-4 pb-6">
         {/* Left-aligned heading */}
         <div>

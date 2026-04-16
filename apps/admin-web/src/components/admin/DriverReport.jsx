@@ -54,7 +54,6 @@ const DriverReport = ({ report }) => {
                 year: 'numeric'
             });
         } catch (e) {
-            console.error('Date formatting error', e);
             return String(date);
         }
     };
@@ -80,7 +79,7 @@ const DriverReport = ({ report }) => {
     return (
         <div className="space-y-6">
             {/* Application Summary */}
-            <Card className="bg-gradient-to-r from-brand-lightBlue to-white border-brand-lightBlue print:border-gray-200 print:shadow-none">
+            <Card className="adm-card bg-gradient-to-r from-brand-lightBlue to-white border-brand-lightBlue print:border-gray-200 print:shadow-none">
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
                         <Users className="h-5 w-5 text-brand-blue print:text-black" />
@@ -115,7 +114,7 @@ const DriverReport = ({ report }) => {
 
             {/* Driver Information */}
             {(report.driverInfo || report.personalInfo) && (
-                <Card className="print:shadow-none print:border-gray-200">
+                <Card className="adm-card print:shadow-none print:border-gray-200">
                     <CardHeader>
                         <CardTitle className="text-lg">Driver Information</CardTitle>
                     </CardHeader>
@@ -134,7 +133,7 @@ const DriverReport = ({ report }) => {
 
             {/* Availability */}
             {report.availability && (
-                <Card className="print:shadow-none print:border-gray-200">
+                <Card className="adm-card print:shadow-none print:border-gray-200">
                     <CardHeader>
                         <CardTitle className="text-lg">Availability Schedule</CardTitle>
                     </CardHeader>
@@ -206,7 +205,7 @@ const DriverReport = ({ report }) => {
 
             {/* Verification */}
             {(report.verification || report.verificationDetails) && (
-                <Card className="print:shadow-none print:border-gray-200">
+                <Card className="adm-card print:shadow-none print:border-gray-200">
                     <CardHeader>
                         <CardTitle className="text-lg">Verification Details</CardTitle>
                     </CardHeader>
@@ -230,7 +229,7 @@ const DriverReport = ({ report }) => {
 
             {/* Facility Preferences */}
             {report.facilityPreferences && (
-                <Card className="print:shadow-none print:border-gray-200">
+                <Card className="adm-card print:shadow-none print:border-gray-200">
                     <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
                             <MapPin className="h-5 w-5" />
@@ -278,7 +277,7 @@ const DriverReport = ({ report }) => {
 
             {/* Health & Safety */}
             {report.healthAndSafety && (report.healthAndSafety.smokingStatus || report.healthAndSafety.smokingFitnessCompleted || report.healthAndSafety.hasPhysicalDifficulties !== null) && (
-                <Card className="print:shadow-none print:border-gray-200">
+                <Card className="adm-card print:shadow-none print:border-gray-200">
                     <CardHeader>
                         <CardTitle className="text-lg">Health & Safety</CardTitle>
                     </CardHeader>
@@ -332,7 +331,7 @@ const DriverReport = ({ report }) => {
 
             {/* Acknowledgements */}
             {report.acknowledgements && Object.keys(report.acknowledgements).length > 0 && (
-                <Card className="print:shadow-none print:border-gray-200">
+                <Card className="adm-card print:shadow-none print:border-gray-200">
                     <CardHeader>
                         <CardTitle className="text-lg">Acknowledgements & Agreements</CardTitle>
                         <CardDescription className="print:hidden">Policies and terms acknowledged during onboarding</CardDescription>

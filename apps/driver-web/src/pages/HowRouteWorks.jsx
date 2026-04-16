@@ -20,10 +20,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@lh/shared";
+import { useOptionalApplication } from "../context/ApplicationContext";
+import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
 
 const HowRouteWorks = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const appContext = useOptionalApplication();
   const { currentUser, updateUserData, isLoading } = useAuth();
   const { toast } = useToast();
 
@@ -51,22 +54,24 @@ const HowRouteWorks = () => {
 
     setIsSaving(true);
     try {
-      const success = await updateUserData({
+      const payload = {
         routesPolicyAcknowledged: true,
         routesPolicyAcknowledgedAt: new Date().toISOString(),
-        step: 'routes_policy'
-      });
+        step: "routes_policy",
+      };
+      const success = appContext
+        ? await appContext.markStepCompleted("routes_policy", payload)
+        : await updateUserData(payload);
 
       if (success) {
         // If user came from summary, return to summary instead of continuing flow
         if (searchParams.get('from') === 'summary') {
           navigate("/acknowledgements-summary");
         } else {
-          navigate("/cancellation-policy");
+          navigate(appContext ? "/screening/cancellation-policy" : "/cancellation-policy");
         }
       }
     } catch (error) {
-      console.error("Error saving routes policy acknowledgment:", error);
       toast({
         title: "Save Failed",
         description: "Unable to save acknowledgment. Please try again.",
@@ -97,7 +102,6 @@ const HowRouteWorks = () => {
         });
       }
     } catch (error) {
-      console.error("Error withdrawing application:", error);
       toast({
         title: "Withdrawal Failed",
         description: "Unable to process withdrawal. Please try again.",
@@ -109,7 +113,7 @@ const HowRouteWorks = () => {
   };
 
   return (
-    <PageLayout compact title="">
+    <PageLayout compact title="" routes={appContext ? SCREENING_STEP_PATHS : undefined} basePath={appContext ? "/screening" : "/"}>
       <div className="w-full flex flex-col items-center">
         <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down">
           {pageContent.howRouteWorks.title}

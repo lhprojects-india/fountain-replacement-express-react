@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { acknowledgementServices } from "@/lib/firebase-services";
+import { acknowledgementServices } from "@/lib/api-services";
 import { pageContent } from "@/data/page-content";
 import { PageLayout } from "@lh/shared";
 import { Button } from "@lh/shared";
@@ -10,10 +10,13 @@ import { UIButton } from "@lh/shared";
 import { CheckboxWithLabel } from "@lh/shared";
 import { useToast } from "@lh/shared";
 import { useMinimumReadTime } from "@lh/shared";
+import { useOptionalApplication } from "../context/ApplicationContext";
+import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
 
 const Liabilities = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const appContext = useOptionalApplication();
   const { currentUser, updateUserData, isLoading } = useAuth();
   const { toast } = useToast();
 
@@ -52,23 +55,24 @@ const Liabilities = () => {
       };
 
       // Attempt server-side immutable acknowledgement
-      const res = await acknowledgementServices.acknowledgeLiabilities();
+      const res = appContext
+        ? { success: await appContext.acknowledgePolicy("liabilities") }
+        : await acknowledgementServices.acknowledgeLiabilities();
 
       // Always update local state regardless of which method was used
       // Liabilities always navigates to summary (whether from summary or normal flow)
       if (res.success) {
         // Backend acknowledged, update local state
         await updateUserData(dataToSave);
-        navigate("/acknowledgements-summary");
+        navigate(appContext ? "/screening/summary" : "/acknowledgements-summary");
       } else {
         // Fallback to client-side write
         const success = await updateUserData(dataToSave);
         if (success) {
-          navigate("/acknowledgements-summary");
+          navigate(appContext ? "/screening/summary" : "/acknowledgements-summary");
         }
       }
     } catch (error) {
-      console.error("Error saving liability confirmation:", error);
       toast({
         title: "Save Failed",
         description: "Unable to save confirmation. Please try again.",
@@ -80,7 +84,7 @@ const Liabilities = () => {
   };
 
   return (
-    <PageLayout compact title="">
+    <PageLayout compact title="" routes={appContext ? SCREENING_STEP_PATHS : undefined} basePath={appContext ? "/screening" : "/"}>
       <div className="w-full flex flex-col items-center">
         <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down">
           {pageContent.liabilities.title}

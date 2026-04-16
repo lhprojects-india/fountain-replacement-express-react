@@ -6,6 +6,7 @@ import {
   toDriverApiShape,
   upsertOnboardingStep,
 } from '../../lib/driverSerialize.js';
+import logger from '../../lib/logger.js';
 
 const DRIVER_SCALAR_WHITELIST = new Set([
   'name',
@@ -64,10 +65,6 @@ export const getDriverData = async (req, res) => {
       where: { email },
     });
 
-    const applicant = await prisma.fountainApplicant.findUnique({
-      where: { email },
-    });
-
     if (!driverPayload) {
       return res.status(404).json({ success: false, message: 'Driver not found' });
     }
@@ -77,18 +74,17 @@ export const getDriverData = async (req, res) => {
       driver: {
         ...driverPayload,
         verification,
-        fountainData: applicant?.fountainData,
       },
     });
   } catch (error) {
-    console.error('Error fetching driver data:', error);
+    logger.error({ msg: 'Error fetching driver data', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
 export const updatePersonalDetails = async (req, res) => {
   const { email } = req.user;
-  const body = req.body || {};
+  const body = req.validatedBody || req.body || {};
 
   try {
     const driver = await prisma.driver.findUnique({ where: { email } });
@@ -142,14 +138,14 @@ export const updatePersonalDetails = async (req, res) => {
     const driverPayload = await loadDriverPayload(email);
     return res.status(200).json({ success: true, driver: driverPayload });
   } catch (error) {
-    console.error('Error updating personal details:', error);
+    logger.error({ msg: 'Error updating personal details', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
 export const saveAvailability = async (req, res) => {
   const { email } = req.user;
-  const { availability: matrix } = req.body;
+  const { availability: matrix } = req.validatedBody || req.body;
 
   try {
     const driver = await prisma.driver.findUnique({ where: { email } });
@@ -168,14 +164,14 @@ export const saveAvailability = async (req, res) => {
 
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error saving availability:', error);
+    logger.error({ msg: 'Error saving availability', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
 export const saveVerification = async (req, res) => {
   const { email } = req.user;
-  const body = req.body || {};
+  const body = req.validatedBody || req.body || {};
 
   try {
     const driver = await prisma.driver.findUnique({ where: { email } });
@@ -201,14 +197,14 @@ export const saveVerification = async (req, res) => {
 
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error saving verification:', error);
+    logger.error({ msg: 'Error saving verification', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
 export const updateProgress = async (req, res) => {
   const { email } = req.user;
-  const { step, data: _data } = req.body;
+  const { step, data: _data } = req.validatedBody || req.body;
 
   try {
     const stepName = normalizeStepName(String(step || ''));
@@ -231,7 +227,7 @@ export const updateProgress = async (req, res) => {
 
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error updating progress:', error);
+    logger.error({ msg: 'Error updating progress', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -261,7 +257,7 @@ export const acknowledgePolicy = async (req, res) => {
 
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error(`Error acknowledging ${policy}:`, error);
+    logger.error({ msg: `Error acknowledging ${policy}`, error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -281,7 +277,7 @@ export const completeOnboarding = async (req, res) => {
 
     return res.status(200).json({ success: true, message: 'Onboarding completed' });
   } catch (error) {
-    console.error('Error completing onboarding:', error);
+    logger.error({ msg: 'Error completing onboarding', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -315,7 +311,7 @@ export const getFacilitiesByCity = async (req, res) => {
 
     return res.status(200).json({ success: true, facilities: mapped });
   } catch (error) {
-    console.error('Error fetching facilities by city:', error);
+    logger.error({ msg: 'Error fetching facilities by city', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

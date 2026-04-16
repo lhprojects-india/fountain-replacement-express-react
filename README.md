@@ -1,191 +1,142 @@
-# Laundryheap Driver Onboarding Monorepo
+# Talentrix by Laundryheap
 
-Monorepo for Laundryheap driver onboarding:
+Driver hiring and onboarding platform (Talentrix by Laundryheap), implemented as a monorepo with one modular backend and two frontend apps.
 
-- `apps/backend`: Express API with Prisma + Postgres
-- `apps/driver-web`: Driver onboarding frontend (React + Vite)
-- `apps/admin-web`: Admin dashboard frontend (React + Vite)
-- `packages/shared`: Shared API client/utilities/components
+## Overview
+
+This system manages the full hiring lifecycle for driver candidates:
+
+- public job discovery and application submission
+- OTP-based driver authentication
+- staged screening and onboarding progression
+- admin pipeline management and lifecycle transitions
+- document upload/review, payment details, questionnaire, contract signing
 
 ## Architecture
 
-1. Fountain sends applicant data to the backend webhook.
-2. Drivers log in with email + phone verification (no OTP flow).
-3. Driver onboarding data is saved via API endpoints.
-4. Admin app reviews and manages onboarding data.
+```text
+Driver Browser (driver-web) ----\
+                                  > Static apps on Render
+Admin Browser (admin-web)  -----/
+                |
+                v
+        Backend API (Express modular monolith)
+                |
+      --------------------------------
+      | Prisma | Postgres | S3/R2 |
+      --------------------------------
+                |
+   Integrations: Resend, Twilio, Dropbox Sign
+```
 
-## Repository Structure
+## Repository Layout
 
 ```text
 .
 ├── apps/
-│   ├── backend/
-│   ├── driver-web/
-│   └── admin-web/
+│   ├── backend/       # Express API + Prisma
+│   ├── driver-web/    # Driver-facing app
+│   └── admin-web/     # Admin dashboard
 ├── packages/
-│   └── shared/
+│   └── shared/        # Shared components and client utilities
+├── docs/              # API docs, runbook, ADRs
+├── migration-plan/
 ├── render.yaml
 └── package.json
 ```
 
 ## Tech Stack
 
-- **Backend**: Node.js, Express, Prisma, PostgreSQL, JWT, Firebase Admin SDK
-- **Frontend**: React, Vite, Tailwind CSS
-- **Deployment**: Render (backend + two static apps)
+- Backend: Node.js, Express, Prisma, PostgreSQL, JWT, Pino
+- Frontend: React, Vite, React Router, Tailwind
+- Integrations: Resend, Twilio, Dropbox Sign, S3-compatible storage
+- Deployment: Render (one Node service + two static services)
 
-## Prerequisites
+## Getting Started
 
-- Node.js 18+
-- npm 9+
-- PostgreSQL database URL
-- Firebase service account credentials (for admin auth verification)
-
-## Environment Variables
-
-The backend loads environment variables from the root `.env` file.
-
-Create `.env` in the repository root:
-
-```env
-# Backend
-PORT=5001
-DATABASE_URL=postgresql://user:password@host:5432/dbname
-JWT_SECRET=replace-with-strong-secret
-
-# Option A: inline JSON (recommended for hosted envs)
-FIREBASE_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
-
-# Option B: local file path relative to repo root
-# FIREBASE_SERVICE_ACCOUNT_PATH=driver-onboarding-lh-firebase-adminsdk-fbsvc-51cf561c46.json
-
-# Frontend API base URL (used by driver/admin web apps)
-VITE_API_URL=http://localhost:5001/api
-
-# Firebase web app config (admin auth only)
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_APP_ID=...
-```
-
-Notes:
-- `apps/backend/src/index.js` explicitly loads `../../../.env` (repo root).
-- `VITE_*` Firebase vars are only needed by `admin-web` for Google sign-in.
-
-## Install
+### 1) Install dependencies
 
 ```bash
 npm install
 ```
 
-## Run Locally
+### 2) Configure environment
 
-Start each app in separate terminals:
+Copy `.env.example` to `.env` and fill values.
 
 ```bash
-# Backend API
+cp .env.example .env
+```
+
+The backend reads env values from repository root `.env`.
+
+### 3) Generate Prisma client
+
+```bash
+npm run build:backend
+```
+
+### 4) Seed development data (optional)
+
+```bash
+npm run seed
+npm run seed:test-admin -w backend
+npm run seed:email-templates -w backend
+```
+
+### 5) Run services locally
+
+```bash
 npm run dev:backend
-
-# Driver app
 npm run dev:driver
-
-# Admin app
 npm run dev:admin
 ```
 
-Equivalent workspace commands:
+## Modules (Backend)
 
-```bash
-npm run dev -w backend
-npm run dev -w driver-web
-npm run dev -w admin-web
-```
-
-## Build
-
-Build all workspaces:
-
-```bash
-npm run build
-```
-
-Build individual apps:
-
-```bash
-npm run build -w driver-web
-npm run build -w admin-web
-```
+- `applications`: submission, pipeline, transitions, decisions, first-block flow
+- `communications`: templates, delivery logs, Resend/Twilio workflow
+- `documents`: requirement management, upload/review lifecycle
+- `payments`: driver payment details and verification
+- `questionnaire`: dynamic onboarding questionnaire lifecycle
+- `jobs`: job management + public links
+- `regions`: operational geography configuration
+- `contracts`: contract templates + Dropbox Sign integration
+- `workflow`: transition rules and stage engine
 
 ## API Overview
 
-Base URL (local): `http://localhost:5001/api`
+Local base URL: `http://localhost:5001/api`
 
-### Auth
+See full endpoint documentation in `docs/api.md`.
 
-- `POST /auth/check-email`
-- `POST /auth/verify-phone`
-- `POST /auth/admin-login`
-- `POST /auth/admin-google-login`
+High-level groups:
 
-### Driver (JWT required)
+- Public: jobs + application submission
+- Driver: auth/session, application status, screening, docs, payment, questionnaire
+- Admin: pipeline, jobs, regions, contracts, documents, analytics, communications
+- Webhooks: Dropbox Sign, Resend, Twilio
 
-- `GET /drivers/me`
-- `PUT /drivers/personal-details`
-- `POST /drivers/availability`
-- `POST /drivers/verification`
-- `POST /drivers/progress`
-- `POST /drivers/acknowledge/:policy`
-- `POST /drivers/complete-onboarding`
-- `GET /drivers/facilities`
+## Deployment
 
-### Admin (JWT + admin role required)
+- Render configuration lives in `render.yaml`
+- Deployment runbook: `migration-plan/deployment-runbook.md`
+- Operational runbook: `docs/runbook.md`
 
-- `GET /admin/me`
-- `GET /admin/dashboard`
-- `PUT /admin/update-status`
-- `DELETE /admin/application/:email`
-- `GET /admin/admins`
-- `POST /admin/set-admin`
-- `GET /admin/fee-structures`
-- `PUT /admin/fee-structures`
-- `DELETE /admin/fee-structures/:city`
-- `GET /admin/facilities`
+Core scripts:
 
-### Webhooks
+- `npm run migrate`
+- `npm run build:backend`
+- `npm run build:driver`
+- `npm run build:admin`
 
-- `POST /webhooks/fountain`
+## Contributing
 
-## Healthcheck
-
-- `GET /health`
-
-## Quick Webhook Test
-
-```bash
-curl -sS -X POST "http://localhost:5001/api/webhooks/fountain" \
-curl -sS -X POST "https://lh-onboarding-backend.onrender.com/api/webhooks/fountain"
-  -H "Content-Type: application/json" \
-  -d '{"email":"driver@test.com","phone":"+353123456789","name":"Jane Smith"}'
-```
-
-## Deployment (Render)
-
-`render.yaml` defines three services:
-
-1. `lh-onboarding-backend` (Node web service)
-2. `lh-driver-web` (static site)
-3. `lh-admin-web` (static site)
-
-Production backend health endpoint: `/health`.
-
-## Common Scripts (root)
-
-- `npm run dev:backend`
-- `npm run dev:driver`
-- `npm run dev:admin`
-- `npm run build`
-- `npm run lint`
+- Follow module boundaries (controllers -> services -> Prisma)
+- Use structured logging (`logger.*`) instead of `console.*`
+- Keep response shape consistent: `success` + payload/error fields
+- Add validation schemas for new request payloads
+- Update docs (`docs/api.md`, runbook, ADR) for behavior changes
 
 ## License
 

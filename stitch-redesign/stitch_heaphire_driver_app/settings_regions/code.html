@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#f7f9fb",
+                    "surface-container-low": "#f2f4f6",
+                    "background": "#f7f9fb",
+                    "inverse-primary": "#a0caff",
+                    "inverse-surface": "#2d3133",
+                    "secondary-container": "#67f5e8",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed-variant": "#00504b",
+                    "tertiary-container": "#b05a6d",
+                    "inverse-on-surface": "#eff1f3",
+                    "tertiary": "#924255",
+                    "primary": "#005ea1",
+                    "surface-container-highest": "#e0e3e5",
+                    "surface-container-high": "#e6e8ea",
+                    "on-primary-container": "#fdfcff",
+                    "on-primary": "#ffffff",
+                    "on-secondary-container": "#006f68",
+                    "secondary-fixed": "#6af8eb",
+                    "on-tertiary-fixed-variant": "#772d40",
+                    "tertiary-fixed": "#ffd9df",
+                    "surface-variant": "#e0e3e5",
+                    "on-surface-variant": "#404752",
+                    "primary-container": "#0078ca",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed": "#d2e4ff",
+                    "on-background": "#191c1e",
+                    "surface-dim": "#d8dadc",
+                    "surface-tint": "#0061a5",
+                    "on-tertiary-container": "#fffbff",
+                    "on-surface": "#191c1e",
+                    "primary-fixed-dim": "#a0caff",
+                    "on-primary-fixed": "#001c37",
+                    "surface-container": "#eceef0",
+                    "surface-bright": "#f7f9fb",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#47dbcf",
+                    "on-primary-fixed-variant": "#00497e",
+                    "outline-variant": "#bfc7d4",
+                    "tertiary-fixed-dim": "#ffb1c0",
+                    "secondary": "#006a63",
+                    "outline": "#707884",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed": "#3f0116",
+                    "on-secondary-fixed": "#00201d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-overlay {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Sidebar Shell (SideNavBar) -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-[#202B93] dark:bg-slate-950 flex flex-col h-full p-4 z-50">
+<div class="mb-8 px-2">
+<span class="text-xl font-bold text-white tracking-tight">Logistics Admin</span>
+<p class="text-[#d2e4ff]/70 text-xs font-medium tracking-tight mt-1">Onboarding Control</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-[#d2e4ff]/70 hover:text-white hover:bg-[#202B93]/80 transition-colors font-inter text-sm font-medium tracking-tight rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="pipeline">plumbing</span> Pipeline
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#d2e4ff]/70 hover:text-white hover:bg-[#202B93]/80 transition-colors font-inter text-sm font-medium tracking-tight rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span> Open Roles
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#d2e4ff]/70 hover:text-white hover:bg-[#202B93]/80 transition-colors font-inter text-sm font-medium tracking-tight rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span> Interviews
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#d2e4ff]/70 hover:text-white hover:bg-[#202B93]/80 transition-colors font-inter text-sm font-medium tracking-tight rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span> Analytics
+            </a>
+<!-- Active State: Settings -->
+<a class="flex items-center gap-3 px-3 py-2 bg-[#005ea1] text-white rounded-lg font-inter text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span> Settings
+            </a>
+</nav>
+<div class="mt-auto pt-4 flex items-center gap-3 px-2">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden">
+<img alt="Admin User Profile" class="w-full h-full object-cover" data-alt="Close up portrait of a professional male administrator in a clean office environment with natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-HOQ3vgn3Lc_uCravqauwZwd-j9aalrSdsSBFM4uZj5508QTQ4PvY_0_5iQt7pB-L1GRuvQYX0MrEL-TIyi0zU_zVxgJkDsMuQsVwqoiSvjHn7P-xVvcqQs8nDJVbGgvEbqG0nD9CQZGd-sgJ9yg2eOy7-qfmDwDkEHShX5IrsOAks5j68_PC8cGTN1AU24TIGQAAEYGCcXzR8jct1v4Y5JPiqRBPlrdIiB487HLNbrAUKvhaJxP70XvB852WVjZqT-vow8pR05Gz"/>
+</div>
+<div class="flex flex-col">
+<span class="text-white text-xs font-bold">Admin User</span>
+<span class="text-[#d2e4ff]/60 text-[10px]">Super Admin</span>
+</div>
+</div>
+</aside>
+<!-- Top Navigation Bar (TopNavBar) -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex justify-between items-center px-8 z-40 shadow-sm border-b border-gray-100">
+<div class="flex items-center gap-6">
+<span class="text-lg font-bold text-[#1A1A2E] dark:text-white">ATS Terminal</span>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-gray-400 text-sm" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-low border-none rounded-lg text-sm focus:ring-2 focus:ring-secondary/30 w-64 transition-all" placeholder="Search parameters..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-gray-500 hover:text-[#005ea1] transition-opacity opacity-80 hover:opacity-100">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-gray-500 hover:text-[#005ea1] transition-opacity opacity-80 hover:opacity-100">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high border-2 border-white overflow-hidden shadow-sm">
+<img alt="Administrator Avatar" class="w-full h-full object-cover" data-alt="Professional avatar portrait of a man in corporate setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmAddTpa0Q2jleztOmlSL2M9Wwx5_9bSwFzi-u5ADEvdxbP3Qp_nyJKHGeapDvc6WTqQIuIKv66f5k69K2iwV9YVwCMXBP8HI3GGw5I_eYwZo3t4LvzeRy3vMf0WAEd74O83QFF9WI_cBVIwoU_wkcvlhcHSqWtjN6a2XS83V8Vv3qXe8V9WPH61heTeNity8n9I77sLHAJRWOsNIyEHbXSCGTEHoWxYcH38i-WI6PqM3KYPgraY6JIVIUwnaKmDceO6Hcq2rwZMoX"/>
+</div>
+</div>
+</header>
+<!-- Main Content Shell -->
+<main class="ml-64 mt-16 p-0 min-h-[calc(100vh-4rem)] flex">
+<!-- Secondary Settings Sidebar -->
+<nav class="w-72 bg-surface-container-low flex flex-col p-6 space-y-6">
+<div>
+<h2 class="text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest mb-4">Configuration</h2>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-surface-container-lowest text-primary font-semibold shadow-sm transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="public" style="font-variation-settings: 'FILL' 1;">public</span>
+<span class="text-sm">Regions</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="corporate_fare">corporate_fare</span>
+<span class="text-sm">Facilities</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="payments">payments</span>
+<span class="text-sm">Fee Structures</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="mail">mail</span>
+<span class="text-sm">Email Templates</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="quiz">quiz</span>
+<span class="text-sm">Questionnaires</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="group">group</span>
+<span class="text-sm">Team</span>
+</a>
+</div>
+</div>
+<div class="mt-auto p-4 bg-primary-fixed/30 rounded-2xl border border-primary-fixed-dim/20">
+<p class="text-xs font-semibold text-primary mb-2">Need Help?</p>
+<p class="text-[11px] text-on-surface-variant leading-relaxed">System-wide configurations affect all recruitment workflows. Contact support for assistance.</p>
+</div>
+</nav>
+<!-- Primary Canvas -->
+<section class="flex-1 bg-surface p-10">
+<div class="max-w-5xl mx-auto">
+<!-- Header Area -->
+<div class="flex justify-between items-end mb-10">
+<div>
+<h1 class="text-4xl font-bold tracking-tight text-on-surface mb-2">Regions</h1>
+<p class="text-on-surface-variant">Manage geographic recruitment hubs and associated logistics networks.</p>
+</div>
+<button class="bg-primary hover:bg-primary-container text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                        Add Region
+                    </button>
+</div>
+<!-- Regions Data Display -->
+<div class="grid grid-cols-1 gap-6">
+<!-- Elegant Bento-style Table -->
+<div class="bg-surface-container-lowest rounded-[2rem] shadow-[0_4px_12px_rgba(26,26,46,0.04)] overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-surface-container-low">
+<th class="px-8 py-5 text-[11px] font-bold text-on-surface-variant/50 uppercase tracking-widest">Region Name</th>
+<th class="px-8 py-5 text-[11px] font-bold text-on-surface-variant/50 uppercase tracking-widest text-center">Facilities</th>
+<th class="px-8 py-5 text-[11px] font-bold text-on-surface-variant/50 uppercase tracking-widest text-center">Active Jobs</th>
+<th class="px-8 py-5 text-[11px] font-bold text-on-surface-variant/50 uppercase tracking-widest">Status</th>
+<th class="px-8 py-5 text-[11px] font-bold text-on-surface-variant/50 uppercase tracking-widest text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low/50">
+<!-- London -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="location_city">location_city</span>
+</div>
+<div>
+<span class="block font-bold text-on-surface">London</span>
+<span class="text-xs text-on-surface-variant">Greater London Metropolitan</span>
+</div>
+</div>
+</td>
+<td class="px-8 py-6 text-center">
+<span class="px-3 py-1 bg-surface-container-high rounded-full text-xs font-semibold text-on-surface">12</span>
+</td>
+<td class="px-8 py-6 text-center">
+<span class="text-sm font-medium text-primary">45</span>
+</td>
+<td class="px-8 py-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-secondary-container/20 text-on-secondary-container text-[11px] font-bold rounded-full uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                            Active
+                                        </span>
+</td>
+<td class="px-8 py-6 text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Manchester -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="location_city">location_city</span>
+</div>
+<div>
+<span class="block font-bold text-on-surface">Manchester</span>
+<span class="text-xs text-on-surface-variant">Greater Manchester Area</span>
+</div>
+</div>
+</td>
+<td class="px-8 py-6 text-center">
+<span class="px-3 py-1 bg-surface-container-high rounded-full text-xs font-semibold text-on-surface">8</span>
+</td>
+<td class="px-8 py-6 text-center">
+<span class="text-sm font-medium text-primary">28</span>
+</td>
+<td class="px-8 py-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-secondary-container/20 text-on-secondary-container text-[11px] font-bold rounded-full uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                            Active
+                                        </span>
+</td>
+<td class="px-8 py-6 text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Birmingham -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="location_city">location_city</span>
+</div>
+<div>
+<span class="block font-bold text-on-surface">Birmingham</span>
+<span class="text-xs text-on-surface-variant">West Midlands Hub</span>
+</div>
+</div>
+</td>
+<td class="px-8 py-6 text-center">
+<span class="px-3 py-1 bg-surface-container-high rounded-full text-xs font-semibold text-on-surface">15</span>
+</td>
+<td class="px-8 py-6 text-center">
+<span class="text-sm font-medium text-primary">12</span>
+</td>
+<td class="px-8 py-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-secondary-container/20 text-on-secondary-container text-[11px] font-bold rounded-full uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                            Active
+                                        </span>
+</td>
+<td class="px-8 py-6 text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Edinburgh -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="location_city">location_city</span>
+</div>
+<div>
+<span class="block font-bold text-on-surface">Edinburgh</span>
+<span class="text-xs text-on-surface-variant">Scotland Central Hub</span>
+</div>
+</div>
+</td>
+<td class="px-8 py-6 text-center">
+<span class="px-3 py-1 bg-surface-container-high rounded-full text-xs font-semibold text-on-surface">5</span>
+</td>
+<td class="px-8 py-6 text-center">
+<span class="text-sm font-medium text-primary">6</span>
+</td>
+<td class="px-8 py-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-container-high text-on-surface-variant text-[11px] font-bold rounded-full uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+                                            Maintenance
+                                        </span>
+</td>
+<td class="px-8 py-6 text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Visual Accent Card -->
+<div class="bg-gradient-to-r from-[#202B93] to-[#2FCCC0] rounded-[2rem] p-8 text-white flex justify-between items-center overflow-hidden relative">
+<div class="relative z-10">
+<h3 class="text-2xl font-bold mb-2">Network Growth</h3>
+<p class="text-white/80 max-w-sm text-sm">Our logistics network has expanded by 18% this quarter across the northern regions. Consider adding secondary hubs.</p>
+</div>
+<div class="opacity-20 absolute -right-4 -bottom-4">
+<span class="material-symbols-outlined text-[160px]" data-icon="hub">hub</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Add Region Modal Overlay -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-6 glass-overlay">
+<div class="bg-surface-container-lowest w-full max-w-lg rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(26,26,46,0.14)] border border-white p-10 relative overflow-hidden">
+<!-- Modal Background Gradient Accent -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-fixed/20 rounded-bl-full -mr-10 -mt-10 blur-2xl"></div>
+<div class="relative z-10">
+<div class="flex justify-between items-start mb-8">
+<div>
+<h2 class="text-3xl font-bold tracking-tight text-on-surface">Add Region</h2>
+<p class="text-on-surface-variant mt-1">Define a new operational territory.</p>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="close">close</span>
+</button>
+</div>
+<form class="space-y-6">
+<div>
+<label class="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Region Name</label>
+<input class="w-full bg-surface-container-low border-none rounded-2xl px-5 py-4 text-on-surface focus:ring-2 focus:ring-secondary/30 transition-all placeholder:text-on-surface-variant/40" placeholder="e.g. West Yorkshire" type="text"/>
+</div>
+<div>
+<label class="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Description</label>
+<textarea class="w-full bg-surface-container-low border-none rounded-2xl px-5 py-4 text-on-surface focus:ring-2 focus:ring-secondary/30 transition-all placeholder:text-on-surface-variant/40" placeholder="Briefly describe the regional coverage..." rows="3"></textarea>
+</div>
+<div>
+<label class="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Primary Cities</label>
+<div class="w-full bg-surface-container-low rounded-2xl p-4 flex flex-wrap gap-2 items-center">
+<span class="px-3 py-1 bg-white rounded-lg text-xs font-semibold text-primary flex items-center gap-1.5 shadow-sm border border-primary-fixed/50">
+                                Leeds
+                                <span class="material-symbols-outlined text-[14px] cursor-pointer" data-icon="close">close</span>
+</span>
+<span class="px-3 py-1 bg-white rounded-lg text-xs font-semibold text-primary flex items-center gap-1.5 shadow-sm border border-primary-fixed/50">
+                                Sheffield
+                                <span class="material-symbols-outlined text-[14px] cursor-pointer" data-icon="close">close</span>
+</span>
+<input class="flex-1 bg-transparent border-none p-1 text-xs focus:ring-0 min-w-[80px]" placeholder="Add city..." type="text"/>
+</div>
+</div>
+<div class="pt-6 flex gap-4">
+<button class="flex-1 px-6 py-4 rounded-2xl bg-surface-container-high text-on-surface font-bold hover:bg-surface-container-highest transition-all" type="button">
+                            Cancel
+                        </button>
+<button class="flex-1 px-6 py-4 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:bg-primary-container transition-all active:scale-[0.98]" type="submit">
+                            Create Region
+                        </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</body></html>

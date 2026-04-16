@@ -35,6 +35,12 @@ export * from './hooks/useMinimumReadTime';
 
 // Export Libs
 export * from './lib/utils';
+export {
+  PRODUCT_BYLINE,
+  PRODUCT_DISPLAY_NAME,
+  PRODUCT_MAIN_NAME,
+} from './lib/product-name';
+export { ProductBrandHeading } from './components/ProductBrandHeading';
 export { default as apiClient } from './lib/api-client';
 export { saveAuthToken, clearAuthToken, getAuthToken, hasAuthToken } from './lib/cookie-utils';
 export * from './lib/driver-services';

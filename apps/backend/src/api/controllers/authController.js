@@ -1,12 +1,13 @@
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import prisma from '../../lib/prisma.js';
 import { adminAuth } from '../../lib/firebase-admin.js';
 import { upsertOnboardingStep } from '../../lib/driverSerialize.js';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+import { JWT_SECRET, jwtSignOptionsByRole } from '../../lib/jwt.js';
+import logger from '../../lib/logger.js';
 
 export const checkFountainEmail = async (req, res) => {
-  const { email } = req.body;
+  const { email } = req.validatedBody || req.body;
 
   if (!email) {
     return res.status(400).json({ success: false, message: 'Email is required' });
@@ -14,7 +15,7 @@ export const checkFountainEmail = async (req, res) => {
 
   try {
     const applicant = await prisma.fountainApplicant.findUnique({
-      where: { email: email.toLowerCase().trim() }
+      where: { email: email.toLowerCase().trim() },
     });
 
     if (applicant) {
@@ -31,13 +32,13 @@ export const checkFountainEmail = async (req, res) => {
 
     return res.status(200).json({ exists: false });
   } catch (error) {
-    console.error('Error checking email:', error);
+    logger.error({ msg: 'Error checking email', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
 export const verifyApplicantPhone = async (req, res) => {
-  const { email, phone } = req.body;
+  const { email, phone } = req.validatedBody || req.body;
 
   if (!email || !phone) {
     return res.status(400).json({ success: false, message: 'Email and phone are required' });
@@ -46,20 +47,18 @@ export const verifyApplicantPhone = async (req, res) => {
   try {
     const normalizedEmail = email.toLowerCase().trim();
     const applicant = await prisma.fountainApplicant.findUnique({
-      where: { email: normalizedEmail }
+      where: { email: normalizedEmail },
     });
 
     if (!applicant) {
       return res.status(404).json({ success: false, message: 'Applicant not found' });
     }
 
-    // Basic normalization for comparison
-    const normalize = (p) => p.replace(/[^\d+]/g, '');
+    const normalize = (value) => value.replace(/[^\d+]/g, '');
     if (normalize(applicant.phone) !== normalize(phone)) {
       return res.status(400).json({ success: false, message: 'Phone number mismatch' });
     }
 
-    // Create or update driver record; mark verify step so progress survives refresh
     const driver = await prisma.driver.upsert({
       where: { email: normalizedEmail },
       update: { updatedAt: new Date() },
@@ -70,11 +69,10 @@ export const verifyApplicantPhone = async (req, res) => {
     });
     await upsertOnboardingStep(prisma, driver.id, 'verify', true, new Date());
 
-    // Generate JWT
     const token = jwt.sign(
       { email: normalizedEmail, role: 'driver' },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      jwtSignOptionsByRole.driver
     );
 
     return res.status(200).json({
@@ -89,16 +87,16 @@ export const verifyApplicantPhone = async (req, res) => {
         status: applicant.status,
         city: applicant.city,
       },
-      token
+      token,
     });
   } catch (error) {
-    console.error('Error verifying phone:', error);
+    logger.error({ msg: 'Error verifying phone', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
 export const adminGoogleLogin = async (req, res) => {
-  const { idToken } = req.body;
+  const { idToken } = req.validatedBody || req.body;
 
   if (!idToken) {
     return res.status(400).json({ success: false, message: 'Firebase ID token is required' });
@@ -121,7 +119,7 @@ export const adminGoogleLogin = async (req, res) => {
     const token = jwt.sign(
       { email: admin.email, role: 'admin' },
       JWT_SECRET,
-      { expiresIn: '1d' }
+      jwtSignOptionsByRole.admin
     );
 
     return res.status(200).json({
@@ -134,13 +132,13 @@ export const adminGoogleLogin = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error verifying Google token:', error);
+    logger.error({ msg: 'Error verifying Google token', error });
     return res.status(401).json({ success: false, message: 'Invalid or expired Google token.' });
   }
 };
 
 export const adminLogin = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = req.validatedBody || req.body;
 
   if (!email) {
     return res.status(400).json({ success: false, message: 'Email is required' });
@@ -155,17 +153,31 @@ export const adminLogin = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // In a real scenario, use bcrypt to compare passwords
-    // For now, if no password is set, allow login for existing admins (migration phase)
-    if (admin.password && admin.password !== password) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    if (admin.password) {
+      const isBcryptHash = admin.password.startsWith('$2a$') || admin.password.startsWith('$2b$');
+      const isValid = isBcryptHash
+        ? await bcrypt.compare(password, admin.password)
+        : admin.password === password;
+
+      if (!isValid) {
+        return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      }
+
+      if (!isBcryptHash) {
+        // Seamless migration path: upgrade plaintext passwords on successful login.
+        const hashedPassword = await bcrypt.hash(password, 12);
+        await prisma.admin.update({
+          where: { email: admin.email },
+          data: { password: hashedPassword },
+        });
+      }
     }
 
     // Generate JWT for admin
     const token = jwt.sign(
       { email: admin.email, role: 'admin' },
       JWT_SECRET,
-      { expiresIn: '1d' }
+      jwtSignOptionsByRole.admin
     );
 
     return res.status(200).json({
@@ -178,7 +190,7 @@ export const adminLogin = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error admin login:', error);
+    logger.error({ msg: 'Error admin login', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

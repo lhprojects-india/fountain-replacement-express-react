@@ -9,6 +9,7 @@ datasource db {
   provider = "postgresql"
 }
 
+/// @deprecated - Fountain integration removed. Table kept for historical data.
 model FountainApplicant {
   email             String   @id
   phone             String?
@@ -53,8 +54,361 @@ model Driver {
   availabilities    DriverAvailability[]
   facilities        DriverFacility[]
   onboardingSteps   DriverOnboardingStep[]
+  applications      Application[]
 
   @@map("drivers")
+}
+
+model City {
+  id                  Int       @id @default(autoincrement())
+  city                String    @unique
+  cityCode            String    @unique @map("city_code")
+  country             String    @default("Unknown")
+  currency            String
+  currencySymbol      String    @map("currency_symbol")
+  timezone            String
+  paymentFieldsSchema Json?     @map("payment_fields_schema")
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  contractTemplates   ContractTemplate[]
+  jobs                Job[]
+  documentRequirements DocumentRequirement[]
+
+  @@map("cities")
+}
+
+model ContractTemplate {
+  id                    Int       @id @default(autoincrement())
+  cityId                Int       @map("city_id")
+  name                  String
+  type                  String
+  dropboxSignTemplateId String?   @map("dropbox_sign_template_id")
+  content               String?   @db.Text
+  isActive              Boolean   @default(true) @map("is_active")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  city City @relation(fields: [cityId], references: [id])
+  jobs Job[]
+
+  @@map("contract_templates")
+}
+
+model Job {
+  id                 Int       @id @default(autoincrement())
+  cityId             Int       @map("city_id")
+  contractTemplateId Int?      @map("contract_template_id")
+  title              String
+  description        String?   @db.Text
+  requirements       String?   @db.Text
+  requiresOwnVehicle   Boolean   @default(false) @map("requires_own_vehicle")
+  isPublished        Boolean   @default(false) @map("is_published")
+  publishedAt        DateTime? @map("published_at")
+  closedAt           DateTime? @map("closed_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  city             City              @relation(fields: [cityId], references: [id])
+  contractTemplate ContractTemplate? @relation(fields: [contractTemplateId], references: [id])
+  publicLinks      JobPublicLink[]
+  applications     Application[]
+
+  @@index([cityId, isPublished])
+  @@map("jobs")
+}
+
+model JobPublicLink {
+  id         Int       @id @default(autoincrement())
+  jobId      Int       @map("job_id")
+  slug       String    @unique
+  isActive   Boolean   @default(true) @map("is_active")
+  expiresAt  DateTime? @map("expires_at")
+  clickCount Int       @default(0) @map("click_count")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  job Job @relation(fields: [jobId], references: [id])
+
+  @@map("job_public_links")
+}
+
+model Application {
+  id                    Int       @id @default(autoincrement())
+  jobId                 Int       @map("job_id")
+  driverId              Int?      @map("driver_id")
+  firstName             String    @map("first_name")
+  lastName              String    @map("last_name")
+  email                 String
+  phone                 String
+  vehicleType           String?   @map("vehicle_type")
+  vehicleDetails        String?   @map("vehicle_details")
+  addressLine1          String?   @map("address_line_1")
+  addressLine2          String?   @map("address_line_2")
+  city                  String?
+  postcode              String?
+  country               String?
+  currentStage          String    @default("applied") @map("current_stage")
+  currentStageEnteredAt DateTime  @default(now()) @map("current_stage_entered_at")
+  rejectionReason       String?   @map("rejection_reason")
+  approvedAt            DateTime? @map("approved_at")
+  rejectedAt            DateTime? @map("rejected_at")
+  contractRequestId     String?   @map("contract_request_id")
+  contractStatus        String?   @map("contract_status")
+  contractSignedAt      DateTime? @map("contract_signed_at")
+  moqScore              Int?      @map("moq_score")
+  moqPassedAt           DateTime? @map("moq_passed_at")
+  firstBlockDate        DateTime? @map("first_block_date")
+  firstBlockResult      String?   @map("first_block_result")
+  onboardingCallScheduledAt DateTime? @map("onboarding_call_scheduled_at")
+  onboardingCallCompletedAt DateTime? @map("onboarding_call_completed_at")
+  onboardingCallNotes   String?   @map("onboarding_call_notes") @db.Text
+  source                String?
+  adminNotes            String?   @map("admin_notes") @db.Text
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  job                    Job                       @relation(fields: [jobId], references: [id])
+  driver                 Driver?                   @relation(fields: [driverId], references: [id])
+  stageHistory           ApplicationStageHistory[]
+  tasks                  ApplicationTask[]
+  documents              DocumentSubmission[]
+  notes                  ApplicationNote[]
+  paymentDetails         PaymentDetailSubmission?
+  questionnaireResponses QuestionnaireResponse[]
+  communicationLogs      CommunicationLog[]
+  documentReviewAudits   DocumentReviewAudit[]
+
+  @@unique([jobId, email])
+  @@index([currentStage])
+  @@index([email])
+  @@index([jobId])
+  @@index([createdAt])
+  @@index([currentStageEnteredAt])
+  @@index([currentStage, createdAt])
+  @@map("applications")
+}
+
+model ApplicationStageHistory {
+  id            Int      @id @default(autoincrement())
+  applicationId Int      @map("application_id")
+  fromStage     String?  @map("from_stage")
+  toStage       String   @map("to_stage")
+  reason        String?
+  actorEmail    String?  @map("actor_email")
+  actorType     String   @default("system") @map("actor_type")
+  metadata      Json?
+  occurredAt    DateTime @default(now()) @map("occurred_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([occurredAt])
+  @@map("application_stage_history")
+}
+
+model ApplicationTask {
+  id            Int       @id @default(autoincrement())
+  applicationId Int       @map("application_id")
+  stage         String
+  title         String
+  description   String?
+  isCompleted   Boolean   @default(false) @map("is_completed")
+  completedAt   DateTime? @map("completed_at")
+  completedBy   String?   @map("completed_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_tasks")
+}
+
+model ApplicationNote {
+  id            Int      @id @default(autoincrement())
+  applicationId Int      @map("application_id")
+  authorEmail   String   @map("author_email")
+  content       String   @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId, createdAt])
+  @@map("application_notes")
+}
+
+model DocumentRequirement {
+  id             Int     @id @default(autoincrement())
+  cityId         Int     @map("city_id")
+  name           String
+  code           String
+  description    String?
+  fileTypes      String  @map("file_types")
+  isRequired     Boolean @default(true) @map("is_required")
+  maxSizeMb      Int     @default(10) @map("max_size_mb")
+  maxDurationSec Int?    @map("max_duration_sec")
+  sortOrder      Int     @default(0) @map("sort_order")
+
+  city City @relation(fields: [cityId], references: [id])
+
+  @@unique([cityId, code])
+  @@map("document_requirements")
+}
+
+model VerificationChecklist {
+  id              Int    @id @default(autoincrement())
+  requirementCode String @map("requirement_code")
+  checkItem       String @map("check_item")
+  sortOrder       Int    @default(0) @map("sort_order")
+
+  @@map("verification_checklists")
+}
+
+model DocumentSubmission {
+  id              Int       @id @default(autoincrement())
+  applicationId   Int       @map("application_id")
+  requirementCode String    @map("requirement_code")
+  fileName        String    @map("file_name")
+  fileUrl         String    @map("file_url")
+  fileType        String    @map("file_type")
+  fileSizeBytes   Int?      @map("file_size_bytes")
+  durationSec     Int?      @map("duration_sec")
+  status          String    @default("pending")
+  reviewerEmail   String?   @map("reviewer_email")
+  reviewerNotes   String?   @map("reviewer_notes")
+  reviewedAt      DateTime? @map("reviewed_at")
+  uploadedAt      DateTime  @default(now()) @map("uploaded_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  reviewAudits DocumentReviewAudit[]
+
+  @@index([applicationId, status])
+  @@map("document_submissions")
+}
+
+model DocumentReviewAudit {
+  id                 Int      @id @default(autoincrement())
+  documentSubmissionId Int    @map("document_submission_id")
+  applicationId      Int      @map("application_id")
+  reviewerEmail      String?  @map("reviewer_email")
+  status             String
+  notes              String?  @db.Text
+  checklistResults   Json?    @map("checklist_results")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  documentSubmission DocumentSubmission @relation(fields: [documentSubmissionId], references: [id], onDelete: Cascade)
+  application        Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([documentSubmissionId, createdAt])
+  @@index([applicationId, createdAt])
+  @@map("document_review_audits")
+}
+
+model PaymentDetailSubmission {
+  id            Int       @id @default(autoincrement())
+  applicationId Int       @unique @map("application_id")
+  details       Json
+  submittedAt   DateTime  @default(now()) @map("submitted_at")
+  verifiedAt    DateTime? @map("verified_at")
+  verifiedBy    String?   @map("verified_by")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("payment_detail_submissions")
+}
+
+model Questionnaire {
+  id           Int       @id @default(autoincrement())
+  cityId       Int?      @map("city_id")
+  title        String
+  description  String?
+  passingScore Int       @default(70) @map("passing_score")
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  questions QuestionnaireQuestion[]
+  responses QuestionnaireResponse[]
+
+  @@map("questionnaires")
+}
+
+model QuestionnaireQuestion {
+  id              Int    @id @default(autoincrement())
+  questionnaireId Int    @map("questionnaire_id")
+  questionText    String @map("question_text") @db.Text
+  questionType    String @default("multiple_choice") @map("question_type")
+  options         Json
+  points          Int    @default(1)
+  sortOrder       Int    @default(0) @map("sort_order")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+
+  @@map("questionnaire_questions")
+}
+
+model QuestionnaireResponse {
+  id              Int      @id @default(autoincrement())
+  applicationId   Int      @map("application_id")
+  questionnaireId Int      @map("questionnaire_id")
+  answers         Json
+  score           Int?
+  passed          Boolean?
+  submittedAt     DateTime @default(now()) @map("submitted_at")
+
+  application   Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
+
+  @@map("questionnaire_responses")
+}
+
+model MessageTemplate {
+  id        Int      @id @default(autoincrement())
+  eventKey  String   @map("event_key")
+  channel   String
+  locale    String   @default("en")
+  subject   String?
+  body      String   @db.Text
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([eventKey, channel, locale])
+  @@map("message_templates")
+}
+
+model CommunicationLog {
+  id               Int       @id @default(autoincrement())
+  applicationId    Int?      @map("application_id")
+  channel          String
+  templateEventKey String?   @map("template_event_key")
+  recipientEmail   String?   @map("recipient_email")
+  recipientPhone   String?   @map("recipient_phone")
+  subject          String?
+  body             String?   @db.Text
+  providerMessageId String?  @map("provider_message_id")
+  status           String    @default("queued")
+  errorMessage     String?   @map("error_message")
+  sentAt           DateTime? @map("sent_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  application Application? @relation(fields: [applicationId], references: [id])
+
+  @@index([applicationId])
+  @@index([createdAt])
+  @@map("communication_logs")
+}
+
+model VerificationCode {
+  id        Int       @id @default(autoincrement())
+  email     String
+  code      String
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  attempts  Int       @default(0)
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([email, code])
+  @@map("verification_codes")
 }
 
 model DriverAvailability {

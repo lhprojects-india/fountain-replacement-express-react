@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{companyName}} Driver Application</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f4f6;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:10px;overflow:hidden;">
+          <tr>
+            <td align="center" style="padding:20px;background:#00B4D8;">
+              <img src="{{logoUrl}}" alt="{{companyName}}" width="180" style="display:block;max-width:180px;width:100%;height:auto;border:0;">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px 24px;">
+              {{content}}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 24px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;line-height:1.6;">
+              <p style="margin:0 0 8px 0;">{{companyName}} Ltd. • {{companyAddress}}</p>
+              <p style="margin:0 0 8px 0;">This email was sent regarding your driver application.</p>
+              <p style="margin:0;">
+                <a href="{{unsubscribeUrl}}" style="color:#00B4D8;text-decoration:none;">Unsubscribe</a>
+                &nbsp;•&nbsp;
+                <a href="{{supportUrl}}" style="color:#00B4D8;text-decoration:none;">Support</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { acknowledgementServices, feeStructureServices } from "@/lib/firebase-services";
-import { getVehicleTypeFromMOT } from "@lh/shared";
+import { acknowledgementServices, feeStructureServices } from "@/lib/api-services";
 import { pageContent } from "@/data/page-content";
 import { PageLayout } from "@lh/shared";
 import { Button } from "@lh/shared";
@@ -22,10 +21,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@lh/shared";
+import { useOptionalApplication } from "../context/ApplicationContext";
+import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
+import { publicServices } from "../lib/public-services";
 
 const CancellationPolicy = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const appContext = useOptionalApplication();
   const { currentUser, updateUserData, isLoading } = useAuth();
   const { toast } = useToast();
 
@@ -40,12 +43,19 @@ const CancellationPolicy = () => {
   const citiesWithoutReleaseFee = ['Birmingham', 'Manchester', 'Dublin', 'Copenhagen', 'Amsterdam', 'Edinburgh', 'Miami', 'Boston', 'Chicago'];
   const shouldHideReleaseFee = city && citiesWithoutReleaseFee.some(c => c.toLowerCase() === city.trim().toLowerCase());
 
-  // Fetch currency based on user's city
+  // Fetch currency/config based on application city
   useEffect(() => {
     const fetchCurrency = async () => {
       try {
-        // Get city from user data (could be from fountainData or city field)
-        const userCity = currentUser?.fountainData?.city || currentUser?.city;
+        if (appContext) {
+          const cfg = await publicServices.getApplicationCityConfig();
+          const userCity = cfg?.city?.city || appContext?.application?.city;
+          if (userCity) setCity(userCity);
+          if (cfg?.city?.currencySymbol) setCurrency(cfg.city.currencySymbol);
+          return;
+        }
+
+        const userCity = currentUser?.city;
 
         if (!userCity) {
           return;
@@ -53,23 +63,19 @@ const CancellationPolicy = () => {
 
         setCity(userCity);
 
-        // Extract vehicle type from MOT data (same as FeeStructure page)
-        const vehicleType = getVehicleTypeFromMOT(currentUser?.fountainData);
-
-        const structures = await feeStructureServices.getFeeStructuresByCity(userCity, vehicleType);
+        const structures = await feeStructureServices.getFeeStructuresByCity(userCity, null);
 
         if (structures?.currency) {
           setCurrency(structures.currency);
         }
       } catch (error) {
-        console.error('❌ Error fetching fee structure for currency:', error);
       }
     };
 
-    if (currentUser) {
+    if (appContext || currentUser) {
       fetchCurrency();
     }
-  }, [currentUser]);
+  }, [appContext, currentUser]);
 
   // Load existing confirmation status
   useEffect(() => {
@@ -99,7 +105,9 @@ const CancellationPolicy = () => {
       };
 
       // Attempt server-side immutable acknowledgement
-      const res = await acknowledgementServices.acknowledgeCancellationPolicy();
+      const res = appContext
+        ? { success: await appContext.acknowledgePolicy("cancellationPolicy") }
+        : await acknowledgementServices.acknowledgeCancellationPolicy();
 
       // Always update local state regardless of which method was used
       // If user came from summary, return to summary instead of continuing flow
@@ -108,16 +116,15 @@ const CancellationPolicy = () => {
       if (res.success) {
         // Backend acknowledged, update local state
         await updateUserData(dataToSave);
-        navigate(shouldReturnToSummary ? "/acknowledgements-summary" : "/smoking-fitness-check");
+        navigate(shouldReturnToSummary ? "/acknowledgements-summary" : appContext ? "/screening/smoking-fitness-check" : "/smoking-fitness-check");
       } else {
         // Fallback to client-side write
         const success = await updateUserData(dataToSave);
         if (success) {
-          navigate(shouldReturnToSummary ? "/acknowledgements-summary" : "/smoking-fitness-check");
+          navigate(shouldReturnToSummary ? "/acknowledgements-summary" : appContext ? "/screening/smoking-fitness-check" : "/smoking-fitness-check");
         }
       }
     } catch (error) {
-      console.error("Error saving cancellation policy acknowledgment:", error);
       toast({
         title: "Save Failed",
         description: "Unable to save acknowledgment. Please try again.",
@@ -148,7 +155,6 @@ const CancellationPolicy = () => {
         });
       }
     } catch (error) {
-      console.error("Error withdrawing application:", error);
       toast({
         title: "Withdrawal Failed",
         description: "Unable to process withdrawal. Please try again.",
@@ -160,7 +166,7 @@ const CancellationPolicy = () => {
   };
 
   return (
-    <PageLayout compact title="">
+    <PageLayout compact title="" routes={appContext ? SCREENING_STEP_PATHS : undefined} basePath={appContext ? "/screening" : "/"}>
       <div className="w-full flex flex-col items-center">
         <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down">
           {pageContent.cancellationPolicy.title}

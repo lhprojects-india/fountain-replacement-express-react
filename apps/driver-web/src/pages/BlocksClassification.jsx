@@ -8,10 +8,13 @@ import { Button } from "@lh/shared";
 import { UIButton } from "@lh/shared";
 import { CheckboxWithLabel } from "@lh/shared";
 import { useToast } from "@lh/shared";
+import { useOptionalApplication } from "../context/ApplicationContext";
+import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
 
 const BlocksClassification = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const appContext = useOptionalApplication();
   const { currentUser, updateUserData, isLoading } = useAuth();
   const { toast } = useToast();
 
@@ -37,22 +40,24 @@ const BlocksClassification = () => {
 
     setIsSaving(true);
     try {
-      const success = await updateUserData({
+      const payload = {
         blocksClassificationAcknowledged: true,
         blocksClassificationAcknowledgedAt: new Date().toISOString(),
-        step: 'blocks_classification'
-      });
+        step: "blocks_classification",
+      };
+      const success = appContext
+        ? await appContext.markStepCompleted("blocks_classification", payload)
+        : await updateUserData(payload);
 
       if (success) {
         // If user came from summary, return to summary instead of continuing flow
         if (searchParams.get('from') === 'summary') {
           navigate("/acknowledgements-summary");
         } else {
-          navigate("/fee-structure");
+          navigate(appContext ? "/screening/fee-structure" : "/fee-structure");
         }
       }
     } catch (error) {
-      console.error("Error saving blocks classification acknowledgment:", error);
       toast({
         title: "Save Failed",
         description: "Unable to save acknowledgment. Please try again.",
@@ -64,7 +69,7 @@ const BlocksClassification = () => {
   };
 
   return (
-    <PageLayout compact title="">
+    <PageLayout compact title="" routes={appContext ? SCREENING_STEP_PATHS : undefined} basePath={appContext ? "/screening" : "/"}>
       <div className="w-full flex flex-col items-center">
         <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down">
           {pageContent.blocksClassification.title}

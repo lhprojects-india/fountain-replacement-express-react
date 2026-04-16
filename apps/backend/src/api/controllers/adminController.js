@@ -5,36 +5,48 @@ import {
   buildFeeStructureCreatesFromLegacy,
 } from '../../lib/feeStructureMapper.js';
 import { toDriverApiShape } from '../../lib/driverSerialize.js';
+import { pollPendingContracts } from '../../modules/integrations/dropbox-sign/polling.service.js';
+import logger from '../../lib/logger.js';
 
 export const getAdminDashboardData = async (req, res) => {
   try {
-    // Fetch all applicants and their linked driver profiles
-    const applicants = await prisma.fountainApplicant.findMany({
-      orderBy: { updatedAt: 'desc' }
-    });
-
-    const drivers = await prisma.driver.findMany({
+    const applications = await prisma.application.findMany({
+      orderBy: { updatedAt: 'desc' },
       include: {
-        availabilities: true,
-        facilities: true,
-        onboardingSteps: true,
+        job: {
+          select: {
+            id: true,
+            title: true,
+            city: { select: { id: true, city: true, cityCode: true } },
+          },
+        },
+        driver: {
+          include: {
+            availabilities: true,
+            facilities: true,
+            onboardingSteps: true,
+          },
+        },
       },
     });
-    const driversMap = drivers.reduce((acc, d) => {
-      acc[d.email] = toDriverApiShape(d);
-      return acc;
-    }, {});
 
-    // Merge data for the dashboard
-    const applications = applicants.map((app) => ({
-      ...app,
-      ...(driversMap[app.email] || {}),
-      applicantId: app.applicantId,
+    const payload = applications.map((app) => ({
+      id: app.id,
+      email: app.email,
+      firstName: app.firstName,
+      lastName: app.lastName,
+      phone: app.phone,
+      city: app.city,
+      currentStage: app.currentStage,
+      createdAt: app.createdAt,
+      updatedAt: app.updatedAt,
+      job: app.job,
+      driver: app.driver ? toDriverApiShape(app.driver) : null,
     }));
 
-    return res.status(200).json({ success: true, applications });
+    return res.status(200).json({ success: true, applications: payload });
   } catch (error) {
-    console.error('Error fetching admin dashboard data:', error);
+    logger.error({ msg: 'Error fetching admin dashboard data', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -53,13 +65,13 @@ export const getAdminData = async (req, res) => {
 
     return res.status(200).json({ success: true, admin });
   } catch (error) {
-    console.error('Error fetching admin data:', error);
+    logger.error({ msg: 'Error fetching admin data', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
 export const updateApplicationStatus = async (req, res) => {
-  const { email, status, adminNotes } = req.body;
+  const { email, status, adminNotes } = req.validatedBody || req.body;
 
   if (!email || !status) {
     return res.status(400).json({ success: false, message: 'Email and status are required' });
@@ -83,7 +95,7 @@ export const updateApplicationStatus = async (req, res) => {
 
     return res.status(200).json({ success: true, driver: toDriverApiShape(updatedDriver) });
   } catch (error) {
-    console.error('Error updating application status:', error);
+    logger.error({ msg: 'Error updating application status', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -100,7 +112,6 @@ export const deleteApplication = async (req, res) => {
 
     // Use a transaction to delete from all related tables
     await prisma.$transaction([
-      prisma.fountainApplicant.deleteMany({ where: { email: normalizedEmail } }),
       prisma.verification.deleteMany({ where: { email: normalizedEmail } }),
       prisma.report.deleteMany({ where: { email: normalizedEmail } }),
       prisma.driver.deleteMany({ where: { email: normalizedEmail } }),
@@ -108,7 +119,7 @@ export const deleteApplication = async (req, res) => {
 
     return res.status(200).json({ success: true, message: 'Application and related data deleted' });
   } catch (error) {
-    console.error('Error deleting application:', error);
+    logger.error({ msg: 'Error deleting application', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -120,13 +131,13 @@ export const getAllAdmins = async (req, res) => {
     });
     return res.status(200).json({ success: true, admins });
   } catch (error) {
-    console.error('Error fetching admins:', error);
+    logger.error({ msg: 'Error fetching admins', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
 export const setAdmin = async (req, res) => {
-  const { email, role, name } = req.body;
+  const { email, role, name } = req.validatedBody || req.body;
 
   try {
     const admin = await prisma.admin.upsert({
@@ -136,7 +147,7 @@ export const setAdmin = async (req, res) => {
     });
     return res.status(200).json({ success: true, admin });
   } catch (error) {
-    console.error('Error setting admin:', error);
+    logger.error({ msg: 'Error setting admin', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -152,13 +163,13 @@ export const getAllFeeStructures = async (req, res) => {
     const feeStructures = dbRowsToLegacyList(rows);
     return res.status(200).json({ success: true, feeStructures });
   } catch (error) {
-    console.error('Error fetching fee structures:', error);
+    logger.error({ msg: 'Error fetching fee structures', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
 export const upsertFeeStructures = async (req, res) => {
-  const body = req.body;
+  const body = req.validatedBody || req.body;
   if (!body?.city?.trim()) {
     return res.status(400).json({ success: false, message: 'City is required' });
   }
@@ -173,7 +184,7 @@ export const upsertFeeStructures = async (req, res) => {
     });
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error saving fee structures:', error);
+    logger.error({ msg: 'Error saving fee structures', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -188,7 +199,7 @@ export const deleteFeeStructuresForCity = async (req, res) => {
     await prisma.feeStructure.deleteMany({ where: { city } });
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error deleting fee structures:', error);
+    logger.error({ msg: 'Error deleting fee structures', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -200,7 +211,64 @@ export const getAllFacilities = async (req, res) => {
     });
     return res.status(200).json({ success: true, facilities });
   } catch (error) {
-    console.error('Error fetching facilities:', error);
+    logger.error({ msg: 'Error fetching facilities', error });
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const upsertFacility = async (req, res) => {
+  const body = req.validatedBody || req.body;
+  const facilityCode = String(body?.facility || '').trim().toUpperCase();
+  const city = String(body?.city || '').trim();
+  const address = String(body?.address || '').trim();
+
+  if (!facilityCode || !city || !address) {
+    return res.status(400).json({ success: false, message: 'City, facility code, and address are required' });
+  }
+
+  try {
+    await prisma.facility.upsert({
+      where: { facilityCode },
+      update: {
+        city,
+        address,
+      },
+      create: {
+        facilityCode,
+        city,
+        address,
+      },
+    });
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    logger.error({ msg: 'Error saving facility', error });
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const deleteFacility = async (req, res) => {
+  const raw = req.params.facilityCode;
+  const facilityCode = String(raw || '').trim().toUpperCase();
+
+  if (!facilityCode) {
+    return res.status(400).json({ success: false, message: 'Facility code is required' });
+  }
+
+  try {
+    await prisma.facility.delete({ where: { facilityCode } });
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    logger.error({ msg: 'Error deleting facility', error });
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const pollContractStatusHandler = async (_req, res) => {
+  try {
+    const result = await pollPendingContracts(prisma);
+    return res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    logger.error({ msg: 'Error polling contract status', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

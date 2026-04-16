@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Application Pipeline - Editorial Logistics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#d8dadc",
+                        "on-primary-fixed-variant": "#00497e",
+                        "on-secondary-fixed-variant": "#00504b",
+                        "inverse-primary": "#a0caff",
+                        "surface-tint": "#0061a5",
+                        "background": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#b05a6d",
+                        "secondary": "#006a63",
+                        "on-tertiary-container": "#fffbff",
+                        "secondary-fixed-dim": "#47dbcf",
+                        "inverse-surface": "#2d3133",
+                        "outline": "#707884",
+                        "surface-variant": "#e0e3e5",
+                        "primary-fixed": "#d2e4ff",
+                        "surface-bright": "#f7f9fb",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#6af8eb",
+                        "on-tertiary-fixed-variant": "#772d40",
+                        "outline-variant": "#bfc7d4",
+                        "on-secondary-container": "#006f68",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#924255",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffd9df",
+                        "on-tertiary-fixed": "#3f0116",
+                        "on-surface-variant": "#404752",
+                        "on-surface": "#191c1e",
+                        "surface": "#f7f9fb",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb1c0",
+                        "surface-container": "#eceef0",
+                        "inverse-on-surface": "#eff1f3",
+                        "primary-container": "#0078ca",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-background": "#191c1e",
+                        "on-primary-container": "#fdfcff",
+                        "secondary-container": "#67f5e8",
+                        "primary": "#005ea1",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#001c37",
+                        "on-secondary-fixed": "#00201d",
+                        "surface-container-low": "#f2f4f6",
+                        "primary-fixed-dim": "#a0caff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #bfc7d4; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex overflow-hidden">
+<!-- Shared SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-[#202B93] dark:bg-slate-900 flex flex-col py-8 px-4 z-50">
+<div class="mb-10 px-2">
+<span class="text-xl font-bold text-white tracking-tighter">Editorial Logistics</span>
+<p class="text-xs text-white/50 font-medium uppercase tracking-widest mt-1">Onboarding Control</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Active Tab: Pipeline -->
+<a class="flex items-center gap-3 px-4 py-3 bg-[#2FCCC0]/20 text-[#2FCCC0] border-r-4 border-[#2FCCC0] font-Inter font-semibold tracking-tight text-sm transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="assignment_ind">assignment_ind</span>
+                Pipeline
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 font-Inter font-semibold tracking-tight text-sm transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+                Open Roles
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 font-Inter font-semibold tracking-tight text-sm transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="event">event</span>
+                Interviews
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 font-Inter font-semibold tracking-tight text-sm transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 font-Inter font-semibold tracking-tight text-sm transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+</nav>
+<div class="mt-auto">
+<button class="w-full py-3 bg-[#2FCCC0] text-[#1A1A2E] font-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-xl" data-icon="add">add</span>
+                Add New Applicant
+            </button>
+<div class="flex items-center gap-3 mt-8 px-2">
+<img alt="Admin User Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white/20" data-alt="portrait of a confident business professional in a tailored navy suit with a clean office background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoseSEXz0JV4o-Aveo-Mq90cSlug-5IpOvoxBEQ-ZNb5z5ioctKdXzA2-pzqgViIXe1Fo5JHpJNnsQB0foPcRqsUsqhr7_L0Tf5kolXQOqshH-toMmbqGxAu486LLP2BAyjkXxSbeaPNOo36eKzkQ4mBsEitvvDpF-5lgJeCvGUn4uCEkPJkQl6bYL7b3VU-a9FkPZZG5auAqlwzmsszsPISyau4qHhlpnAGP5aVKfEU0ZRkxX9HL-jFkej5Znz5ccJRmvgnOHq4Tu"/>
+<div class="overflow-hidden">
+<p class="text-white text-sm font-bold truncate">Alex Sterling</p>
+<p class="text-white/40 text-xs truncate">Head of Logistics</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="flex-1 ml-64 flex flex-col h-screen overflow-hidden">
+<!-- Shared TopNavBar -->
+<header class="h-16 bg-[#f7f9fb] dark:bg-slate-950 flex justify-between items-center px-8 w-full z-40">
+<div class="flex items-center gap-8">
+<span class="text-lg font-bold text-[#1A1A2E] dark:text-white">Onboarding ATS</span>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-[#f2f4f6] dark:bg-slate-900 border-none rounded-lg text-sm w-64 focus:ring-2 focus:ring-[#2FCCC0]/30 transition-all" placeholder="Search applications..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex gap-6">
+<a class="text-[#005ea1] font-bold border-b-2 border-[#005ea1] pb-1 font-Inter font-medium text-sm" href="#">Applications</a>
+<a class="text-[#404752] dark:text-slate-400 hover:bg-[#f2f4f6] dark:hover:bg-slate-800 rounded-lg px-2 py-0.5 transition-all font-Inter font-medium text-sm" href="#">Help Center</a>
+</nav>
+<div class="flex items-center gap-3 border-l border-outline-variant/30 pl-6">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-[#f2f4f6] p-1.5 rounded-lg transition-all" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-[#f2f4f6] p-1.5 rounded-lg transition-all" data-icon="apps">apps</button>
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs border border-primary/20">AS</div>
+</div>
+</div>
+</header>
+<!-- Canvas Area -->
+<section class="flex-1 overflow-y-auto bg-surface-container-low p-8 custom-scrollbar">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h1 class="text-4xl font-bold tracking-tight text-on-surface font-headline">Application Pipeline</h1>
+<p class="text-on-surface-variant mt-2 font-medium">142 total applications across all stages.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-5 py-2.5 bg-surface-container-lowest text-primary font-bold rounded-lg transition-all flex items-center gap-2 hover:bg-white active:scale-95">
+<span class="material-symbols-outlined text-lg" data-icon="download">download</span>
+                        Export CSV
+                    </button>
+<button class="px-5 py-2.5 bg-primary text-white font-bold rounded-lg transition-all flex items-center gap-2 hover:shadow-lg active:scale-95">
+<span class="material-symbols-outlined text-lg" data-icon="person_add">person_add</span>
+                        + Invite Driver
+                    </button>
+</div>
+</div>
+<!-- Filter Section -->
+<div class="bg-surface-container-lowest rounded-xl p-6 mb-8">
+<div class="flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant" data-icon="filter_list">filter_list</span>
+<select class="appearance-none pl-12 pr-10 py-2.5 bg-surface-container-low border-none rounded-lg text-sm font-semibold text-on-surface-variant focus:ring-2 focus:ring-primary/20 cursor-pointer">
+<option>Sorted by Date Applied (Newest)</option>
+<option>Sorted by Risk Score</option>
+<option>Sorted by Name (A-Z)</option>
+</select>
+</div>
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant" data-icon="search">search</span>
+<input class="w-full pl-12 pr-4 py-2.5 bg-surface-container-low border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20" placeholder="Search by name or email..." type="text"/>
+</div>
+</div>
+<button class="flex items-center gap-2 text-primary font-bold text-sm">
+<span class="material-symbols-outlined text-lg" data-icon="tune">tune</span>
+                            Advanced Filters
+                        </button>
+</div>
+<!-- Horizontal Tab Bar -->
+<div class="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
+<button class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm flex items-center gap-2 shrink-0">
+                            All <span class="bg-white/20 px-1.5 py-0.5 rounded text-[10px]">142</span>
+</button>
+<button class="px-4 py-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant font-semibold text-sm flex items-center gap-2 shrink-0 transition-colors">
+                            Applied <span class="bg-surface-container-high px-1.5 py-0.5 rounded text-[10px]">24</span>
+</button>
+<button class="px-4 py-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant font-semibold text-sm flex items-center gap-2 shrink-0 transition-colors">
+                            Screening <span class="bg-surface-container-high px-1.5 py-0.5 rounded text-[10px]">18</span>
+</button>
+<button class="px-4 py-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant font-semibold text-sm flex items-center gap-2 shrink-0 transition-colors">
+                            Documents <span class="bg-surface-container-high px-1.5 py-0.5 rounded text-[10px]">32</span>
+</button>
+<button class="px-4 py-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant font-semibold text-sm flex items-center gap-2 shrink-0 transition-colors">
+                            Questionnaire <span class="bg-surface-container-high px-1.5 py-0.5 rounded text-[10px]">12</span>
+</button>
+<button class="px-4 py-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant font-semibold text-sm flex items-center gap-2 shrink-0 transition-colors">
+                            Decision <span class="bg-surface-container-high px-1.5 py-0.5 rounded text-[10px]">8</span>
+</button>
+<button class="px-4 py-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant font-semibold text-sm flex items-center gap-2 shrink-0 transition-colors">
+                            First Block <span class="bg-surface-container-high px-1.5 py-0.5 rounded text-[10px]">4</span>
+</button>
+<button class="px-4 py-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant font-semibold text-sm flex items-center gap-2 shrink-0 transition-colors">
+                            Approved <span class="bg-surface-container-high px-1.5 py-0.5 rounded text-[10px]">41</span>
+</button>
+<button class="px-4 py-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant font-semibold text-sm flex items-center gap-2 shrink-0 transition-colors">
+                            Rejected <span class="bg-surface-container-high px-1.5 py-0.5 rounded text-[10px]">3</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Candidate Table -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50 text-on-surface-variant font-bold text-[11px] uppercase tracking-wider">
+<th class="py-4 pl-6 pr-2 w-10">
+<input class="rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+</th>
+<th class="py-4 px-4">Driver</th>
+<th class="py-4 px-4">Stage</th>
+<th class="py-4 px-4">City</th>
+<th class="py-4 px-4">Vehicle</th>
+<th class="py-4 px-4">Applied Date</th>
+<th class="py-4 px-4">Days in Stage</th>
+<th class="py-4 px-6 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Row 1: Green Health -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="py-4 pl-6 pr-2">
+<input class="rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<img alt="Driver Avatar" class="w-9 h-9 rounded-full object-cover bg-surface-container" data-alt="headshot of a smiling young man with friendly expression in a casual green shirt" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeZWJJ3AoIBuuUpro8AvHA0G655rL_7BVy66qy1QomFHA0ONEKVYtVehQ1Zv7R__OI9gpE19jhvo4mm7UPUpX3vaU7Y481itYqIjl19suGayqX1_qHkaYnxQxicohiLW6Ldm6nWlTbJeFv24KhjSyQqepkrbs_9UZ3wm3sPb5LbXk_5Ccsn_JQtn484IQVApcKGXIaFBTYeJ323hzGxfZOapdJVzHZlMQ33lT_1tjOlOF9NAetRYMHn5ov_FAVm3N_cHaqFVOW5C1w"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Julian Rossi</p>
+<p class="text-[11px] text-on-surface-variant">julian.r@example.com</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary-fixed text-on-primary-fixed-variant">Screening</span>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Chicago, IL</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-lg" data-icon="local_shipping">local_shipping</span>
+<span class="text-sm">Box Truck</span>
+</div>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Oct 24, 2023</td>
+<td class="py-4 px-4">
+<div class="w-24">
+<div class="flex justify-between text-[10px] font-bold text-on-surface-variant mb-1">
+<span>2 Days</span>
+<span class="text-secondary">On Track</span>
+</div>
+<div class="h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[20%]"></div>
+</div>
+</div>
+</td>
+<td class="py-4 px-6 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="visibility">visibility</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="sticky_note_2">sticky_note_2</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="call">call</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Yellow Health -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="py-4 pl-6 pr-2">
+<input class="rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<img alt="Driver Avatar" class="w-9 h-9 rounded-full object-cover bg-surface-container" data-alt="professional portrait of a woman with a warm smile, wearing a modern professional blouse" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_eRlcIsXFcPVnQts8pZSI5RD5dfDHuFhkgufYAnQK72OFLkgUVlGkULECWh7mHtSgeZdmKWwn1GQ1Ea5NwWI7mWL9tPWF_OnPfZL_6fav2m8VrZa_j2S-t8KokLoebdue2Ns0Cuwdnt5BtRt01tT-xtKP3V8R9fMN9vs5Eqb8RQHqnsnZ8Pa4l5MsuWIhMSJj3TX-oViPigh898nMdUgX5JVeTu80ojM0zrbwL2cctn2FKLjX4m0fF0VAfxw3l033b41uuUEcjvgZ"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Elena Vance</p>
+<p class="text-[11px] text-on-surface-variant">e.vance@workmail.com</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-tertiary-fixed text-on-tertiary-fixed-variant">Documents</span>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Portland, OR</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-lg" data-icon="directions_car">directions_car</span>
+<span class="text-sm">Cargo Van</span>
+</div>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Oct 20, 2023</td>
+<td class="py-4 px-4">
+<div class="w-24">
+<div class="flex justify-between text-[10px] font-bold text-on-surface-variant mb-1">
+<span>6 Days</span>
+<span class="text-amber-600">Pending</span>
+</div>
+<div class="h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-amber-500 w-[60%]"></div>
+</div>
+</div>
+</td>
+<td class="py-4 px-6 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="visibility">visibility</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="sticky_note_2">sticky_note_2</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="call">call</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Red Health -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="py-4 pl-6 pr-2">
+<input class="rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-secondary-fixed text-on-secondary-container flex items-center justify-center font-bold text-xs uppercase tracking-tighter">MC</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Marcus Chen</p>
+<p class="text-[11px] text-on-surface-variant">m.chen@logistics.net</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant">Decision</span>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Austin, TX</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-lg" data-icon="local_shipping">local_shipping</span>
+<span class="text-sm">Box Truck</span>
+</div>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Oct 12, 2023</td>
+<td class="py-4 px-4">
+<div class="w-24">
+<div class="flex justify-between text-[10px] font-bold text-on-surface-variant mb-1">
+<span>14 Days</span>
+<span class="text-error">Stagnant</span>
+</div>
+<div class="h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-error w-full"></div>
+</div>
+</div>
+</td>
+<td class="py-4 px-6 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="visibility">visibility</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="sticky_note_2">sticky_note_2</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="call">call</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Green Health (Applied) -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="py-4 pl-6 pr-2">
+<input class="rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<img alt="Driver Avatar" class="w-9 h-9 rounded-full object-cover bg-surface-container" data-alt="middle-aged man with beard and friendly eyes, wearing a simple gray crew neck" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqw2zNXozWPkFRuF00W76zoOPxKJXv0ko2fXRFUjFslKgQsxlmskTXN9M9Y12UhHS_Gbj6uTvcakdhQLhw5P9G8kmhKudxd0A8hDGlrbkfbVgFdKTf03wiIA0TUKemQUx4YT_omVQPHHPqpL4ZHZv_jUGRHfHcLsHoRoeKt7wvN0bUeDo-KoS14USPnUv4o3voosRaJ2ROPQYUVVqUM0XLQa5crp6RaZLvmE05MT7bhNQ6DZ8XLHKAcdxK68BAJHjPmItCmT9_BuCK"/>
+<div>
+<p class="text-sm font-bold text-on-surface">David Miller</p>
+<p class="text-[11px] text-on-surface-variant">miller.d@provider.co</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-secondary-container text-on-secondary-container">Applied</span>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Denver, CO</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-lg" data-icon="motorcycle">motorcycle</span>
+<span class="text-sm">Two-Wheeler</span>
+</div>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Oct 26, 2023</td>
+<td class="py-4 px-4">
+<div class="w-24">
+<div class="flex justify-between text-[10px] font-bold text-on-surface-variant mb-1">
+<span>&lt; 1 Day</span>
+<span class="text-secondary">New</span>
+</div>
+<div class="h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[5%]"></div>
+</div>
+</div>
+</td>
+<td class="py-4 px-6 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="visibility">visibility</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="sticky_note_2">sticky_note_2</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="call">call</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Screening -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="py-4 pl-6 pr-2">
+<input class="rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<img alt="Driver Avatar" class="w-9 h-9 rounded-full object-cover bg-surface-container" data-alt="portrait of a woman looking thoughtfully away, soft cinematic lighting in an urban setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCga8-ugda0M0xiIwmASyFAM5YbKbiJ094UNs30K3REjONfDSGTxPCQDcB6dX6xOH6ySEBVN3UrOm-mtTe--vbe20y8eS-QSipZOOhhElrAEGxVaWx5op6m1xJPKTS4-hzafBArUJ5YbvWlKsz_TKYlVOcsuXtKt3wQ2KedTGn1MZ8BJT7lQSWQX7qqp-iHGDeE1OjE_WOrU809o_v2oqkorTb2epFznHtYEe-bOgdkxz-n-2d-Am0s2B9M_4Hz0_cc4z6hmhJ0qKkQ"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Sarah Connor</p>
+<p class="text-[11px] text-on-surface-variant">s.connor@cybernet.io</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary-fixed text-on-primary-fixed-variant">Screening</span>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Los Angeles, CA</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-lg" data-icon="directions_car">directions_car</span>
+<span class="text-sm">SUV</span>
+</div>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Oct 23, 2023</td>
+<td class="py-4 px-4">
+<div class="w-24">
+<div class="flex justify-between text-[10px] font-bold text-on-surface-variant mb-1">
+<span>3 Days</span>
+<span class="text-secondary">On Track</span>
+</div>
+<div class="h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[30%]"></div>
+</div>
+</div>
+</td>
+<td class="py-4 px-6 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="visibility">visibility</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="sticky_note_2">sticky_note_2</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="call">call</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 6: Documents Stalled -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="py-4 pl-6 pr-2">
+<input class="rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<img alt="Driver Avatar" class="w-9 h-9 rounded-full object-cover bg-surface-container" data-alt="portrait of a confident man with a salt and pepper beard, wearing professional attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxIMi-_Ta0GCugqAXhf6MnskFgS9M7tl2lm4avr7h0pQQUIXehCGr6EmTpm6SEqvOCZ2cCv4stI2YmUBNjlqw_sg1vo9O1aPQ5VE5EuYLYrGQa6I639tN55WficH2Uvd4pnlE928oKpLlACElPl35RxZASikHVyOd0NPTIUAIhP7Yj-UFiAQUzlPiwkSKWExlTSTD8OZKiSzU7ZIiQNZP_R-wlQcN77o1Tzj2zHgv82UVOokYh7Pi63kRvp3ur9U6RYe1RYiQtaklv"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Robert King</p>
+<p class="text-[11px] text-on-surface-variant">rking@freight.com</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-tertiary-fixed text-on-tertiary-fixed-variant">Documents</span>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Phoenix, AZ</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-lg" data-icon="local_shipping">local_shipping</span>
+<span class="text-sm">Flatbed</span>
+</div>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Oct 15, 2023</td>
+<td class="py-4 px-4">
+<div class="w-24">
+<div class="flex justify-between text-[10px] font-bold text-on-surface-variant mb-1">
+<span>11 Days</span>
+<span class="text-error">Attention</span>
+</div>
+<div class="h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-error w-[90%]"></div>
+</div>
+</div>
+</td>
+<td class="py-4 px-6 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="visibility">visibility</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="sticky_note_2">sticky_note_2</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="call">call</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 7: Approved -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="py-4 pl-6 pr-2">
+<input class="rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<img alt="Driver Avatar" class="w-9 h-9 rounded-full object-cover bg-surface-container" data-alt="headshot of a man with a confident, bright smile and modern glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnOZ9X3bZWLKdQAZ7aJvOzvhoP8zCnHhdPzjQtyhFnWFD-eiEKFi_mqIaehmwefVY9rICQICXe_e0HphiSpo6zsCsknz6zVxrZyhR49NMFCPU8Rno-4-RWpf5R4GmSgD3GjVgGovOlpPWEFymMCJYNqQnk8dFUjzP8vA7sOFVfPuf-Casdoxa9WlKwDB5I5Y3wYX8lKAczORkRaWhyOMGlFyESGCo4a1YWjICbUEFb7vO2vD6LMMozYVTCdPE6Or4c1yGk56yHTW6s"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Kevin Hart</p>
+<p class="text-[11px] text-on-surface-variant">k.hart@express.co</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-secondary-container text-on-secondary-container">Approved</span>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Seattle, WA</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-lg" data-icon="electric_car">electric_car</span>
+<span class="text-sm">EV Delivery</span>
+</div>
+</td>
+<td class="py-4 px-4 text-sm text-on-surface-variant">Oct 25, 2023</td>
+<td class="py-4 px-4">
+<div class="w-24">
+<div class="flex justify-between text-[10px] font-bold text-on-surface-variant mb-1">
+<span>1 Day</span>
+<span class="text-secondary">Ready</span>
+</div>
+<div class="h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[10%]"></div>
+</div>
+</div>
+</td>
+<td class="py-4 px-6 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="visibility">visibility</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="sticky_note_2">sticky_note_2</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="call">call</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 8: Decision Pending -->
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="py-4 pl-6 pr-2 border-b-0">
+<input class="rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+</td>
+<td class="py-4 px-4 border-b-0">
+<div class="flex items-center gap-3">
+<img alt="Driver Avatar" class="w-9 h-9 rounded-full object-cover bg-surface-container" data-alt="portrait of a professional woman with a steady and serious expression, modern urban background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvBAcoBjx9G1XKPeOz7fCnj3HNxKJUDl5HQup3ig8IIG1QpHgU4OzsCWqA5GVA5LPS5PiJNuVvhzsV-78WnGv_3786hiGYmgB7mGN5OQZbqWWzOvOZIVqJcac1wtLL07f2Fd0z7YpF7A23zcBpphxWyq3wUjjPzfy33Gz4y07SXk4Tt9trjw7Ft2P3VDMbH2a39AgmQkTcih6OBoI0soih7CE0ZFsvGYCbw0GgS4U2WEhr4_BK-eU9f5rGuhPtvbbNnxZX1o5Vt1zA"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Angela White</p>
+<p class="text-[11px] text-on-surface-variant">awhite@logistics.net</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 border-b-0">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant">Decision</span>
+</td>
+<td class="py-4 px-4 border-b-0 text-sm text-on-surface-variant">Miami, FL</td>
+<td class="py-4 px-4 border-b-0">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-lg" data-icon="directions_car">directions_car</span>
+<span class="text-sm">Cargo Van</span>
+</div>
+</td>
+<td class="py-4 px-4 border-b-0 text-sm text-on-surface-variant">Oct 18, 2023</td>
+<td class="py-4 px-4 border-b-0">
+<div class="w-24">
+<div class="flex justify-between text-[10px] font-bold text-on-surface-variant mb-1">
+<span>8 Days</span>
+<span class="text-amber-600">Pending</span>
+</div>
+<div class="h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-amber-500 w-[80%]"></div>
+</div>
+</div>
+</td>
+<td class="py-4 px-6 text-right border-b-0">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="visibility">visibility</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="sticky_note_2">sticky_note_2</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-lg text-primary transition-all"><span class="material-symbols-outlined text-lg" data-icon="call">call</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination Footer -->
+<footer class="px-8 py-6 bg-surface-container-low/30 border-t border-surface-container flex items-center justify-between">
+<p class="text-sm font-medium text-on-surface-variant">
+                        Showing <span class="font-bold text-on-surface">1–8</span> of <span class="font-bold text-on-surface">142</span> applications
+                    </p>
+<div class="flex gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-lowest text-outline hover:text-primary transition-colors active:scale-90 disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold text-sm shadow-md">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-lowest text-on-surface font-semibold text-sm hover:bg-white transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-lowest text-on-surface font-semibold text-sm hover:bg-white transition-colors">3</button>
+<span class="w-10 h-10 flex items-center justify-center text-outline">...</span>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-lowest text-on-surface font-semibold text-sm hover:bg-white transition-colors">18</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-lowest text-outline hover:text-primary transition-colors active:scale-90">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</footer>
+</div>
+<!-- Focus Mode Indicator (Decorative Editorial Element) -->
+<div class="mt-12 flex items-center justify-center">
+<div class="flex items-center gap-4 text-outline-variant">
+<div class="h-px w-16 bg-outline-variant/30"></div>
+<span class="text-[10px] font-bold uppercase tracking-[0.2em]">End of Active Pipeline</span>
+<div class="h-px w-16 bg-outline-variant/30"></div>
+</div>
+</div>
+</section>
+</main>
+</body></html>

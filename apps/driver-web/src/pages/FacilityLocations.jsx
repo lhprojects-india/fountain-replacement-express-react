@@ -5,8 +5,9 @@ import { PageLayout } from "@lh/shared";
 import { Button } from "@lh/shared";
 import { CheckboxWithLabel } from "@lh/shared";
 import { useToast } from "@lh/shared";
-import { useSaveProgress } from "@/hooks/useSaveProgress";
-import { facilityServices } from "@/lib/firebase-services";
+import { facilityServices } from "@/lib/api-services";
+import { useOptionalApplication } from "../context/ApplicationContext";
+import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,9 +22,9 @@ import {
 
 const FacilityLocations = () => {
   const navigate = useNavigate();
+  const appContext = useOptionalApplication();
   const { currentUser, updateUserData, isLoading } = useAuth();
   const { toast } = useToast();
-  useSaveProgress(); // Automatically save progress when user visits this page
   const [isSaving, setIsSaving] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [selectedFacilities, setSelectedFacilities] = useState([]);
@@ -39,7 +40,7 @@ const FacilityLocations = () => {
       }
 
       // Get city from user data (similar to FeeStructure page)
-      const city = currentUser?.fountainData?.city || currentUser?.city;
+      const city = appContext?.application?.city || currentUser?.city;
 
       if (!city) {
         setCityFacilities([]);
@@ -54,11 +55,12 @@ const FacilityLocations = () => {
         setCityFacilities(facilities);
 
         // Load existing facility selections if available
-        if (currentUser?.selectedFacilities) {
+        if (appContext?.screeningProgress?.driver?.facilities?.length) {
+          setSelectedFacilities(appContext.screeningProgress.driver.facilities.map((f) => f.facilityCode));
+        } else if (currentUser?.selectedFacilities) {
           setSelectedFacilities(currentUser.selectedFacilities);
         }
       } catch (error) {
-        console.error('❌ Error fetching facilities:', error);
         setCityFacilities([]);
       } finally {
         setLoadingFacilities(false);
@@ -66,7 +68,7 @@ const FacilityLocations = () => {
     };
 
     fetchFacilities();
-  }, [currentUser]);
+  }, [appContext, currentUser]);
 
   const handleFacilityToggle = (facilityCode) => {
     setSelectedFacilities(prev => {
@@ -90,18 +92,20 @@ const FacilityLocations = () => {
 
     setIsSaving(true);
     try {
-      const success = await updateUserData({
+      const payload = {
         selectedFacilities: selectedFacilities,
         facilityLocationsAcknowledged: true,
         facilityLocationsAcknowledgedAt: new Date().toISOString(),
-        step: 'facility_locations'
-      });
+        step: "facility_locations",
+      };
+      const success = appContext
+        ? await appContext.updatePersonalDetails(payload)
+        : await updateUserData(payload);
 
       if (success) {
-        navigate("/blocks-classification");
+        navigate(appContext ? "/screening/blocks-classification" : "/blocks-classification");
       }
     } catch (error) {
-      console.error("Error saving facility locations:", error);
       toast({
         title: "Save Failed",
         description: "Unable to save facility selections. Please try again.",
@@ -132,7 +136,6 @@ const FacilityLocations = () => {
         });
       }
     } catch (error) {
-      console.error("Error withdrawing application:", error);
       toast({
         title: "Withdrawal Failed",
         description: "Unable to process withdrawal. Please try again.",
@@ -146,7 +149,7 @@ const FacilityLocations = () => {
   // Show loading state
   if (loadingFacilities) {
     return (
-      <PageLayout compact title="">
+      <PageLayout compact title="" routes={appContext ? SCREENING_STEP_PATHS : undefined} basePath={appContext ? "/screening" : "/"}>
         <div className="w-full flex flex-col items-center">
           <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down self-start max-w-sm mx-auto w-full">
             Facility Locations
@@ -163,9 +166,9 @@ const FacilityLocations = () => {
 
   // Show message if no facilities found
   if (cityFacilities.length === 0 && currentUser && !loadingFacilities) {
-    const city = currentUser?.fountainData?.city || currentUser?.city;
+    const city = appContext?.application?.city || currentUser?.city;
     return (
-      <PageLayout compact title="">
+      <PageLayout compact title="" routes={appContext ? SCREENING_STEP_PATHS : undefined} basePath={appContext ? "/screening" : "/"}>
         <div className="w-full flex flex-col items-center">
           <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down self-start max-w-sm mx-auto w-full">
             Facility Locations
@@ -187,7 +190,7 @@ const FacilityLocations = () => {
   }
 
   return (
-    <PageLayout compact title="">
+    <PageLayout compact title="" routes={appContext ? SCREENING_STEP_PATHS : undefined} basePath={appContext ? "/screening" : "/"}>
       <div className="w-full flex flex-col items-center">
         <h2 className="text-2xl font-bold mb-3 text-brand-shadeBlue animate-slide-down self-start max-w-sm mx-auto w-full">
           Facility Locations

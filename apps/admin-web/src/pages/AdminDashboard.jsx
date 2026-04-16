@@ -3,7 +3,16 @@ import { useAdminAuth } from "../context/AdminAuthContext";
 import { adminServices } from "../lib/admin-services";
 import FeeStructureManager from "../components/admin/FeeStructureManager";
 import FacilityManager from "../components/admin/FacilityManager";
+import RegionManager from "../components/admin/RegionManager";
+import JobManager from "../components/admin/JobManager";
 import AdminManager from "../components/admin/AdminManager";
+import EmailTemplateManager from "../components/admin/EmailTemplateManager";
+import NotificationSettingsManager from "../components/admin/NotificationSettingsManager";
+import CommunicationsOverview from "../components/admin/CommunicationsOverview";
+import QuestionnaireBuilder from "../components/admin/QuestionnaireBuilder";
+import ApplicationPipeline from "../components/admin/ApplicationPipeline";
+import AnalyticsDashboard from "../components/admin/AnalyticsDashboard";
+import AdminErrorBoundary from "../components/admin/AdminErrorBoundary";
 import { Button } from "@lh/shared";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@lh/shared";
 import { Badge } from "@lh/shared";
@@ -18,6 +27,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@lh/shared";
 import {
@@ -51,7 +61,7 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@lh/shared";
 import { getCurrentStage } from "@lh/shared";
-import { LaundryheapLogo } from "@lh/shared";
+import { LaundryheapLogo, ProductBrandHeading } from "@lh/shared";
 import { getVehicleTypeFromMOT } from "@lh/shared";
 import {
   ResponsiveContainer,
@@ -83,9 +93,10 @@ export default function AdminDashboard() {
   const [adminNotes, setAdminNotes] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [onboardingFilter, setOnboardingFilter] = useState("all");
-  const [stageFilter, setStageFilter] = useState("Completed");
+  const [stageFilter, setStageFilter] = useState("all");
+  const [onboardingFilter, setOnboardingFilter] = useState("completed");
   const [cityFilter, setCityFilter] = useState("all");
+  const [navCounts, setNavCounts] = useState({ pipelineActive: 0, publishedJobs: 0 });
 
   useEffect(() => {
     // Add admin-page class to body to enable text selection
@@ -105,9 +116,10 @@ export default function AdminDashboard() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      let [applicationsData, statsData] = await Promise.all([
+      let [applicationsData, statsData, jobsData] = await Promise.all([
         adminServices.getAllApplications(),
-        adminServices.getApplicationStats()
+        adminServices.getApplicationStats(),
+        adminServices.getAllJobs()
       ]);
 
       // Filter by accessible cities if restricted
@@ -130,8 +142,13 @@ export default function AdminDashboard() {
 
       setApplications(applicationsData);
       setStats(statsData);
+      const byStage = statsData?.byStage || {};
+      const pipelineActive = Object.entries(byStage)
+        .filter(([stage]) => !["rejected", "withdrawn", "active", "first_block_failed"].includes(stage))
+        .reduce((sum, [, count]) => sum + Number(count || 0), 0);
+      const publishedJobs = (jobsData || []).filter((job) => Boolean(job.isPublished)).length;
+      setNavCounts({ pipelineActive, publishedJobs });
     } catch (error) {
-      console.error('Error loading data:', error);
       toast({
         title: "Error loading data",
         description: "Unable to load admin data. Please try again.",
@@ -161,7 +178,6 @@ export default function AdminDashboard() {
         });
       }
     } catch (error) {
-      console.error('Error updating status:', error);
       toast({
         title: "Update failed",
         description: error.message || "Unable to update application status.",
@@ -187,7 +203,6 @@ export default function AdminDashboard() {
         });
       }
     } catch (error) {
-      console.error('Error resetting progress:', error);
       toast({
         title: "Reset failed",
         description: "Unable to reset driver progress.",
@@ -213,7 +228,6 @@ export default function AdminDashboard() {
         });
       }
     } catch (error) {
-      console.error('Error deleting application:', error);
       toast({
         title: "Delete failed",
         description: "Unable to delete application.",
@@ -305,6 +319,38 @@ export default function AdminDashboard() {
       .sort((a, b) => b.hired - a.hired);
   })();
 
+  const weeklyStatusData = (() => {
+    const weekMap = new Map();
+    const now = new Date();
+    for (let i = 4; i >= 0; i -= 1) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - (i * 7));
+      const weekKey = `${d.getFullYear()}-${Math.ceil((d.getDate() + new Date(d.getFullYear(), d.getMonth(), 1).getDay()) / 7)}-${d.getMonth() + 1}`;
+      weekMap.set(weekKey, { label: `WK ${5 - i}`, pending: 0, approved: 0, rejected: 0 });
+    }
+
+    applications.forEach((app) => {
+      if (!app.createdAt) return;
+      const d = app.createdAt instanceof Date ? app.createdAt : new Date(app.createdAt);
+      if (Number.isNaN(d.getTime())) return;
+      const weekKey = `${d.getFullYear()}-${Math.ceil((d.getDate() + new Date(d.getFullYear(), d.getMonth(), 1).getDay()) / 7)}-${d.getMonth() + 1}`;
+      if (!weekMap.has(weekKey)) return;
+
+      const row = weekMap.get(weekKey);
+      if (!app.status || app.status === "pending") row.pending += 1;
+      if (app.status === "approved" || app.status === "hired") row.approved += 1;
+      if (app.status === "rejected") row.rejected += 1;
+    });
+
+    return Array.from(weekMap.values());
+  })();
+
+  const totalApplicants = applications.length;
+  const totalApprovedOrHired = applications.filter((app) => app.status === "approved" || app.status === "hired").length;
+  const totalRejected = applications.filter((app) => app.status === "rejected").length;
+  const pendingReview = applications.filter((app) => !app.status || app.status === "pending" || app.status === "on_hold").length;
+  const hiringRate = totalApplicants > 0 ? ((stats.hired || 0) / totalApplicants) * 100 : 0;
+
   const STATUS_COLORS = {
     Pending: "#FFD06D", // Brand-yellow
     "On Hold": "#FFB55D", // Brand-shadeYellow (replacing orange)
@@ -338,166 +384,124 @@ export default function AdminDashboard() {
       (statusFilter === "pending" && (!app.status || app.status === "pending")) ||
       app.status === statusFilter;
 
-    // Onboarding filter
-    const matchesOnboarding = onboardingFilter === "all" ||
-      app.onboardingStatus === onboardingFilter;
-
     // Stage filter
     const matchesStage = stageFilter === "all" ||
       getCurrentStage(app) === stageFilter;
+
+    // Onboarding filter
+    const matchesOnboarding = onboardingFilter === "all" ||
+      app.onboardingStatus === onboardingFilter;
 
     // City filter
     const matchesCity = cityFilter === "all" ||
       app.city === cityFilter;
 
-    return matchesSearch && matchesStatus && matchesOnboarding && matchesStage && matchesCity;
+    return matchesSearch && matchesStatus && matchesStage && matchesOnboarding && matchesCity;
   });
 
   const getStatusBadge = (status) => {
-    const statusConfig = {
-      pending: { variant: "outline", icon: Clock, className: "bg-brand-lightYellow text-gray-800 border-brand-yellow", label: "Pending" },
-      approved: { variant: "default", icon: CheckCircle, className: "bg-brand-teal hover:bg-brand-shadeTeal text-white", label: "Approved" },
-      rejected: { variant: "destructive", icon: XCircle, className: "bg-brand-pink hover:bg-brand-shadePink text-white", label: "Rejected" },
-      hired: {
-        variant: "default",
-        icon: UserCheck,
-        className: "bg-brand-blue hover:bg-brand-shadeBlue text-white",
-        label: "Hired",
-      },
-      on_hold: {
-        variant: "outline",
-        icon: PauseCircle,
-        className: "border-brand-yellow text-brand-shadeYellow bg-brand-lightYellow",
-        label: "On Hold",
-      },
+    const labelMap = {
+      pending: "Pending",
+      approved: "Approved",
+      rejected: "Rejected",
+      hired: "Hired",
+      on_hold: "On Hold",
     };
-
-    const config = statusConfig[status] || statusConfig.pending;
-    const Icon = config.icon;
-
-    return (
-      <Badge
-        variant={config.variant}
-        className={`flex items-center gap-1 rounded-md px-2.5 py-0.5 ${config.className || ""}`}
-      >
-        <Icon className="h-3.5 w-3.5" />
-        {config.label || status || "pending"}
-      </Badge>
-    );
+    const label = labelMap[status] || "Pending";
+    const badgeClass = `adm-badge adm-badge-${status || 'pending'}`;
+    return <span className={badgeClass}>{label}</span>;
   };
 
   const getOnboardingStatusBadge = (status) => {
-    const statusConfig = {
-      started: { variant: "secondary", label: "In Progress" },
-      completed: { variant: "default", label: "Completed" },
-    };
-
-    const config = statusConfig[status] || statusConfig.started;
-
+    if (status === 'completed') {
+      return (
+        <span className="adm-badge adm-badge-completed">Completed</span>
+      );
+    }
     return (
-      <Badge variant={config.variant}>
-        {config.label}
-      </Badge>
+      <span className="adm-badge" style={{ background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1' }}>
+        In Progress
+      </span>
     );
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50/50">
+      <div className="min-h-screen" style={{ background: 'var(--adm-surface)' }}>
         {/* Header Skeleton */}
-        <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-30 transition-all duration-300">
-          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-4">
-                <Skeleton className="w-12 h-12 rounded-full" />
-                <div>
-                  <Skeleton className="h-7 w-64 mb-1" />
-                  <Skeleton className="h-4 w-32" />
-                </div>
-              </div>
-              <div className="flex items-center gap-3 w-full sm:w-auto bg-gray-50 p-1.5 rounded-full border border-gray-100">
-                <div className="hidden sm:flex items-center gap-2 px-3">
-                  <Skeleton className="h-2 w-2 rounded-full" />
-                  <Skeleton className="h-4 w-40" />
-                </div>
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <Skeleton className="h-8 w-8 rounded-full" />
-              </div>
-            </div>
+        <header className="adm-header">
+          <div className="flex items-center gap-4">
+            <Skeleton className="w-8 h-8 rounded-lg bg-white/20" />
+            <Skeleton className="h-5 w-44 rounded bg-white/20" />
+          </div>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-8 w-36 rounded-full bg-white/20" />
+            <Skeleton className="h-8 w-8 rounded-full bg-white/20" />
+            <Skeleton className="h-8 w-8 rounded-full bg-white/20" />
           </div>
         </header>
 
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
-          {/* Stats Cards Skeleton */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="relative overflow-hidden border-0 shadow-sm transition-all duration-300 h-32">
-                <div className="absolute top-0 left-0 w-1 h-full bg-gray-200"></div>
-                <CardHeader className="pb-2 relative z-10">
-                  <Skeleton className="h-4 w-32" />
-                </CardHeader>
-                <CardContent className="relative z-10 mt-2">
-                  <Skeleton className="h-9 w-16" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Main Content Skeleton */}
-          <div className="space-y-6">
-            <div className="bg-white p-1 rounded-xl shadow-sm border border-gray-100 inline-flex gap-1">
+        <div className="flex">
+          {/* Sidebar skeleton */}
+          <aside className="adm-sidebar">
+            <div className="px-6 mb-8">
+              <div className="flex items-center gap-3">
+                <Skeleton className="w-10 h-10 rounded-xl" />
+                <div>
+                  <Skeleton className="h-5 w-24 mb-1" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 px-3 space-y-1">
               {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-9 w-32 rounded-lg" />
+                <Skeleton key={i} className="h-11 w-full rounded-lg" />
+              ))}
+            </div>
+          </aside>
+
+          {/* Main content skeleton */}
+          <div className="adm-main flex-1 p-8 space-y-8">
+            {/* Stats Cards Skeleton */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="adm-stat-card border-l-4 border-gray-200">
+                  <Skeleton className="h-3 w-24 mb-4" />
+                  <Skeleton className="h-9 w-16" />
+                </div>
               ))}
             </div>
 
-            <Card className="bg-white border-0 shadow-sm border border-gray-100 overflow-hidden">
-              <div className="bg-white px-6 py-4 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-5 w-5 rounded" />
-                    <div>
-                      <Skeleton className="h-6 w-48 mb-1" />
-                      <Skeleton className="h-4 w-64" />
-                    </div>
-                  </div>
+            {/* Filter bar skeleton */}
+            <div className="adm-filter-bar gap-4">
+              <Skeleton className="h-11 flex-1 min-w-[280px] rounded-xl" />
+              <Skeleton className="h-11 w-36 rounded-xl" />
+              <Skeleton className="h-11 w-36 rounded-xl" />
+              <Skeleton className="h-11 w-36 rounded-xl" />
+            </div>
+
+            {/* Table skeleton */}
+            <div className="adm-card overflow-hidden">
+              <div className="adm-table-header">
+                <div className="grid grid-cols-8 gap-4 px-6 py-4">
+                  {[...Array(8)].map((_, i) => (
+                    <Skeleton key={i} className="h-3 rounded" />
+                  ))}
                 </div>
               </div>
-              <CardContent className="p-6 space-y-6 bg-white">
-                <Skeleton className="h-12 w-full rounded-lg" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="space-y-2">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-10 w-full rounded-md" />
+              <div className="divide-y divide-gray-100">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 px-6 py-4">
+                    <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                    <div className="space-y-1.5 flex-1">
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-3 w-1/4" />
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-sm border border-gray-100">
-              <CardHeader className="bg-white border-b border-gray-100">
-                <div className="flex justify-between items-center">
-                  <Skeleton className="h-6 w-48" />
-                  <Skeleton className="h-9 w-32 rounded-md" />
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="p-4 space-y-4">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="flex items-center space-x-4 p-2">
-                      <Skeleton className="h-10 w-10 rounded-full" />
-                      <div className="space-y-2 flex-1">
-                        <Skeleton className="h-4 w-1/3" />
-                        <Skeleton className="h-3 w-1/4" />
-                      </div>
-                      <Skeleton className="h-8 w-24 rounded-full" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -505,564 +509,310 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-30 transition-all duration-300">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex items-center gap-4">
-              <div className="relative group">
-                <div className="w-12 h-12 flex items-center justify-center relative bg-white rounded-full p-1 shadow-sm">
-                  <svg
-                    width="40"
-                    height="40"
-                    viewBox="270 0 170 160"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-full h-full"
-                  >
-                    <path
-                      d="M280.839 14.6317C274.557 19.0512 270.817 26.2593 270.817 33.9496V83.0697C270.817 93.8463 276.229 103.9 285.217 109.821L342.641 147.655C350.499 152.832 360.678 152.832 368.536 147.655L425.96 109.821C434.948 103.9 440.36 93.8463 440.36 83.0698V33.9496C440.36 26.2594 436.62 19.0512 430.338 14.6317L415.635 4.28764C406.826 -1.90906 394.946 -1.33884 386.769 5.67309L370.912 19.272C362.091 26.836 349.086 26.836 340.265 19.272L324.408 5.67308C316.231 -1.33884 304.351 -1.90906 295.542 4.28764L280.839 14.6317Z"
-                      fill="#FFD06D"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
-                  Driver Onboarding
-                </h1>
-                <p className="text-sm text-gray-500 font-medium tracking-wide">Admin Dashboard</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 w-full sm:w-auto bg-gray-50 p-1.5 rounded-full border border-gray-100">
-              <div className="hidden sm:flex items-center gap-2 px-3">
-                <div className="h-2 w-2 rounded-full bg-brand-teal animate-pulse"></div>
-                <span className="text-sm font-medium text-gray-600 truncate max-w-[150px]">{currentUser?.email}</span>
-              </div>
-              <Button variant="ghost" size="sm" onClick={loadData} className="shrink-0 rounded-full h-8 w-8 p-0 hover:bg-white hover:shadow-sm">
-                <RefreshCw className="h-4 w-4 text-gray-600" />
-                <span className="sr-only">Refresh</span>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={signOut} className="shrink-0 rounded-full h-8 w-8 p-0 hover:bg-brand-lightPink text-gray-500 hover:text-brand-pink hover:shadow-sm">
-                <LogOut className="h-4 w-4" />
-                <span className="sr-only">Sign out</span>
-              </Button>
-            </div>
+    <div className="min-h-screen adm-tabs-sidebar" style={{ background: 'var(--adm-surface)' }}>
+      {/* Fixed top header */}
+      <header className="adm-header">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 flex items-center justify-center bg-white/10 rounded-lg">
+            <svg width="20" height="20" viewBox="270 0 170 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M280.839 14.6317C274.557 19.0512 270.817 26.2593 270.817 33.9496V83.0697C270.817 93.8463 276.229 103.9 285.217 109.821L342.641 147.655C350.499 152.832 360.678 152.832 368.536 147.655L425.96 109.821C434.948 103.9 440.36 93.8463 440.36 83.0698V33.9496C440.36 26.2594 436.62 19.0512 430.338 14.6317L415.635 4.28764C406.826 -1.90906 394.946 -1.33884 386.769 5.67309L370.912 19.272C362.091 26.836 349.086 26.836 340.265 19.272L324.408 5.67308C316.231 -1.33884 304.351 -1.90906 295.542 4.28764L280.839 14.6317Z" fill="#FFD06D" />
+            </svg>
+          </div>
+          <ProductBrandHeading
+            mainClassName="text-xl font-bold text-white tracking-tight"
+            bylineClassName="text-xs font-medium text-white/75 mt-0.5"
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-white">
+            <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded uppercase tracking-wider">{adminRole?.replace('_', ' ')}</span>
+            {adminRole === "admin_view" ? (
+              <span className="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded uppercase tracking-wider">View only</span>
+            ) : null}
+            <span className="text-sm font-medium truncate max-w-[160px] hidden sm:inline">{currentUser?.email}</span>
+          </div>
+          <div className="flex items-center gap-1 border-l border-white/10 pl-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={loadData}
+              className="rounded-full h-8 w-8 p-0 text-white/80 hover:text-white hover:bg-white/10"
+              title="Refresh"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span className="sr-only">Refresh</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={signOut}
+              className="rounded-full h-8 w-8 p-0 text-white/80 hover:text-white hover:bg-white/10"
+              title="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="sr-only">Sign out</span>
+            </Button>
           </div>
         </div>
       </header>
 
-      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
-          <Card className="relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 group">
-            <div className="absolute top-0 left-0 w-1 h-full bg-brand-blue"></div>
-            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-brand-lightBlue/30 group-hover:bg-brand-lightBlue/50 transition-colors"></div>
-            <CardHeader className="pb-2 relative z-10">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Applications</CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-3xl font-bold text-gray-900 group-hover:scale-105 transition-transform origin-left">{stats.total || 0}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 group">
-            <div className="absolute top-0 left-0 w-1 h-full bg-brand-yellow"></div>
-            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-brand-lightYellow/30 group-hover:bg-brand-lightYellow/50 transition-colors"></div>
-            <CardHeader className="pb-2 relative z-10">
-              <CardTitle className="text-sm font-medium text-gray-600">Pending Review</CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-3xl font-bold text-brand-shadeYellow group-hover:scale-105 transition-transform origin-left">{stats.pending || 0}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 group">
-            <div className="absolute top-0 left-0 w-1 h-full bg-brand-teal"></div>
-            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-brand-lightTeal/30 group-hover:bg-brand-lightTeal/50 transition-colors"></div>
-            <CardHeader className="pb-2 relative z-10">
-              <CardTitle className="text-sm font-medium text-gray-600">Approved</CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-3xl font-bold text-brand-shadeTeal group-hover:scale-105 transition-transform origin-left">{stats.approved || 0}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 group">
-            <div className="absolute top-0 left-0 w-1 h-full bg-brand-blue"></div>
-            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-brand-lightBlue/30 group-hover:bg-brand-lightBlue/50 transition-colors"></div>
-            <CardHeader className="pb-2 relative z-10">
-              <CardTitle className="text-sm font-medium text-gray-600">Hired</CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-3xl font-bold text-brand-shadeBlue group-hover:scale-105 transition-transform origin-left">{stats.hired || 0}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 group">
-            <div className="absolute top-0 left-0 w-1 h-full bg-brand-teal"></div>
-            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-brand-lightTeal/30 group-hover:bg-brand-lightTeal/50 transition-colors"></div>
-            <CardHeader className="pb-2 relative z-10">
-              <CardTitle className="text-sm font-medium text-gray-600">Completed</CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-3xl font-bold text-brand-shadeTeal group-hover:scale-105 transition-transform origin-left">{stats.completed || 0}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 group">
-            <div className="absolute top-0 left-0 w-1 h-full bg-brand-pink"></div>
-            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-brand-lightPink/30 group-hover:bg-brand-lightPink/50 transition-colors"></div>
-            <CardHeader className="pb-2 relative z-10">
-              <CardTitle className="text-sm font-medium text-gray-600">Rejected</CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-3xl font-bold text-brand-shadePink group-hover:scale-105 transition-transform origin-left">{stats.rejected || 0}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content */}
-        <Tabs defaultValue="applications" className="space-y-6">
-          <div className="bg-white p-1 rounded-xl shadow-sm border border-gray-100 inline-flex">
-            <TabsList className="bg-transparent h-auto p-0 gap-1">
-              <TabsTrigger
-                value="applications"
-                className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all"
+      {/* Tabs wraps both sidebar and main content */}
+      <Tabs defaultValue="pipeline" className="flex">
+        {/* Fixed left sidebar */}
+        <aside className="adm-sidebar adm-no-scrollbar">
+          <div className="px-6 mb-8">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
+                style={{ background: 'var(--adm-nav-bg)' }}
               >
-                Applications
-              </TabsTrigger>
-              <TabsTrigger
-                value="analytics"
-                className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all"
-              >
-                Analytics
-              </TabsTrigger>
-              <TabsTrigger
-                value="fee-structures"
-                className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all"
-              >
-                Fee Structures
-              </TabsTrigger>
-              <TabsTrigger
-                value="facilities"
-                className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all"
-              >
-                Facilities
-              </TabsTrigger>
-              {(adminRole === 'super_admin' || adminRole === 'app_admin') && (
-                <TabsTrigger
-                  value="admins"
-                  className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all"
-                >
-                  Admins
-                </TabsTrigger>
-              )}
-            </TabsList>
+                <svg width="22" height="22" viewBox="270 0 170 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M280.839 14.6317C274.557 19.0512 270.817 26.2593 270.817 33.9496V83.0697C270.817 93.8463 276.229 103.9 285.217 109.821L342.641 147.655C350.499 152.832 360.678 152.832 368.536 147.655L425.96 109.821C434.948 103.9 440.36 93.8463 440.36 83.0698V33.9496C440.36 26.2594 436.62 19.0512 430.338 14.6317L415.635 4.28764C406.826 -1.90906 394.946 -1.33884 386.769 5.67309L370.912 19.272C362.091 26.836 349.086 26.836 340.265 19.272L324.408 5.67308C316.231 -1.33884 304.351 -1.90906 295.542 4.28764L280.839 14.6317Z" fill="#FFD06D" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-lg font-black leading-tight" style={{ color: 'var(--adm-nav-bg)' }}>Onboarding</h2>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Admin Orchestrator</p>
+              </div>
+            </div>
           </div>
 
+          <TabsList className="flex-1 flex flex-col items-stretch gap-0.5 px-3 bg-transparent h-auto">
+            <TabsTrigger value="pipeline" className="adm-nav-item justify-start">
+              <span>Pipeline</span>
+              <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-white/70">{navCounts.pipelineActive}</span>
+            </TabsTrigger>
+            <TabsTrigger value="applications" className="adm-nav-item justify-start">
+              Applications
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="adm-nav-item justify-start">
+              Analytics
+            </TabsTrigger>
+            {(adminRole === "super_admin" || adminRole === "app_admin") ? (
+              <TabsTrigger value="jobs" className="adm-nav-item justify-start">
+                <span>Jobs</span>
+                <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-white/70">{navCounts.publishedJobs}</span>
+              </TabsTrigger>
+            ) : null}
+            <TabsTrigger value="settings" className="adm-nav-item justify-start">
+              Settings
+            </TabsTrigger>
+          </TabsList>
+        </aside>
+
+        {/* Main content area */}
+        <main className="adm-main flex-1">
+          <div className="p-8 space-y-8">
+
+          <TabsContent value="pipeline" className="space-y-4 mt-0">
+            <AdminErrorBoundary>
+              <ApplicationPipeline />
+            </AdminErrorBoundary>
+          </TabsContent>
+
           {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6 mt-6">
-            <Card className="border border-gray-200 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-brand-blue" />
-                  <div>
-                    <CardTitle className="text-base font-semibold text-gray-900">
-                      Driver Funnel & Insights
-                    </CardTitle>
-                    <CardDescription className="text-sm text-gray-600">
-                      Overview of applications moving from applied to hired across cities.
-                    </CardDescription>
-                  </div>
-                </div>
-                <Badge variant="outline" className="text-xs">
-                  {applications.length} applications analysed
-                </Badge>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Status distribution */}
-                  <div className="col-span-1 lg:col-span-2">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-semibold text-gray-800">Application Outcomes</p>
-                      <p className="text-xs text-gray-500">
-                        Pending, approved, hired, rejected, withdrawn
-                      </p>
-                    </div>
-                    <div className="h-64 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={statusChartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                          <XAxis dataKey="status" tick={{ fontSize: 11 }} />
-                          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                          <Tooltip />
-                          <Legend />
-                          <Bar dataKey="count" name="Applications">
-                            {statusChartData.map((entry) => (
-                              <Cell
-                                key={entry.status}
-                                fill={STATUS_COLORS[entry.status] || "#0f172a"}
-                              />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
-                  {/* Onboarding funnel */}
-                  <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-800 mb-3">Onboarding Progress</p>
-                    <div className="h-56 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={onboardingChartData}
-                            dataKey="value"
-                            nameKey="name"
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={70}
-                            labelLine={false}
-                            label={({ name, percent }) =>
-                              `${name} ${(percent * 100).toFixed(0)}%`
-                            }
-                          >
-                            {onboardingChartData.map((entry, index) => (
-                              <Cell
-                                key={entry.name}
-                                fill={PIE_COLORS[index % PIE_COLORS.length]}
-                              />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="mt-3 space-y-1 text-xs text-gray-600">
-                      <p>
-                        <span className="font-semibold">Completed:</span>{" "}
-                        {stats.completed || 0}
-                      </p>
-                      <p>
-                        <span className="font-semibold">In Progress:</span>{" "}
-                        {stats.inProgress || 0}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* City insights table */}
-                {cityInsights.length > 0 && (
-                  <div className="border-t border-gray-100 pt-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-semibold text-gray-800">
-                        City Performance (Top 10 by hired drivers)
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Conversion = hired ÷ total applications, and hired ÷ completed
-                      </p>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="bg-gray-50">
-                            <TableHead className="text-xs font-semibold text-gray-700">
-                              City
-                            </TableHead>
-                            <TableHead className="text-xs font-semibold text-gray-700 text-right">
-                              Total
-                            </TableHead>
-                            <TableHead className="text-xs font-semibold text-gray-700 text-right">
-                              Completed
-                            </TableHead>
-                            <TableHead className="text-xs font-semibold text-gray-700 text-right">
-                              Hired
-                            </TableHead>
-                            <TableHead className="text-xs font-semibold text-gray-700 text-right">
-                              Rejected
-                            </TableHead>
-                            <TableHead className="text-xs font-semibold text-gray-700 text-right">
-                              Conversion
-                            </TableHead>
-                            <TableHead className="text-xs font-semibold text-gray-700 text-right">
-                              Conv. vs Completed
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {cityInsights.slice(0, 10).map((city, index) => (
-                            <TableRow key={`${city.city ?? "unknown"}-${index}`}>
-                              <TableCell className="text-sm font-medium">
-                                {city.city}
-                              </TableCell>
-                              <TableCell className="text-sm text-right">
-                                {city.total}
-                              </TableCell>
-                              <TableCell className="text-sm text-right">
-                                {city.completed}
-                              </TableCell>
-                              <TableCell className="text-sm text-right text-brand-shadeTeal">
-                                {city.hired}
-                              </TableCell>
-                              <TableCell className="text-sm text-right text-brand-pink">
-                                {city.rejected}
-                              </TableCell>
-                              <TableCell className="text-sm text-right">
-                                {city.conversionRate}%
-                              </TableCell>
-                              <TableCell className="text-sm text-right">
-                                {city.completedConversionRate}%
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <TabsContent value="analytics" className="space-y-4 mt-0">
+            <AdminErrorBoundary>
+              <AnalyticsDashboard />
+            </AdminErrorBoundary>
           </TabsContent>
 
           {/* Applications Tab */}
 
           {/* Applications Tab */}
-          <TabsContent value="applications" className="space-y-6 mt-6">
-            {/* Search and Filters */}
-            <Card className="bg-white border-0 shadow-sm border border-gray-100 overflow-hidden">
-              {/* Header */}
-              <div className="bg-white/50 backdrop-blur-sm border-b border-gray-100 px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-brand-lightBlue flex items-center justify-center">
-                      <Filter className="h-5 w-5 text-brand-blue" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900">Filters & Search</h3>
-                      <p className="text-sm text-gray-500 font-medium">Refine your application search</p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-500 hover:text-brand-blue hover:bg-brand-lightBlue/30 transition-colors"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setStatusFilter("all");
-                      setOnboardingFilter("all");
-                      setStageFilter("all");
-                      setCityFilter("all");
-                    }}
-                  >
-                    Reset All
-                  </Button>
+
+          {/* Applications Tab */}
+          <TabsContent value="applications" className="space-y-4 mt-0">
+            {/* Applications-only Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+              <div className="adm-stat-card border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: 'var(--adm-brand-blue)' }}>
+                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--adm-outline)' }}>Total Applications</p>
+                <div className="flex justify-between items-end">
+                  <span className="text-4xl font-bold" style={{ color: 'var(--adm-on-surface)' }}>{stats.total || 0}</span>
                 </div>
               </div>
 
-              <CardContent className="p-6 space-y-6 bg-white">
-                {/* Search Row */}
-                <div className="relative group">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-brand-blue to-brand-teal rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-200"></div>
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      placeholder="Search by email, name, or city..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-11 pr-10 h-12 rounded-xl border-gray-200 bg-white focus:border-brand-blue focus:ring-4 focus:ring-brand-lightBlue/20 transition-all text-base"
-                    />
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-brand-blue transition-colors" />
-                    {searchQuery && (
-                      <button
-                        onClick={() => setSearchQuery("")}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        <XCircle className="h-4 w-4" />
-                      </button>
-                    )}
+              <div className="adm-stat-card border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: 'var(--adm-brand-shade-yellow)', background: 'rgba(255,224,174,0.2)' }}>
+                <p className="text-xs font-bold uppercase tracking-wider mb-2 text-amber-700/70">Pending Review</p>
+                <div className="flex justify-between items-end">
+                  <span className="text-4xl font-bold text-amber-900">{stats.pending || 0}</span>
+                  <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-amber-600" />
                   </div>
                 </div>
+              </div>
 
-                {/* Filter Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">
-                      APPLICATION STATUS
-                    </label>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-full h-11 rounded-lg border-gray-200 bg-gray-50/50 hover:bg-white focus:ring-2 focus:ring-brand-blue/20 transition-all flex flex-row items-center justify-between [&>span]:order-1 [&>svg]:order-2">
-                        <SelectValue placeholder="All statuses" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Statuses</SelectItem>
-                        <SelectItem value="pending">Pending Review</SelectItem>
-                        <SelectItem value="on_hold">On Hold</SelectItem>
-                        <SelectItem value="approved">Approved</SelectItem>
-                        <SelectItem value="hired">Hired</SelectItem>
-                        <SelectItem value="rejected">Rejected</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">
-                      CURRENT STAGE
-                    </label>
-                    <Select value={stageFilter} onValueChange={setStageFilter}>
-                      <SelectTrigger className="w-full h-11 rounded-lg border-gray-200 bg-gray-50/50 hover:bg-white focus:ring-2 focus:ring-brand-blue/20 transition-all flex flex-row items-center justify-between [&>span]:order-1 [&>svg]:order-2">
-                        <SelectValue placeholder="All stages" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Stages</SelectItem>
-                        {uniqueStages.map((stage) => (
-                          <SelectItem key={stage} value={stage}>
-                            {stage}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">
-                      CITY
-                    </label>
-                    <Select value={cityFilter} onValueChange={setCityFilter}>
-                      <SelectTrigger className="w-full h-11 rounded-lg border-gray-200 bg-gray-50/50 hover:bg-white focus:ring-2 focus:ring-brand-blue/20 transition-all flex flex-row items-center justify-between [&>span]:order-1 [&>svg]:order-2">
-                        <SelectValue placeholder="All cities" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Cities</SelectItem>
-                        {uniqueCities.map((city) => (
-                          <SelectItem key={city} value={city}>
-                            {city}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">
-                      ONBOARDING PROGRESS
-                    </label>
-                    <Select value={onboardingFilter} onValueChange={setOnboardingFilter}>
-                      <SelectTrigger className="w-full h-11 rounded-lg border-gray-200 bg-gray-50/50 hover:bg-white focus:ring-2 focus:ring-brand-blue/20 transition-all flex flex-row items-center justify-between [&>span]:order-1 [&>svg]:order-2">
-                        <SelectValue placeholder="All progress" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Progress</SelectItem>
-                        <SelectItem value="started">In Progress</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                      </SelectContent>
-                    </Select>
+              <div className="adm-stat-card border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: 'var(--adm-brand-blue)', background: 'rgba(186,235,255,0.2)' }}>
+                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--adm-brand-shade-blue)', opacity: 0.7 }}>Approved</p>
+                <div className="flex justify-between items-end">
+                  <span className="text-4xl font-bold" style={{ color: 'var(--adm-brand-shade-blue)' }}>{stats.approved || 0}</span>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--adm-brand-light-blue)' }}>
+                    <CheckCircle className="h-5 w-5" style={{ color: 'var(--adm-brand-blue)' }} />
                   </div>
                 </div>
+              </div>
 
-                {/* Active Filters */}
-                {activeFiltersCount > 0 && (
-                  <div className="pt-4 border-t border-gray-200">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-bold text-gray-500 uppercase tracking-wide mr-2">Active Filters:</span>
-                      {searchQuery && (
-                        <Badge variant="secondary" className="bg-brand-lightBlue text-brand-shadeBlue border border-brand-blue/20 px-3 py-1 rounded-full font-medium">
-                          Search: "{searchQuery}"
-                          <button
-                            onClick={() => setSearchQuery("")}
-                            className="ml-2 hover:text-brand-blue transition-colors inline-flex items-center"
-                          >
-                            <XCircle className="h-3.5 w-3.5" />
-                          </button>
-                        </Badge>
-                      )}
-                      {statusFilter !== "all" && (
-                        <Badge variant="secondary" className="bg-brand-lightBlue text-brand-shadeBlue border border-brand-blue/20 px-3 py-1 rounded-full font-medium">
-                          Status: {statusFilter === "pending"
-                            ? "Pending Review"
-                            : statusFilter === "on_hold"
-                              ? "On Hold"
-                              : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
-                          <button
-                            onClick={() => setStatusFilter("all")}
-                            className="ml-2 hover:text-brand-blue transition-colors inline-flex items-center"
-                          >
-                            <XCircle className="h-3.5 w-3.5" />
-                          </button>
-                        </Badge>
-                      )}
-                      {stageFilter !== "all" && (
-                        <Badge variant="secondary" className="bg-brand-lightBlue text-brand-shadeBlue border border-brand-blue/20 px-3 py-1 rounded-full font-medium">
-                          Stage: {stageFilter}
-                          <button
-                            onClick={() => setStageFilter("all")}
-                            className="ml-2 hover:text-brand-blue transition-colors inline-flex items-center"
-                          >
-                            <XCircle className="h-3.5 w-3.5" />
-                          </button>
-                        </Badge>
-                      )}
-                      {cityFilter !== "all" && (
-                        <Badge variant="secondary" className="bg-brand-lightBlue text-brand-shadeBlue border border-brand-blue/20 px-3 py-1 rounded-full font-medium">
-                          City: {cityFilter}
-                          <button
-                            onClick={() => setCityFilter("all")}
-                            className="ml-2 hover:text-brand-blue transition-colors inline-flex items-center"
-                          >
-                            <XCircle className="h-3.5 w-3.5" />
-                          </button>
-                        </Badge>
-                      )}
-                      {onboardingFilter !== "all" && (
-                        <Badge variant="secondary" className="bg-brand-lightBlue text-brand-shadeBlue border border-brand-blue/20 px-3 py-1 rounded-full font-medium">
-                          Progress: {onboardingFilter === "started" ? "In Progress" : "Completed"}
-                          <button
-                            onClick={() => setOnboardingFilter("all")}
-                            className="ml-2 hover:text-brand-blue transition-colors inline-flex items-center"
-                          >
-                            <XCircle className="h-3.5 w-3.5" />
-                          </button>
-                        </Badge>
-                      )}
-                    </div>
+              <div className="adm-stat-card border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: 'var(--adm-brand-teal)', background: 'rgba(147,236,229,0.2)' }}>
+                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--adm-brand-shade-teal)', opacity: 0.8 }}>Hired</p>
+                <div className="flex justify-between items-end">
+                  <span className="text-4xl font-bold" style={{ color: 'var(--adm-brand-shade-teal)' }}>{stats.hired || 0}</span>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--adm-brand-light-teal)' }}>
+                    <UserCheck className="h-5 w-5" style={{ color: 'var(--adm-brand-shade-teal)' }} />
                   </div>
+                </div>
+              </div>
+
+              <div className="adm-stat-card border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: 'var(--adm-brand-pink)', background: 'rgba(251,180,194,0.2)' }}>
+                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--adm-brand-shade-pink)', opacity: 0.8 }}>Rejected</p>
+                <div className="flex justify-between items-end">
+                  <span className="text-4xl font-bold" style={{ color: 'var(--adm-brand-shade-pink)' }}>{stats.rejected || 0}</span>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--adm-brand-light-pink)' }}>
+                    <XCircle className="h-5 w-5" style={{ color: 'var(--adm-brand-shade-pink)' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Single-row filter bar */}
+            <div
+              className="p-4 rounded-xl flex flex-wrap items-center gap-3"
+              style={{ background: 'var(--adm-surface-container-low)' }}
+            >
+              {/* Search */}
+              <div className="flex-1 min-w-[260px] relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--adm-outline)' }} />
+                <Input
+                  type="text"
+                  placeholder="Search by name, email or phone..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-9 h-10 rounded-xl bg-white text-sm shadow-sm"
+                  style={{ border: '1px solid rgba(191,199,212,0.2)', outline: 'none' }}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                    style={{ color: 'var(--adm-outline)' }}
+                  >
+                    <XCircle className="h-4 w-4" />
+                  </button>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+
+              {/* Status */}
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger
+                  className="h-10 rounded-xl bg-white text-sm shadow-sm min-w-[140px] flex flex-row items-center justify-between [&>span]:order-1 [&>svg]:order-2"
+                  style={{ border: '1px solid rgba(191,199,212,0.2)' }}
+                >
+                  <SelectValue placeholder="All Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending Review</SelectItem>
+                  <SelectItem value="on_hold">On Hold</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="hired">Hired</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* City */}
+              <Select value={cityFilter} onValueChange={setCityFilter}>
+                <SelectTrigger
+                  className="h-10 rounded-xl bg-white text-sm shadow-sm min-w-[140px] flex flex-row items-center justify-between [&>span]:order-1 [&>svg]:order-2"
+                  style={{ border: '1px solid rgba(191,199,212,0.2)' }}
+                >
+                  <SelectValue placeholder="All Cities" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Cities</SelectItem>
+                  {uniqueCities.map((city) => (
+                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Stage */}
+              <Select value={stageFilter} onValueChange={setStageFilter}>
+                <SelectTrigger
+                  className="h-10 rounded-xl bg-white text-sm shadow-sm min-w-[150px] flex flex-row items-center justify-between [&>span]:order-1 [&>svg]:order-2"
+                  style={{ border: '1px solid rgba(191,199,212,0.2)' }}
+                >
+                  <SelectValue placeholder="All Stages" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Stages</SelectItem>
+                  {uniqueStages.map((stage) => (
+                    <SelectItem key={stage} value={stage}>{stage}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Onboarding progress */}
+              <Select value={onboardingFilter} onValueChange={setOnboardingFilter}>
+                <SelectTrigger
+                  className="h-10 rounded-xl bg-white text-sm shadow-sm min-w-[150px] flex flex-row items-center justify-between [&>span]:order-1 [&>svg]:order-2"
+                  style={{ border: '1px solid rgba(191,199,212,0.2)' }}
+                >
+                  <SelectValue placeholder="All Progress" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Progress</SelectItem>
+                  <SelectItem value="started">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Reset — only when filters are active */}
+              {activeFiltersCount > 0 && (
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("all");
+                    setStageFilter("all");
+                    setOnboardingFilter("completed");
+                    setCityFilter("all");
+                  }}
+                  className="h-10 px-3 rounded-xl bg-white text-sm font-medium shadow-sm transition-colors"
+                  style={{ border: '1px solid rgba(191,199,212,0.2)', color: 'var(--adm-outline)' }}
+                  title="Reset all filters"
+                >
+                  <Filter className="h-4 w-4" />
+                </button>
+              )}
+            </div>
 
             {/* Applications Table */}
-            <div className="bg-white border border-gray-200 rounded-md shadow-sm">
+            <div className="adm-card overflow-hidden">
               {/* Summary Bar */}
-              <div className="bg-gray-100 border-b border-gray-200 px-4 py-2">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <p className="text-sm text-gray-700">
-                    Filtered applications: <span className="font-semibold">{filteredApplications.length}</span> | Total applications: <span className="font-semibold">{applications.length}</span>
-                  </p>
-                  {filteredApplications.filter(app => app.onboardingStatus === 'completed' && (!app.status || app.status === 'pending')).length > 0 && (
-                    <Badge className="bg-brand-lightYellow text-brand-shadeYellow border-brand-yellow hover:bg-brand-lightYellow">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {filteredApplications.filter(app => app.onboardingStatus === 'completed' && (!app.status || app.status === 'pending')).length} completed application{filteredApplications.filter(app => app.onboardingStatus === 'completed' && (!app.status || app.status === 'pending')).length !== 1 ? 's' : ''} awaiting review
-                    </Badge>
-                  )}
-                </div>
+              <div className="px-6 py-3 flex items-center justify-between gap-2" style={{ borderBottom: '1px solid var(--adm-surface-container)' }}>
+                <p className="text-sm" style={{ color: 'var(--adm-on-surface-variant)' }}>
+                  Showing <span className="font-semibold" style={{ color: 'var(--adm-on-surface)' }}>1 to {Math.min(filteredApplications.length, 25)}</span> of{' '}
+                  <span className="font-semibold" style={{ color: 'var(--adm-on-surface)' }}>{applications.length.toLocaleString()}</span> applications
+                </p>
+                {filteredApplications.filter(app => app.onboardingStatus === 'completed' && (!app.status || app.status === 'pending')).length > 0 && (
+                  <span className="adm-badge adm-badge-pending">
+                    <Clock className="h-3 w-3" />
+                    {filteredApplications.filter(app => app.onboardingStatus === 'completed' && (!app.status || app.status === 'pending')).length} awaiting review
+                  </span>
+                )}
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto adm-custom-scrollbar">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-white border-b border-gray-200">
-                      <TableHead className="font-semibold text-gray-700 py-3 px-4 text-left">Name</TableHead>
-                      <TableHead className="font-semibold text-gray-700 py-3 px-4 text-left">Email</TableHead>
-                      <TableHead className="font-semibold text-gray-700 py-3 px-4 text-left">Phone</TableHead>
-                      <TableHead className="font-semibold text-gray-700 py-3 px-4 text-left">City</TableHead>
-                      <TableHead className="font-semibold text-gray-700 py-3 px-4 text-left">Status</TableHead>
-                      <TableHead className="font-semibold text-gray-700 py-3 px-4 text-left">Current Stage</TableHead>
-                      <TableHead className="font-semibold text-gray-700 py-3 px-4 text-left">Progress</TableHead>
-                      <TableHead className="font-semibold text-gray-700 py-3 px-4 text-left">Created</TableHead>
-                      <TableHead className="font-semibold text-gray-700 py-3 px-4 text-right">Actions</TableHead>
+                    <TableRow style={{ background: 'var(--adm-surface-container-low)' }}>
+                      <TableHead className="text-[11px] font-bold uppercase tracking-[0.05em] py-4 px-6" style={{ color: 'var(--adm-on-surface-variant)' }}>Name</TableHead>
+                      <TableHead className="text-[11px] font-bold uppercase tracking-[0.05em] py-4 px-6" style={{ color: 'var(--adm-on-surface-variant)' }}>Email</TableHead>
+                      <TableHead className="text-[11px] font-bold uppercase tracking-[0.05em] py-4 px-6" style={{ color: 'var(--adm-on-surface-variant)' }}>Phone</TableHead>
+                      <TableHead className="text-[11px] font-bold uppercase tracking-[0.05em] py-4 px-6" style={{ color: 'var(--adm-on-surface-variant)' }}>City</TableHead>
+                      <TableHead className="text-[11px] font-bold uppercase tracking-[0.05em] py-4 px-6" style={{ color: 'var(--adm-on-surface-variant)' }}>App Status</TableHead>
+                      <TableHead className="text-[11px] font-bold uppercase tracking-[0.05em] py-4 px-6" style={{ color: 'var(--adm-on-surface-variant)' }}>Stage</TableHead>
+                      <TableHead className="text-[11px] font-bold uppercase tracking-[0.05em] py-4 px-6" style={{ color: 'var(--adm-on-surface-variant)' }}>Progress</TableHead>
+                      <TableHead className="text-[11px] font-bold uppercase tracking-[0.05em] py-4 px-6" style={{ color: 'var(--adm-on-surface-variant)' }}>Created</TableHead>
+                      <TableHead className="text-[11px] font-bold uppercase tracking-[0.05em] py-4 px-6 text-right" style={{ color: 'var(--adm-on-surface-variant)' }}>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1080,20 +830,51 @@ export default function AdminDashboard() {
                       filteredApplications.map((app, index) => (
                         <TableRow
                           key={app.id ?? app.applicantId ?? app.email ?? `${app.email ?? "app"}-${index}`}
-                          className="hover:bg-gray-50 border-b border-gray-200 transition-colors"
+                          className="adm-table-row"
                         >
-                          <TableCell className="text-sm py-3 px-4 text-left font-medium">{app.name || 'N/A'}</TableCell>
-                          <TableCell className="text-sm py-3 px-4 text-left">{app.email}</TableCell>
-                          <TableCell className="text-sm py-3 px-4 text-left">{app.phone || 'N/A'}</TableCell>
-                          <TableCell className="text-sm py-3 px-4 text-left">{app.city || 'N/A'}</TableCell>
-                          <TableCell className="py-3 px-4 text-left">{getStatusBadge(app.status)}</TableCell>
-                          <TableCell className="py-3 px-4 text-left">
-                            <Badge variant="outline" className="text-xs">
-                              {getCurrentStage(app)}
-                            </Badge>
+                          {/* Name + avatar */}
+                          <TableCell className="adm-table-cell">
+                            {(() => {
+                              const avatarPalette = [
+                                { bg: '#BAEBFF', fg: '#202B93' },
+                                { bg: '#FFE5AE', fg: '#92400e' },
+                                { bg: '#93ECE5', bg2: '#d1fae5', fg: '#065f46' },
+                                { bg: '#FBB4C2', fg: '#be123c' },
+                              ];
+                              const seed = (app.name || app.email || '').charCodeAt(0) % avatarPalette.length;
+                              const { bg, fg } = avatarPalette[seed];
+                              const initials = (app.name || app.email || '?').trim().split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
+                              return (
+                                <div className="flex items-center gap-3">
+                                  <div
+                                    className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                                    style={{ background: bg, color: fg }}
+                                  >
+                                    {initials}
+                                  </div>
+                                  <p className="text-sm font-semibold whitespace-nowrap" style={{ color: 'var(--adm-on-surface)' }}>
+                                    {app.name || 'N/A'}
+                                  </p>
+                                </div>
+                              );
+                            })()}
                           </TableCell>
-                          <TableCell className="py-3 px-4 text-left">{getOnboardingStatusBadge(app.onboardingStatus)}</TableCell>
-                          <TableCell className="text-sm text-gray-600 py-3 px-4 text-left">
+                          <TableCell className="adm-table-cell text-sm" style={{ color: 'var(--adm-on-surface-variant)' }}>{app.email}</TableCell>
+                          <TableCell className="adm-table-cell text-sm" style={{ color: 'var(--adm-on-surface-variant)' }}>{app.phone || 'N/A'}</TableCell>
+                          <TableCell className="adm-table-cell">
+                            <span className="text-sm" style={{ color: 'var(--adm-on-surface)' }}>{app.city || 'N/A'}</span>
+                          </TableCell>
+                          <TableCell className="adm-table-cell">{getStatusBadge(app.status)}</TableCell>
+                          <TableCell className="adm-table-cell">
+                            <span
+                              className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap"
+                              style={{ background: '#1e293b', color: '#f1f5f9' }}
+                            >
+                              {getCurrentStage(app)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="adm-table-cell">{getOnboardingStatusBadge(app.onboardingStatus)}</TableCell>
+                          <TableCell className="adm-table-cell text-sm" style={{ color: 'var(--adm-on-surface-variant)' }}>
                             {app.createdAt ? new Date(app.createdAt).toLocaleDateString('en-GB', {
                               day: '2-digit',
                               month: 'short',
@@ -1103,7 +884,8 @@ export default function AdminDashboard() {
                             }) : 'N/A'}
                           </TableCell>
                           <TableCell className="py-3 px-4 text-right">
-                            <div className="flex items-center justify-end gap-2 flex-wrap">
+                            <div className="flex items-center justify-end gap-2">
+                              {/* View — always visible */}
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -1246,208 +1028,97 @@ export default function AdminDashboard() {
                                 View
                               </Button>
 
-                              {/* Quick Approve/Reject/Hold for completed applications */}
-                              {app.onboardingStatus === 'completed' && (adminRole === 'super_admin' || adminRole === 'app_admin' || adminRole === 'admin_fleet') && app.status !== 'approved' && app.status !== 'rejected' && app.status !== 'hired' && (
-                                <>
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button
-                                        size="sm"
-                                        className="bg-brand-shadeTeal hover:bg-brand-teal text-white shadow-md hover:shadow-lg"
-                                      >
-                                        <CheckCircle className="h-3 w-3 mr-1" />
-                                        Approve
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent className="z-[200]">
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Approve Application</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          Are you sure you want to approve this application for {app.email}?
-                                          The driver will be notified of the approval.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction
-                                          onClick={() => handleStatusUpdate(app.email, 'approved')}
-                                          className="bg-brand-shadeTeal hover:bg-brand-teal"
-                                        >
-                                          Approve Application
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
-
-                                  {app.status !== 'on_hold' && (
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="text-brand-shadeYellow hover:text-brand-shadeYellow hover:bg-brand-lightYellow border-brand-yellow"
-                                        >
-                                          <PauseCircle className="h-3 w-3 mr-1" />
-                                          On Hold
-                                        </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent className="z-[200]">
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle>Put Application On Hold</AlertDialogTitle>
-                                          <AlertDialogDescription>
-                                            Are you sure you want to put this application on hold for {app.email}?
-                                            You can reconsider and change the status later.
-                                          </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                          <AlertDialogAction
-                                            onClick={() => handleStatusUpdate(app.email, 'on_hold')}
-                                            className="bg-brand-shadeYellow hover:bg-brand-yellow text-white"
-                                          >
-                                            Put On Hold
-                                          </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
-                                  )}
-
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="text-brand-shadePink hover:text-brand-pink hover:bg-brand-lightPink border-brand-pink"
-                                      >
-                                        <XCircle className="h-3 w-3 mr-1" />
-                                        Reject
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent className="z-[200]">
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Reject Application</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          Are you sure you want to reject this application for {app.email}?
-                                          The driver will be notified of the rejection.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction
-                                          onClick={() => handleStatusUpdate(app.email, 'rejected')}
-                                          className="bg-brand-shadePink hover:bg-brand-pink"
-                                        >
-                                          Reject Application
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
-                                </>
-                              )}
-
-                              {/* Mark Hired button - only for approved applicants */}
-                              {app.status === 'approved' && (adminRole === 'super_admin' || adminRole === 'app_admin' || adminRole === 'admin_fleet') && (
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button
-                                      size="sm"
-                                      className="bg-brand-blue hover:bg-brand-shadeBlue text-white shadow-md hover:shadow-lg"
-                                    >
-                                      <UserCheck className="h-3 w-3 mr-1" />
-                                      Mark Hired
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent className="z-[200]">
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Mark Driver as Hired</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Are you sure you want to mark this driver as hired for {app.email}?
-                                        This will update the application status to "Hired".
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() => handleStatusUpdate(app.email, 'hired')}
-                                        className="bg-brand-blue hover:bg-brand-shadeBlue"
-                                      >
-                                        Mark Hired
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              )}
-
-                              {/* Secondary Actions Dropdown */}
+                              {/* 3-dot menu — all other actions */}
                               {(adminRole === 'super_admin' || adminRole === 'app_admin' || adminRole === 'admin_fleet') && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                      <span className="sr-only">Open menu</span>
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-[160px] z-50 bg-white">
-                                    <DropdownMenuItem
-                                      onClick={() => {
-                                        setSelectedReport(null);
-                                        setSelectedApplication(app);
-                                      }}
+                                    <button
+                                      type="button"
+                                      className="inline-flex h-8 w-8 items-center justify-center rounded-md p-0 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                                     >
-                                      <Edit className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
-                                      Edit
+                                      <span className="sr-only">More actions</span>
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-[190px] z-50 bg-white shadow-lg">
+
+                                    {/* Edit */}
+                                    <DropdownMenuItem
+                                      onClick={() => { setSelectedReport(null); setSelectedApplication(app); }}
+                                    >
+                                      <Edit className="mr-2 h-4 w-4 text-slate-500" />
+                                      Edit Status
                                     </DropdownMenuItem>
 
-                                    {app.status !== 'on_hold' && app.status !== 'hired' && (adminRole === 'super_admin' || adminRole === 'app_admin' || adminRole === 'admin_fleet') && (
-                                      <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                          <DropdownMenuItem
-                                            onSelect={(e) => e.preventDefault()}
-                                            className="text-brand-shadeYellow focus:text-brand-shadeYellow focus:bg-brand-lightYellow"
-                                          >
-                                            <PauseCircle className="mr-2 h-3.5 w-3.5" />
-                                            Put On Hold
-                                          </DropdownMenuItem>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent className="z-[200]">
-                                          <AlertDialogHeader>
-                                            <AlertDialogTitle>Put Application On Hold</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                              Are you sure you want to put this application on hold for {app.email}?
-                                              You can reconsider and change the status later.
-                                            </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction
-                                              onClick={() => handleStatusUpdate(app.email, 'on_hold')}
-                                              className="bg-brand-shadeYellow hover:bg-brand-yellow text-white"
-                                            >
-                                              Put On Hold
-                                            </AlertDialogAction>
-                                          </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                      </AlertDialog>
+                                    <DropdownMenuSeparator />
+
+                                    {/* Approve */}
+                                    {app.onboardingStatus === 'completed' && app.status !== 'approved' && app.status !== 'rejected' && app.status !== 'hired' && (
+                                      <DropdownMenuItem
+                                        onClick={() => handleStatusUpdate(app.email, 'approved')}
+                                        className="text-emerald-700 focus:text-emerald-700 focus:bg-emerald-50"
+                                      >
+                                        <CheckCircle className="mr-2 h-4 w-4" />
+                                        Approve
+                                      </DropdownMenuItem>
                                     )}
 
+                                    {/* Mark Hired */}
+                                    {app.status === 'approved' && (
+                                      <DropdownMenuItem
+                                        onClick={() => handleStatusUpdate(app.email, 'hired')}
+                                        className="text-blue-700 focus:text-blue-700 focus:bg-blue-50"
+                                      >
+                                        <UserCheck className="mr-2 h-4 w-4" />
+                                        Mark Hired
+                                      </DropdownMenuItem>
+                                    )}
+
+                                    {/* Put On Hold */}
+                                    {app.status !== 'on_hold' && app.status !== 'hired' && (
+                                      <DropdownMenuItem
+                                        onClick={() => handleStatusUpdate(app.email, 'on_hold')}
+                                        className="text-amber-700 focus:text-amber-700 focus:bg-amber-50"
+                                      >
+                                        <PauseCircle className="mr-2 h-4 w-4" />
+                                        Put On Hold
+                                      </DropdownMenuItem>
+                                    )}
+
+                                    {/* Reject */}
+                                    {app.onboardingStatus === 'completed' && app.status !== 'approved' && app.status !== 'rejected' && app.status !== 'hired' && (
+                                      <DropdownMenuItem
+                                        onClick={() => handleStatusUpdate(app.email, 'rejected')}
+                                        className="text-rose-700 focus:text-rose-700 focus:bg-rose-50"
+                                      >
+                                        <XCircle className="mr-2 h-4 w-4" />
+                                        Reject
+                                      </DropdownMenuItem>
+                                    )}
+
+                                    {/* Reset Progress */}
                                     {app.onboardingStatus === 'completed' && (adminRole === 'super_admin' || adminRole === 'app_admin') && (
                                       <DropdownMenuItem
                                         onClick={() => setApplicationToReset(app)}
-                                        className="text-brand-shadeYellow focus:text-brand-shadeYellow focus:bg-brand-lightYellow"
+                                        className="text-amber-700 focus:text-amber-700 focus:bg-amber-50"
                                       >
-                                        <RefreshCw className="mr-2 h-3.5 w-3.5" />
+                                        <RefreshCw className="mr-2 h-4 w-4" />
                                         Reset Progress
                                       </DropdownMenuItem>
                                     )}
 
+                                    {/* Delete */}
                                     {(adminRole === 'super_admin' || adminRole === 'app_admin') && (
-                                      <DropdownMenuItem
-                                        onClick={() => setApplicationToDelete(app)}
-                                        className="text-brand-pink focus:text-brand-pink focus:bg-brand-lightPink"
-                                      >
-                                        <Trash2 className="mr-2 h-3.5 w-3.5" />
-                                        Delete
-                                      </DropdownMenuItem>
+                                      <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                          onClick={() => setApplicationToDelete(app)}
+                                          className="text-rose-700 focus:text-rose-700 focus:bg-rose-50"
+                                        >
+                                          <Trash2 className="mr-2 h-4 w-4" />
+                                          Delete
+                                        </DropdownMenuItem>
+                                      </>
                                     )}
                                   </DropdownMenuContent>
                                 </DropdownMenu>
@@ -1472,6 +1143,57 @@ export default function AdminDashboard() {
             <FacilityManager />
           </TabsContent>
 
+          <TabsContent value="regions">
+            <RegionManager />
+          </TabsContent>
+
+          <TabsContent value="jobs">
+            <JobManager />
+          </TabsContent>
+
+          <TabsContent value="settings" className="mt-0">
+            <Tabs defaultValue="regions" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="regions">Regions</TabsTrigger>
+                <TabsTrigger value="fee-structures">Fee Structures</TabsTrigger>
+                <TabsTrigger value="facilities">Facilities</TabsTrigger>
+                <TabsTrigger value="email-templates">Email Templates</TabsTrigger>
+                <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                <TabsTrigger value="communications">Communications</TabsTrigger>
+                <TabsTrigger value="questionnaires">Questionnaires</TabsTrigger>
+                {(adminRole === 'super_admin' || adminRole === 'app_admin') && (
+                  <TabsTrigger value="team">Team</TabsTrigger>
+                )}
+              </TabsList>
+              <TabsContent value="regions">
+                <RegionManager />
+              </TabsContent>
+              <TabsContent value="fee-structures">
+                <FeeStructureManager />
+              </TabsContent>
+              <TabsContent value="facilities">
+                <FacilityManager />
+              </TabsContent>
+              <TabsContent value="email-templates">
+                <EmailTemplateManager />
+              </TabsContent>
+              <TabsContent value="notifications">
+                <NotificationSettingsManager />
+              </TabsContent>
+              <TabsContent value="communications">
+                <CommunicationsOverview />
+              </TabsContent>
+              <TabsContent value="questionnaires">
+                <QuestionnaireBuilder />
+              </TabsContent>
+              {(adminRole === 'super_admin' || adminRole === 'app_admin') && (
+                <TabsContent value="team">
+                  <AdminManager />
+                </TabsContent>
+              )}
+            </Tabs>
+          </TabsContent>
+
           {/* Admins Tab - Only visible to super_admin and app_admin */}
           {(adminRole === 'super_admin' || adminRole === 'app_admin') && (
             <TabsContent value="admins">
@@ -1479,8 +1201,9 @@ export default function AdminDashboard() {
             </TabsContent>
           )}
 
-        </Tabs>
-      </div>
+          </div>
+        </main>
+      </Tabs>
 
       {/* Status Update Dialog */}
       {
@@ -2002,7 +1725,6 @@ export default function AdminDashboard() {
                                         </p>
                                       );
                                     } catch (error) {
-                                      console.error('Error formatting timestamp:', error, timestamp);
                                       return null;
                                     }
                                   })()}

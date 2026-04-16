@@ -1,0 +1,545 @@
+/*
+ * Admin-only styles — imported ONLY from apps/admin-web/src/main.jsx
+ * Do NOT import from apps/driver-web or packages/shared.
+ *
+ * Colour system sourced from the approved design palette.
+ * Token names follow Material Design 3 naming to match the Stitch output.
+ */
+
+/* ─────────────────────────────────────────────
+   1. Design-system tokens (admin scope)
+   ───────────────────────────────────────────── */
+:root {
+  /* Surface scale */
+  --adm-surface:                    #f3f6fb;
+  --adm-surface-bright:             #f8fafd;
+  --adm-surface-dim:                #d8dadd;
+  --adm-surface-container-lowest:   #ffffff;
+  --adm-surface-container-low:      #eff3f8;
+  --adm-surface-container:          #e5ebf3;
+  --adm-surface-container-high:     #dce5ef;
+  --adm-surface-container-highest:  #d2deec;
+
+  /* On-surface */
+  --adm-on-surface:                 #1f2937;
+  --adm-on-surface-variant:         #5b6575;
+  --adm-on-background:              #111827;
+  --adm-inverse-surface:            #2d3133;
+  --adm-inverse-on-surface:         #eff1f4;
+
+  /* Primary (blue) */
+  --adm-primary:                    #0b72bd;
+  --adm-primary-container:          #0890f1;
+  --adm-primary-fixed:              #d2e4ff;
+  --adm-primary-fixed-dim:          #a0caff;
+  --adm-on-primary:                 #ffffff;
+  --adm-on-primary-container:       #fdfcff;
+  --adm-on-primary-fixed:           #001c37;
+  --adm-on-primary-fixed-variant:   #00497e;
+  --adm-inverse-primary:            #a0caff;
+
+  /* Secondary (indigo/purple) */
+  --adm-secondary:                  #202b93;
+  --adm-secondary-container:        #8a95ff;
+  --adm-secondary-fixed:            #dfe0ff;
+  --adm-secondary-fixed-dim:        #bdc2ff;
+  --adm-on-secondary:               #ffffff;
+  --adm-on-secondary-container:     #1b268f;
+  --adm-on-secondary-fixed:         #000866;
+  --adm-on-secondary-fixed-variant: #2f3aa1;
+
+  /* Tertiary (teal) */
+  --adm-tertiary:                   #006861;
+  --adm-tertiary-container:         #00837a;
+  --adm-tertiary-fixed:             #6af8eb;
+  --adm-tertiary-fixed-dim:         #47dbcf;
+  --adm-on-tertiary:                #ffffff;
+  --adm-on-tertiary-container:      #f3fffc;
+  --adm-on-tertiary-fixed:          #00201d;
+  --adm-on-tertiary-fixed-variant:  #00504b;
+
+  /* Error */
+  --adm-error:                      #ba1a1a;
+  --adm-error-container:            #ffdad6;
+  --adm-on-error:                   #ffffff;
+  --adm-on-error-container:         #93000a;
+
+  /* Outline */
+  --adm-outline:                    #707884;
+  --adm-outline-variant:            #bfc7d4;
+
+  /* Brand accent colours from the approved palette */
+  --adm-brand-yellow:               #FFD06D;
+  --adm-brand-pink:                 #EF8EA2;
+  --adm-brand-teal:                 #2FCCC0;
+  --adm-brand-blue:                 #0890F1;
+  --adm-brand-shade-blue:           #202B93;
+  --adm-brand-shade-teal:           #04B4A8;
+  --adm-brand-shade-pink:           #ED738C;
+  --adm-brand-shade-yellow:         #FFB55D;
+  --adm-brand-light-blue:           #BAEBFF;
+  --adm-brand-light-teal:           #93ECE5;
+  --adm-brand-light-pink:           #FBB4C2;
+  --adm-brand-light-yellow:         #FFE5AE;
+
+  /* Nav header */
+  --adm-nav-bg:                     #202B93;
+  --adm-nav-height:                 4rem;      /* 64px */
+  --adm-sidebar-width:              16rem;     /* 256px */
+}
+
+body.admin-page {
+  background: var(--adm-surface);
+  color: var(--adm-on-surface);
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.admin-shell {
+  background: var(--adm-surface);
+}
+
+/* ─────────────────────────────────────────────
+   2. Admin layout utilities
+   ───────────────────────────────────────────── */
+
+/* Fixed top navigation bar */
+.adm-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+  height: var(--adm-nav-height);
+  background-color: var(--adm-nav-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 1.5rem;
+  box-shadow: 0 4px 24px -4px rgba(32, 43, 147, 0.25);
+}
+
+/* Fixed left sidebar */
+.adm-sidebar {
+  position: fixed;
+  top: var(--adm-nav-height);
+  left: 0;
+  width: var(--adm-sidebar-width);
+  height: calc(100vh - var(--adm-nav-height));
+  background-color: #f8fafc; /* slate-50 */
+  border-right: 1px solid rgba(226, 232, 240, 0.6);
+  display: flex;
+  flex-direction: column;
+  padding-block: 1.5rem;
+  z-index: 40;
+  overflow-y: auto;
+}
+
+/* Main content offset for header + sidebar */
+.adm-main {
+  margin-left: var(--adm-sidebar-width);
+  padding-top: var(--adm-nav-height);
+  min-height: 100vh;
+  background-color: var(--adm-surface);
+}
+
+/* Sidebar nav item — inactive */
+.adm-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b; /* slate-500 */
+  cursor: pointer;
+  transition: all 200ms ease;
+  text-align: left;
+  width: 100%;
+  background: transparent;
+  border: none;
+}
+
+.adm-nav-item:hover {
+  background-color: rgba(226, 232, 240, 0.5);
+  transform: translateX(2px);
+}
+
+/* Sidebar nav item — active */
+.adm-nav-item-active {
+  background-color: #ffffff;
+  color: #1d4ed8;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border-left: 4px solid #1d4ed8;
+  transform: translateX(2px);
+}
+
+.adm-nav-item-active:hover {
+  background-color: #f8fafc;
+}
+
+/* ─────────────────────────────────────────────
+   3. Card patterns
+   ───────────────────────────────────────────── */
+.adm-card {
+  background-color: var(--adm-surface-container-lowest);
+  border-radius: 1rem;
+  border: 1px solid var(--adm-surface-container);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 12px 24px rgba(16, 24, 40, 0.04);
+}
+
+.adm-stat-card {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 20px rgba(16, 24, 40, 0.05);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(32, 43, 147, 0.08);
+}
+
+/* ─────────────────────────────────────────────
+   4. Table patterns
+   ───────────────────────────────────────────── */
+.adm-table-header th {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--adm-on-surface-variant);
+  background-color: var(--adm-surface-container-low);
+  padding: 1rem 1.5rem;
+}
+
+.adm-table-row {
+  transition: background-color 150ms ease;
+  border-bottom: 1px solid var(--adm-surface-container);
+}
+
+.adm-table-row:hover {
+  background-color: rgba(242, 244, 247, 0.5);
+}
+
+.adm-table-cell {
+  padding: 1rem 1.5rem;
+  font-size: 0.875rem;
+  color: var(--adm-on-surface);
+}
+
+/* ─────────────────────────────────────────────
+   5. Badge patterns
+   ───────────────────────────────────────────── */
+.adm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Application status badges with standardized brand colours */
+.adm-badge-pending   { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.adm-badge-on_hold   { background-color: #fef3c7; color: #b45309; border: 1px solid #f59e0b; }
+.adm-badge-approved  { background-color: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+.adm-badge-hired     { background-color: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+.adm-badge-completed { background-color: var(--adm-brand-light-teal); color: var(--adm-brand-shade-teal); border: 1px solid var(--adm-brand-teal); }
+.adm-badge-rejected  { background-color: #ffe4e6; color: #be123c; border: 1px solid #fda4af; }
+
+/* Role badges */
+.adm-role-super_admin { background-color: var(--adm-brand-shade-blue); color: #ffffff; }
+.adm-role-app_admin   { background-color: var(--adm-brand-blue); color: #ffffff; }
+.adm-role-admin_fleet { background-color: var(--adm-brand-teal); color: #ffffff; }
+.adm-role-admin_view  { background-color: #e2e8f0; color: #475569; }
+
+/* ─────────────────────────────────────────────
+   6. Filter bar
+   ───────────────────────────────────────────── */
+.adm-filter-bar {
+  background-color: var(--adm-surface-container-low);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ─────────────────────────────────────────────
+   7. Button patterns
+   ───────────────────────────────────────────── */
+.adm-btn-primary {
+  background-color: var(--adm-primary);
+  color: var(--adm-on-primary);
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 150ms ease;
+  box-shadow: 0 2px 8px rgba(0, 94, 161, 0.25);
+  cursor: pointer;
+  border: none;
+}
+
+.adm-btn-primary:hover {
+  background-color: var(--adm-primary-container);
+  box-shadow: 0 4px 16px rgba(0, 94, 161, 0.35);
+}
+
+.adm-btn-primary:active {
+  transform: scale(0.97);
+}
+
+.adm-btn-outline {
+  background: #fff;
+  color: #0b72bd;
+  border: 1px solid rgba(8, 144, 241, 0.25);
+  border-radius: 0.75rem;
+  transition: all 150ms ease;
+}
+
+.adm-btn-outline:hover {
+  background: rgba(8, 144, 241, 0.06);
+  border-color: rgba(8, 144, 241, 0.45);
+}
+
+/* ─────────────────────────────────────────────
+   8. Scroll utilities
+   ───────────────────────────────────────────── */
+.adm-no-scrollbar::-webkit-scrollbar { display: none; }
+.adm-no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.adm-custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.adm-custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.adm-custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #bfc7d4;
+  border-radius: 10px;
+}
+
+/* ─────────────────────────────────────────────
+   9. Glass panel
+   ───────────────────────────────────────────── */
+.adm-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ─────────────────────────────────────────────
+   10. Background decoration blobs (login)
+   ───────────────────────────────────────────── */
+.adm-bg-blob-primary {
+  position: fixed;
+  width: 400px;
+  height: 400px;
+  background: rgba(0, 94, 161, 0.05);
+  border-radius: 9999px;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.adm-bg-blob-secondary {
+  position: fixed;
+  width: 350px;
+  height: 350px;
+  background: rgba(73, 84, 186, 0.05);
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.adm-login-bg {
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 35%),
+    linear-gradient(135deg, #202b93 0%, #0890f1 60%, #2fccc0 100%);
+}
+
+.adm-sidebar-shell {
+  background: linear-gradient(180deg, #202b93 0%, #1b2586 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  color: #dbe8ff;
+}
+
+.adm-sidebar-item {
+  position: relative;
+  color: #9fb1e7;
+  border-radius: 0.625rem;
+  transition: all 150ms ease;
+}
+
+.adm-sidebar-item:hover {
+  color: #f5f8ff;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.adm-sidebar-item-active {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.adm-sidebar-item-active::after {
+  content: "";
+  position: absolute;
+  right: -0.75rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 3px;
+  border-radius: 999px;
+  background: #2fccc0;
+}
+
+.adm-topbar {
+  background: #ffffff;
+  border-bottom: 1px solid rgba(32, 43, 147, 0.08);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03);
+}
+
+.adm-search {
+  height: 2.4rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(32, 43, 147, 0.12);
+  background: #f8fafc;
+  color: #4b5563;
+}
+
+.adm-pill {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+}
+
+.adm-panel {
+  background: #fff;
+  border: 1px solid rgba(32, 43, 147, 0.1);
+  border-radius: 0.9rem;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 20px rgba(16, 24, 40, 0.04);
+}
+
+.adm-toolbar {
+  background: #fff;
+  border: 1px solid rgba(32, 43, 147, 0.1);
+  border-radius: 0.9rem;
+  padding: 0.75rem;
+}
+
+.adm-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(8, 144, 241, 0.3);
+  background: #fff;
+  color: #334155;
+}
+
+.adm-chip-active {
+  background: #0b72bd;
+  color: #fff;
+  border-color: #0b72bd;
+}
+
+.adm-table-shell {
+  background: #fff;
+  border: 1px solid rgba(32, 43, 147, 0.1);
+  border-radius: 0.9rem;
+  overflow: auto;
+}
+
+.adm-modal {
+  border: 1px solid rgba(32, 43, 147, 0.12);
+  box-shadow: 0 16px 40px rgba(16, 24, 40, 0.16);
+  border-radius: 0.95rem;
+}
+
+.adm-kanban-column {
+  width: 300px;
+  flex-shrink: 0;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(32, 43, 147, 0.1);
+  background: #f8fafd;
+}
+
+.adm-kanban-card {
+  border: 1px solid rgba(32, 43, 147, 0.1);
+  border-radius: 0.7rem;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03);
+}
+
+.adm-form-modern input:not([type="checkbox"]):not([type="radio"]),
+.adm-form-modern textarea,
+.adm-form-modern [data-slot="select-trigger"],
+.adm-form-modern select {
+  border-width: 1px !important;
+  border-color: #d7deea !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  background: #ffffff !important;
+}
+
+.adm-form-modern input:not([type="checkbox"]):not([type="radio"]):focus,
+.adm-form-modern textarea:focus,
+.adm-form-modern [data-slot="select-trigger"]:focus,
+.adm-form-modern select:focus {
+  border-color: #8bc8f3 !important;
+  box-shadow: 0 0 0 3px rgba(8, 144, 241, 0.12) !important;
+}
+
+.adm-form-modern .adm-question-card {
+  border: 1px solid #dfe6f1;
+  border-radius: 12px;
+  background: #fbfdff;
+  padding: 0.875rem;
+}
+
+/* ─────────────────────────────────────────────
+   11. Sidebar-scoped Radix Tabs override
+   Radix TabsList defaults to flex-row; inside the
+   sidebar we need it to be a vertical flex column.
+   ───────────────────────────────────────────── */
+.adm-tabs-sidebar [role="tablist"] {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: transparent;
+  height: auto;
+  gap: 0.125rem;
+  padding: 0;
+}
+
+.adm-tabs-sidebar [role="tab"] {
+  justify-content: flex-start;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  transition: all 200ms ease;
+  border: none;
+  background: transparent;
+}
+
+.adm-tabs-sidebar [role="tab"]:hover {
+  background-color: rgba(226, 232, 240, 0.5);
+  transform: translateX(2px);
+  color: #334155;
+}
+
+.adm-tabs-sidebar [role="tab"][data-state="active"] {
+  background-color: #ffffff !important;
+  color: #1d4ed8 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border-left: 4px solid #1d4ed8;
+  transform: translateX(2px);
+}

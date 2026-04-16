@@ -20,9 +20,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@lh/shared";
+import { useOptionalApplication } from "../context/ApplicationContext";
+import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
+import { publicServices } from "../lib/public-services";
 
 const SmokingFitnessCheck = () => {
   const navigate = useNavigate();
+  const appContext = useOptionalApplication();
   const { currentUser, updateUserData, isLoading } = useAuth();
   const { toast } = useToast();
 
@@ -46,14 +50,12 @@ const SmokingFitnessCheck = () => {
     setIsWithdrawing(true);
     try {
       const success = await updateUserData({
-        status: 'withdrawn',
-        withdrawnAt: new Date().toISOString(),
-        withdrawalReason: 'Cannot climb stairs - physical fitness requirement not met',
-        step: 'smoking_fitness_check'
+        step: "smoking_fitness_check",
       });
 
       if (success) {
-        navigate("/thank-you");
+        await publicServices.withdrawDriverApplication("Cannot climb stairs - physical fitness requirement not met");
+        navigate("/dashboard");
       } else {
         toast({
           title: "Withdrawal Failed",
@@ -62,7 +64,6 @@ const SmokingFitnessCheck = () => {
         });
       }
     } catch (error) {
-      console.error("Error withdrawing application:", error);
       toast({
         title: "Withdrawal Failed",
         description: "Unable to process withdrawal. Please try again.",
@@ -100,17 +101,19 @@ const SmokingFitnessCheck = () => {
 
     setIsSaving(true);
     try {
-      const success = await updateUserData({
+      const payload = {
         smokingStatus: smokingPolicy,
         hasPhysicalDifficulties: !physicalFitness,
-        step: 'smoking_fitness_check'
-      });
+        step: "smoking_fitness_check",
+      };
+      const success = appContext
+        ? await appContext.updatePersonalDetails(payload)
+        : await updateUserData(payload);
 
       if (success) {
-        navigate("/liabilities");
+        navigate(appContext ? "/screening/liabilities" : "/liabilities");
       }
     } catch (error) {
-      console.error("Error saving smoking/fitness data:", error);
       toast({
         title: "Save Failed",
         description: "Unable to save information. Please try again.",
@@ -122,7 +125,7 @@ const SmokingFitnessCheck = () => {
   };
 
   return (
-    <PageLayout compact title="">
+    <PageLayout compact title="" routes={appContext ? SCREENING_STEP_PATHS : undefined} basePath={appContext ? "/screening" : "/"}>
       <div className="w-full flex flex-col items-center">
         <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down">
           {pageContent.smokingFitnessCheck.title}

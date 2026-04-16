@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pipeline Board - Logistics ATS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e0e3e5",
+                        "on-surface": "#191c1e",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#191c1e",
+                        "surface-container-low": "#f2f4f6",
+                        "on-primary-fixed": "#001c37",
+                        "primary-fixed-dim": "#a0caff",
+                        "tertiary": "#924255",
+                        "primary-fixed": "#d2e4ff",
+                        "on-secondary-fixed": "#00201d",
+                        "secondary": "#006a63",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "inverse-surface": "#2d3133",
+                        "on-tertiary-container": "#fffbff",
+                        "outline-variant": "#bfc7d4",
+                        "error": "#ba1a1a",
+                        "surface-container": "#eceef0",
+                        "on-primary-fixed-variant": "#00497e",
+                        "secondary-container": "#67f5e8",
+                        "outline": "#707884",
+                        "on-surface-variant": "#404752",
+                        "on-secondary-fixed-variant": "#00504b",
+                        "error-container": "#ffdad6",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#a0caff",
+                        "tertiary-container": "#b05a6d",
+                        "surface-bright": "#f7f9fb",
+                        "primary": "#005ea1",
+                        "tertiary-fixed-dim": "#ffb1c0",
+                        "surface": "#f7f9fb",
+                        "inverse-on-surface": "#eff1f3",
+                        "background": "#f7f9fb",
+                        "surface-container-highest": "#e0e3e5",
+                        "tertiary-fixed": "#ffd9df",
+                        "on-primary-container": "#fdfcff",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed-dim": "#47dbcf",
+                        "secondary-fixed": "#6af8eb",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#006f68",
+                        "surface-tint": "#0061a5",
+                        "surface-dim": "#d8dadc",
+                        "primary-container": "#0078ca",
+                        "on-tertiary-fixed": "#3f0116",
+                        "on-tertiary-fixed-variant": "#772d40",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar (Authority: JSON) -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-[#202B93] flex flex-col py-6 z-50">
+<div class="px-6 mb-8">
+<h1 class="text-xl font-bold text-white tracking-tight">Logistics ATS</h1>
+<p class="text-xs text-[#2FCCC0] font-medium tracking-wide">Driver Onboarding</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Pipeline Active -->
+<a class="bg-[#2FCCC0]/10 text-[#2FCCC0] border-r-4 border-[#2FCCC0] px-4 py-3 flex items-center gap-3 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="assignment_ind">assignment_ind</span>
+<span class="font-['Inter'] text-sm font-medium tracking-tight">Pipeline</span>
+</a>
+<a class="text-white/70 hover:text-white px-4 py-3 flex items-center gap-3 transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined" data-icon="work_outline">work_outline</span>
+<span class="font-['Inter'] text-sm font-medium tracking-tight">Open Roles</span>
+</a>
+<a class="text-white/70 hover:text-white px-4 py-3 flex items-center gap-3 transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+<span class="font-['Inter'] text-sm font-medium tracking-tight">Interviews</span>
+</a>
+<a class="text-white/70 hover:text-white px-4 py-3 flex items-center gap-3 transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-['Inter'] text-sm font-medium tracking-tight">Analytics</span>
+</a>
+<a class="text-white/70 hover:text-white px-4 py-3 flex items-center gap-3 transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-['Inter'] text-sm font-medium tracking-tight">Settings</span>
+</a>
+</nav>
+<div class="px-6 pt-6 mt-auto border-t border-white/10">
+<div class="flex items-center gap-3">
+<img alt="Org Logo" class="w-8 h-8 rounded-lg object-cover" data-alt="Corporate headshot of a professional logistics manager in a blue suit and white shirt, studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUigb1qD99BoQ3KpmR2E7CasKcTsXV0lbJS-bXkShJvmgzzJT1yNB7C0Ruw4nkDG7OrOBxOfgIT3huN-QO0KxBs7GUGlIl9r9sfHJSDE5hFLLrnB5LOFmwTF4QzoA1ky3qHg7Anv_zVlMT97jlu0viZJYLIwBw1VDD0ICC0JjaiyW40EHz2ga_5KGgE1EI4SdSygFFpgIgzxGoyvFqRsijMCBJMTesTwLH00MMeei7dS9I00-0zHNkQQjE7aEXYaon60KTOSV-cdKn"/>
+<div class="overflow-hidden">
+<p class="text-white text-xs font-semibold truncate">Laundryheap Ltd.</p>
+<p class="text-white/50 text-[10px] uppercase tracking-wider">Fleet Ops</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopAppBar (Authority: JSON) -->
+<header class="w-[calc(100%-16rem)] ml-64 fixed top-0 h-16 flex justify-between items-center px-8 w-full border-b border-[#bfc7d4]/20 bg-[#f7f9fb] z-40">
+<div class="flex items-center gap-4">
+<span class="text-on-surface-variant font-medium text-sm">Dashboard / Pipeline</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="bg-surface-container-low border-none rounded-full pl-10 pr-4 py-1.5 text-sm focus:ring-2 focus:ring-secondary/30 w-64" placeholder="Search drivers..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="help_outline">help_outline</span>
+<img alt="Admin Avatar" class="w-8 h-8 rounded-full border border-outline-variant/20 object-cover" data-alt="professional woman in logistics operations management profile photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDU664FffZzUFLUApRc1PqQrTty1rWRBw1FdvmDBmR6Fh2hXYbo8yb-NeAW1zAqV5LbRedww-4up-38BdeZaJH3i4DJpMSzh6W26QMOka1yLD6PnAxXoxf3jYX3HPG_Skz0aeFP0rxDXc4vWFXC8c-jS1FBiNQICzEYppuOzLoXhF27VQHyYcANnASHqOdrCrDhy5knEeScmrcMVfaH2UM02lO30YQaH38C3onP4CMvKGZbBNaPqHeO87otE9a74fPtOnLEucXvx5Px"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 mt-16 p-8 min-h-[calc(100vh-4rem)] bg-surface">
+<!-- Page Header Section -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h1 class="text-4xl font-bold tracking-tight text-on-surface">Pipeline Board</h1>
+<p class="text-on-surface-variant mt-1">Manage driver onboarding lifecycle across 17 active applications.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="bg-surface-container rounded-lg p-1 flex gap-1">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-on-surface-variant hover:text-on-surface transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="list">list</span>
+                        Table
+                    </button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-primary text-white shadow-sm">
+<span class="material-symbols-outlined text-[18px]" data-icon="grid_view">grid_view</span>
+                        Board
+                    </button>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 border border-outline-variant/30 rounded-lg text-sm font-medium text-on-surface hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="filter_list">filter_list</span>
+                    Filter
+                </button>
+<button class="bg-primary hover:bg-primary-container text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                    New Driver
+                </button>
+</div>
+</div>
+<!-- Kanban Board Area -->
+<div class="flex gap-4 overflow-x-auto pb-8 hide-scrollbar">
+<!-- Column 1: Applied -->
+<div class="flex-shrink-0 w-[280px]">
+<div class="flex items-center justify-between mb-4 px-2">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-6 rounded-full bg-outline"></div>
+<h3 class="font-semibold text-on-surface uppercase tracking-wider text-xs">Applied</h3>
+<span class="bg-surface-container-high text-on-surface-variant text-[10px] px-2 py-0.5 rounded-full font-bold">5</span>
+</div>
+<span class="material-symbols-outlined text-outline cursor-pointer" data-icon="more_horiz">more_horiz</span>
+</div>
+<div class="space-y-3">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-transparent hover:border-primary/20 transition-all cursor-grab">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-on-surface leading-tight">Marcus Thompson</h4>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="electric_car">electric_car</span>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="bg-surface-container text-on-surface-variant text-[10px] px-2 py-0.5 rounded-full font-semibold">New App</span>
+<span class="text-[11px] text-on-surface-variant">London, UK</span>
+</div>
+<div class="flex justify-between items-center mt-4">
+<div class="flex gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-secondary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="material-symbols-outlined text-[16px] text-outline-variant" data-icon="pending">pending</span>
+</div>
+<img class="w-6 h-6 rounded-full grayscale opacity-50" data-alt="portrait of a male admin reviewer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoVHxFD7LKlerGMLwzEvFcXCKp3r9RGF35rSyz4qldzSEGCXR9pwvEwuLXlutMkPmISTQoIsQzozqBj_XUadaThiZCe0wUJgOq5ILzRU01mVeUEHYhPR5R1WY79shkGmTh6f6dfkB5uFAkF7BNxRcJkX79jSmNs_EaK4zfrCYrlONSAZSJ8BQezuTi1WBynvXwt86pTaaRV8taHb-42p7H66r69vZHe5OAxWdj6xGApgDTCdURfDjUkHbivg_DDAmjw3S80V2xCq2q"/>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-transparent hover:border-primary/20 transition-all cursor-grab">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-on-surface leading-tight">Sarah Chen</h4>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="moped">moped</span>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="bg-surface-container text-on-surface-variant text-[10px] px-2 py-0.5 rounded-full font-semibold">Self-Employed</span>
+<span class="text-[11px] text-on-surface-variant">Manchester</span>
+</div>
+<div class="flex justify-between items-center mt-4">
+<span class="text-[10px] text-error font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="alarm">alarm</span>
+                                9 days ago
+                            </span>
+<img class="w-6 h-6 rounded-full" data-alt="female administrator profile photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApHyk8erbPS0r63_uyy2XdfCoRI-xzg743-EIvLHEGr0ExWR9gDqLoV5DVfQKaE7hBdOLUK3nRwZo78_GId59OxwJNAIL5T2SrVrsfiUxpoxwHrnrOQnLCe3QrlCqEHmVBRQyPwIlPlopW9sb4Bm6X16FDo9eP6L1f7wqQQb-_eF2LYgSIDirdJoxnDosXVOQjW-vh0FnStlQuMZdxs_MdVfviHVg7NlRu0qHsjQP78ZIZYhQGeJx_YI0tKUDkcg7f5ZkTJw5KTD1W"/>
+</div>
+</div>
+<!-- placeholder/dashed for more -->
+<div class="border-2 border-dashed border-outline-variant/30 rounded-xl h-24 flex items-center justify-center text-outline-variant">
+<span class="text-xs font-medium">+ 3 more</span>
+</div>
+</div>
+</div>
+<!-- Column 2: Screening -->
+<div class="flex-shrink-0 w-[280px]">
+<div class="flex items-center justify-between mb-4 px-2">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-6 rounded-full bg-primary"></div>
+<h3 class="font-semibold text-on-surface uppercase tracking-wider text-xs">Screening</h3>
+<span class="bg-primary-fixed text-on-primary-fixed text-[10px] px-2 py-0.5 rounded-full font-bold">4</span>
+</div>
+</div>
+<div class="space-y-3">
+<!-- Card Mid-Drag State -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-2xl border-2 border-primary rotate-2 scale-105 z-10 cursor-grabbing relative">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-on-surface leading-tight">Jameson Blake</h4>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="local_shipping">local_shipping</span>
+</div>
+<div class="text-[11px] text-on-surface-variant mb-4">Interview scheduled</div>
+<div class="flex justify-between items-center">
+<div class="flex gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary" data-icon="task_alt" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+<span class="material-symbols-outlined text-[16px] text-secondary" data-icon="task_alt" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+</div>
+<img class="w-6 h-6 rounded-full" data-alt="middle aged male manager avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvxeLybf1EPZf-Rek-Vw2M7jG-B4p4fJahFY-RsaCtecOBaq-g-SwDDPgMCMYhUO4YEl92wtZ1rauYNCG-TGcByKiQdbb5ooA_4p884ndgsBJShKihLv89Ywwkwi-aQMNTwkngEQ_XI4TqdNX9ebKwdCrX2ARsuGoac8YZ7K2vuroXPTiI6UmZtboJgQgQjlgNBQ_ZBjgDHKRP3XBSfvP2Q1MhhLScGwdiqxKi7ied4hAOCbhzw_ckMYWTTzmBMpy-ThLNYzdlch22"/>
+</div>
+</div>
+<!-- Placeholder -->
+<div class="border-2 border-dashed border-primary/20 bg-primary/5 rounded-xl h-32"></div>
+</div>
+</div>
+<!-- Column 3: Documents -->
+<div class="flex-shrink-0 w-[280px]">
+<div class="flex items-center justify-between mb-4 px-2">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-6 rounded-full bg-amber-400"></div>
+<h3 class="font-semibold text-on-surface uppercase tracking-wider text-xs">Documents</h3>
+<span class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-bold">3</span>
+</div>
+</div>
+<div class="space-y-3">
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-transparent hover:border-primary/20 transition-all cursor-grab">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-on-surface leading-tight">Alina Vance</h4>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="directions_car">directions_car</span>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="bg-amber-50 text-amber-700 text-[10px] px-2 py-0.5 rounded-full font-semibold italic">Missing License</span>
+</div>
+<div class="flex justify-between items-center mt-4">
+<span class="text-[10px] text-error font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="priority_high">priority_high</span>
+                                12 days in stage
+                            </span>
+<img class="w-6 h-6 rounded-full" data-alt="female admin avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfVGxWyqjMz0JIemP3QGhW0CBdiHZew8sZ_BdJsh26n6B74zZIjAYJ4yjXTe0W8aRDISSf1NUWhysRJvH8En2urYF2MKw-EiV1foVgC5lqG_eG00oIjXLFKwbMaQ_GVTowzR8sX7nWQYAp49GcMKKCwC2YxNVKQQAjGq5EdAjm-sDL-bDIAD4nkMM6tNYPE1107zTFKXnT27RDbFw7lARC3x1uE-90hjIZoLw2yyXMu6TCZfilawOQLAwA9wVWya5HEKZYx9N8eBza"/>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-transparent hover:border-primary/20 transition-all cursor-grab">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-on-surface leading-tight">Oliver Twist</h4>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="electric_bike">electric_bike</span>
+</div>
+<div class="text-[11px] text-on-surface-variant">Reviewing Insurance</div>
+<div class="flex justify-between items-center mt-4">
+<div class="flex gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-secondary" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="material-symbols-outlined text-[16px] text-outline-variant" data-icon="sync">sync</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Column 4: Decision -->
+<div class="flex-shrink-0 w-[280px]">
+<div class="flex items-center justify-between mb-4 px-2">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-6 rounded-full bg-[#202B93]"></div>
+<h3 class="font-semibold text-on-surface uppercase tracking-wider text-xs">Decision</h3>
+<span class="bg-[#202B93]/10 text-[#202B93] text-[10px] px-2 py-0.5 rounded-full font-bold">2</span>
+</div>
+</div>
+<div class="space-y-3">
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-transparent hover:border-primary/20 transition-all cursor-grab">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-on-surface leading-tight">Sofia Martinez</h4>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="local_shipping">local_shipping</span>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="bg-secondary-container text-on-secondary-container text-[10px] px-2 py-0.5 rounded-full font-semibold">Recommended</span>
+</div>
+<div class="flex justify-between items-center mt-4">
+<span class="text-[11px] text-on-surface-variant">3 days ago</span>
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border-2 border-white" data-alt="team member avatar one" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtm4TH_iSINTFusNyB--iqAYwB-bBS3eLLWnMCjUiM34AJU8gTmMnLm34CCv9FEtUJDssAVdbsd22kgBCnQwVo-YJONRjWXoh5VDVLg8yCzWd30zQcE57GeC7VKH467K25jpOBaLU4ECAX5tlft72LBWNMXOTySiPQVizD_FCCe23pAWQzrCS18uvxZ3rjqUJI_ldl_ovtj9g1hL6lyYYHE5GxNU5DJUceCSpYjS4rYXtA_zpVWJJseRC75qyAPdSEpxHttW1ObNY5"/>
+<img class="w-6 h-6 rounded-full border-2 border-white" data-alt="team member avatar two" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2svRn6ibY-5IAe1UdXDeQ2hCiyXMTbbJT-rF3cze27jOIVpaGxQ8jJYRt0IqkC6Rt9-7WB9wkJkBD6ErAIbFVVf2uldf7QaLuxf2TEFF4VUUM4UMt2cNlG1v9B7yBn0YNDaOodINYKcWx3z7iEvpJdFnuUGvFWq-Xg-RewMKllzb6ooLf_s8N-6K4EYJWnbekmDwq0d7RN4dan9z4H7dIOjWoHOEfeadxFgYx3O6rs6HRtAzw6XypB649BmcEp6xTA-FR9V72CnHC"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Column 5: First Block -->
+<div class="flex-shrink-0 w-[280px]">
+<div class="flex items-center justify-between mb-4 px-2">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-6 rounded-full bg-[#2FCCC0]"></div>
+<h3 class="font-semibold text-on-surface uppercase tracking-wider text-xs">First Block</h3>
+<span class="bg-[#2FCCC0]/10 text-[#2FCCC0] text-[10px] px-2 py-0.5 rounded-full font-bold">3</span>
+</div>
+</div>
+<div class="space-y-3">
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-transparent hover:border-primary/20 transition-all cursor-grab">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-on-surface leading-tight">Liam O'Connor</h4>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="electric_car">electric_car</span>
+</div>
+<div class="flex items-center justify-between mb-3">
+<span class="text-[11px] text-on-surface-variant">Zone 1 &amp; 2</span>
+<span class="text-secondary font-bold text-[10px]">READY</span>
+</div>
+<div class="flex justify-between items-center mt-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-secondary" data-icon="event">event</span>
+<span class="text-[11px] font-medium">Tomorrow, 08:00</span>
+</div>
+</div>
+</div>
+<div class="border-2 border-dashed border-outline-variant/30 rounded-xl h-24 flex flex-col items-center justify-center text-outline-variant gap-1 hover:bg-surface-container transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Assign Slot</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Glassmorphism Floating Action Notification (Contextual) -->
+<div class="fixed bottom-8 right-8 bg-surface-container-lowest/80 backdrop-blur-md border border-white/50 shadow-[0_4px_12px_rgba(26,26,46,0.08)] px-6 py-4 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container" data-icon="bolt">bolt</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">3 Drivers waiting for decision</p>
+<p class="text-xs text-on-surface-variant">Documentation for 'London Hub' is complete.</p>
+</div>
+<button class="ml-4 text-primary font-bold text-xs hover:underline">Review All</button>
+</div>
+</main>
+</body></html>

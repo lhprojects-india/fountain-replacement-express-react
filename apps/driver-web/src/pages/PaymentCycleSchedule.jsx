@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { getPaymentCycleContent, pageContent } from "@/data/page-content";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { acknowledgementServices } from "@/lib/firebase-services";
+import { acknowledgementServices } from "@/lib/api-services";
 import { PageLayout } from "@lh/shared";
 import { Button } from "@lh/shared";
 import { UIButton } from "@lh/shared";
@@ -21,10 +21,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@lh/shared";
+import { useOptionalApplication } from "../context/ApplicationContext";
+import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
+import { publicServices } from "../lib/public-services";
 
 const PaymentCycleSchedule = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const appContext = useOptionalApplication();
   const { currentUser, updateUserData, isLoading } = useAuth();
   const { toast } = useToast();
 
@@ -40,8 +44,27 @@ const PaymentCycleSchedule = () => {
     }
   }, [currentUser]);
 
-  const city = currentUser?.fountainData?.city || currentUser?.city;
-  const content = getPaymentCycleContent(city);
+  const [cityConfig, setCityConfig] = useState(null);
+  const city = appContext?.application?.city || currentUser?.city;
+  const content = cityConfig
+    ? {
+        paymentCycle: cityConfig.paymentCycle || {},
+        scheduling: cityConfig.scheduling || {},
+      }
+    : getPaymentCycleContent(city);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!appContext) return;
+      try {
+        const data = await publicServices.getApplicationCityConfig();
+        setCityConfig(data);
+      } catch (e) {
+        setCityConfig(null);
+      }
+    };
+    load();
+  }, [appContext]);
 
   const handleContinue = async () => {
     if (!policyUnderstood) {
@@ -64,7 +87,9 @@ const PaymentCycleSchedule = () => {
       };
 
       // Attempt server-side immutable acknowledgement
-      const res = await acknowledgementServices.acknowledgePaymentCycleSchedule();
+      const res = appContext
+        ? { success: await appContext.acknowledgePolicy("paymentCycleSchedule") }
+        : await acknowledgementServices.acknowledgePaymentCycleSchedule();
 
       // Always update local state regardless of which method was used
       // If user came from summary, return to summary instead of continuing flow
@@ -73,16 +98,15 @@ const PaymentCycleSchedule = () => {
       if (res.success) {
         // Backend acknowledged, update local state
         await updateUserData(dataToSave);
-        navigate(shouldReturnToSummary ? "/acknowledgements-summary" : "/how-route-works");
+        navigate(shouldReturnToSummary ? "/acknowledgements-summary" : appContext ? "/screening/how-route-works" : "/how-route-works");
       } else {
         // Fallback to client-side write
         const success = await updateUserData(dataToSave);
         if (success) {
-          navigate(shouldReturnToSummary ? "/acknowledgements-summary" : "/how-route-works");
+          navigate(shouldReturnToSummary ? "/acknowledgements-summary" : appContext ? "/screening/how-route-works" : "/how-route-works");
         }
       }
     } catch (error) {
-      console.error("Error saving payment cycle & schedule acknowledgment:", error);
       toast({
         title: "Save Failed",
         description: "Unable to save acknowledgment. Please try again.",
@@ -113,7 +137,6 @@ const PaymentCycleSchedule = () => {
         });
       }
     } catch (error) {
-      console.error("Error withdrawing application:", error);
       toast({
         title: "Withdrawal Failed",
         description: "Unable to process withdrawal. Please try again.",
@@ -125,7 +148,7 @@ const PaymentCycleSchedule = () => {
   };
 
   return (
-    <PageLayout compact title="">
+    <PageLayout compact title="" routes={appContext ? SCREENING_STEP_PATHS : undefined} basePath={appContext ? "/screening" : "/"}>
       <div className="w-full flex flex-col items-center">
         <h2 className="text-2xl font-bold mb-4 text-brand-shadeBlue animate-slide-down">
           Payment Cycle &amp; Block Schedule
