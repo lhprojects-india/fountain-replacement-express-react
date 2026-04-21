@@ -6,6 +6,12 @@ import { upsertOnboardingStep } from '../../lib/driverSerialize.js';
 import { JWT_SECRET, jwtSignOptionsByRole } from '../../lib/jwt.js';
 import logger from '../../lib/logger.js';
 
+function getBootstrapSuperAdminEmail() {
+  return String(process.env.BOOTSTRAP_SUPER_ADMIN_EMAIL || '')
+    .toLowerCase()
+    .trim();
+}
+
 export const checkFountainEmail = async (req, res) => {
   const { email } = req.validatedBody || req.body;
 
@@ -110,7 +116,24 @@ export const adminGoogleLogin = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Could not retrieve email from Google account' });
     }
 
-    const admin = await prisma.admin.findUnique({ where: { email } });
+    let admin = await prisma.admin.findUnique({ where: { email } });
+
+    if (!admin) {
+      const bootstrapEmail = getBootstrapSuperAdminEmail();
+      if (bootstrapEmail && email === bootstrapEmail) {
+        const adminCount = await prisma.admin.count();
+        if (adminCount === 0) {
+          admin = await prisma.admin.create({
+            data: {
+              email,
+              role: 'super_admin',
+              name: decoded.name || 'Bootstrap Super Admin',
+            },
+          });
+          logger.info({ msg: 'Bootstrap super admin created from Google login', email });
+        }
+      }
+    }
 
     if (!admin) {
       return res.status(403).json({ success: false, message: 'Access denied. This Google account is not authorised as an admin.' });
