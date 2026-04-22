@@ -55,8 +55,8 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 const allowedOrigins = [
-  process.env.DRIVER_WEB_URL || 'http://localhost:3000',
-  process.env.ADMIN_WEB_URL || 'http://localhost:3001',
+  process.env.DRIVER_WEB_URL || process.env.VITE_DRIVER_APP_URL || 'http://localhost:3000',
+  process.env.ADMIN_WEB_URL || process.env.VITE_ADMIN_APP_URL || 'http://localhost:3001',
 ].filter(Boolean);
 
 const globalLimiter = rateLimit({
