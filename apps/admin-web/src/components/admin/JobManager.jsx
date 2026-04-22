@@ -50,8 +50,12 @@ import {
   Briefcase,
 } from "lucide-react";
 
-const DRIVER_APP_URL =
-  import.meta.env.VITE_DRIVER_APP_URL || "http://localhost:5173";
+const DRIVER_APP_URL = (() => {
+  const configuredUrl = import.meta.env.VITE_DRIVER_APP_URL?.trim();
+  if (configuredUrl) return configuredUrl;
+  if (typeof window !== "undefined") return window.location.origin;
+  return "http://localhost:5173";
+})();
 
 function errMessage(err) {
   if (!err) return "Something went wrong";
