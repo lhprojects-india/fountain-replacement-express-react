@@ -236,6 +236,11 @@ export const adminServices = {
     return result;
   },
 
+  async removeDropboxTemplate(id) {
+    const result = await apiClient.delete(`/contract-templates/${id}/dropbox-sign-template`);
+    return result;
+  },
+
   async getAllJobs(filters = {}) {
     const params = new URLSearchParams();
     if (filters.cityId != null && filters.cityId !== "") {

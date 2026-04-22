@@ -7,6 +7,7 @@ import {
 } from './contract.schemas.js';
 import {
   createTemplateFromFile,
+  deleteDropboxTemplate,
   getEmbeddedTemplateEditUrl,
 } from '../integrations/dropbox-sign/dropbox-sign.client.js';
 
@@ -207,8 +208,15 @@ export async function getDropboxTemplateEditUrlForContract(id) {
   try {
     edit = await getEmbeddedTemplateEditUrl(existing.dropboxSignTemplateId);
   } catch (error) {
+    const msg = error?.message || 'Failed to get Dropbox Sign embedded editor URL.';
+    if (msg.toLowerCase().includes('template not found')) {
+      throw new ContractServiceError(
+        'Linked Dropbox template was not found for this API app/account. Recreate it using "Create DS" to enable in-app editing.',
+        409
+      );
+    }
     throw new ContractServiceError(
-      error?.message || 'Failed to get Dropbox Sign embedded editor URL.',
+      msg,
       502
     );
   }
@@ -220,6 +228,46 @@ export async function getDropboxTemplateEditUrlForContract(id) {
     embeddedEditor: {
       editUrl: edit.editUrl,
       expiresAt: edit.expiresAt,
+    },
+  };
+}
+
+export async function removeDropboxTemplateForContract(id) {
+  const templateId = Number(id);
+  if (!Number.isInteger(templateId) || templateId <= 0) {
+    throw new ContractServiceError('Invalid contract template id.', 400);
+  }
+  const existing = await prisma.contractTemplate.findUnique({ where: { id: templateId } });
+  if (!existing) {
+    throw new ContractServiceError('Contract template not found.', 404);
+  }
+
+  const providerTemplateId = String(existing.dropboxSignTemplateId || '').trim();
+  if (!providerTemplateId) {
+    throw new ContractServiceError('No Dropbox Sign template is linked to this contract template.', 400);
+  }
+
+  let providerDeleted = false;
+  try {
+    await deleteDropboxTemplate(providerTemplateId);
+    providerDeleted = true;
+  } catch (error) {
+    const msg = error?.message || 'Failed to delete Dropbox Sign template.';
+    if (!msg.toLowerCase().includes('template not found')) {
+      throw new ContractServiceError(msg, 502);
+    }
+  }
+
+  const updatedTemplate = await prisma.contractTemplate.update({
+    where: { id: templateId },
+    data: { dropboxSignTemplateId: null },
+  });
+
+  return {
+    template: updatedTemplate,
+    dropboxTemplate: {
+      templateId: providerTemplateId,
+      deleted: providerDeleted,
     },
   };
 }

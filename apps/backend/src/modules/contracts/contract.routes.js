@@ -8,6 +8,7 @@ import {
   getContractTemplateById,
   listByCity,
   listContractTemplates,
+  removeDropboxTemplateHandler,
   updateContractTemplateHandler,
 } from './contract.controller.js';
 import asyncHandler from '../../api/middleware/asyncHandler.js';
@@ -51,6 +52,11 @@ router.get(
   '/:id/dropbox-sign-template/edit-url',
   requireDbAdminRoles(...REGION_MUTATE_ROLES),
   asyncHandler(getDropboxTemplateEditUrlHandler)
+);
+router.delete(
+  '/:id/dropbox-sign-template',
+  requireDbAdminRoles(...REGION_MUTATE_ROLES),
+  asyncHandler(removeDropboxTemplateHandler)
 );
 router.delete('/:id', requireDbAdminRoles(...REGION_MUTATE_ROLES), asyncHandler(deleteContractTemplateHandler));
 

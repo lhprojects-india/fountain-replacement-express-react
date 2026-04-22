@@ -140,6 +140,7 @@ export default function CityManager() {
   const [dropboxEditorOpen, setDropboxEditorOpen] = useState(false);
   const [dropboxEditorUrl, setDropboxEditorUrl] = useState("");
   const [dropboxEditorLoading, setDropboxEditorLoading] = useState(false);
+  const [dropboxDeleteLoadingId, setDropboxDeleteLoadingId] = useState(null);
 
   const canMutate = adminRole && adminRole !== "admin_view";
   const canCreateCity =
@@ -411,6 +412,32 @@ export default function CityManager() {
     }
   };
 
+  const removeDropboxTemplateLink = async (contractTemplate) => {
+    if (!contractTemplate?.id) return;
+    setDropboxDeleteLoadingId(contractTemplate.id);
+    try {
+      const result = await adminServices.removeDropboxTemplate(contractTemplate.id);
+      const deletedInProvider = Boolean(result?.dropboxTemplate?.deleted);
+      toast({
+        title: deletedInProvider
+          ? "Dropbox template deleted and unlinked"
+          : "Dropbox template link removed",
+        description: deletedInProvider
+          ? undefined
+          : "Template was not found in Dropbox Sign, but local link was removed.",
+      });
+      await loadCities();
+    } catch (e) {
+      toast({
+        title: "Could not remove Dropbox template",
+        description: errMessage(e),
+        variant: "destructive",
+      });
+    } finally {
+      setDropboxDeleteLoadingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <Card className="adm-card">
@@ -638,6 +665,18 @@ export default function CityManager() {
                                                   onClick={() => openDropboxEditor(t)}
                                                 >
                                                   Edit DS
+                                                </Button>
+                                              )}
+                                              {t.dropboxSignTemplateId && (
+                                                <Button
+                                                  type="button"
+                                                  variant="outline"
+                                                  size="sm"
+                                                  className="h-8"
+                                                  disabled={dropboxDeleteLoadingId === t.id}
+                                                  onClick={() => removeDropboxTemplateLink(t)}
+                                                >
+                                                  {dropboxDeleteLoadingId === t.id ? "Removing..." : "Delete DS"}
                                                 </Button>
                                               )}
                                               <Button

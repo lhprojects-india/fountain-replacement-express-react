@@ -153,6 +153,19 @@ export async function getEmbeddedTemplateEditUrl(templateId) {
   };
 }
 
+export async function deleteDropboxTemplate(templateId) {
+  if (!templateId) {
+    throw new Error('Missing Dropbox Sign template id');
+  }
+  const payload = new URLSearchParams();
+  await request(`/template/delete/${encodeURIComponent(templateId)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: payload.toString(),
+  });
+  return { deleted: true };
+}
+
 export async function getSignatureRequestStatus(signatureRequestId) {
   const json = await request(`/signature_request/${encodeURIComponent(signatureRequestId)}`);
   return json?.signature_request || null;
