@@ -19,7 +19,6 @@ const compression = (await import('compression')).default;
 const pinoHttp = (await import('pino-http')).default;
 const prisma = (await import('./lib/prisma.js')).default;
 const { logger } = await import('./lib/logger.js');
-const { checkStorageHealth } = await import('./modules/documents/storage.service.js');
 
 // Route imports
 const authRoutes = (await import('./api/routes/authRoutes.js')).default;
@@ -160,14 +159,6 @@ app.get('/health', async (req, res) => {
   } catch (error) {
     checks.database = 'error';
     logger.warn({ msg: 'Health check database failed', error: error?.message || error });
-  }
-
-  try {
-    await checkStorageHealth();
-    checks.storage = 'ok';
-  } catch (error) {
-    checks.storage = 'error';
-    logger.warn({ msg: 'Health check storage failed', error: error?.message || error });
   }
 
   const healthy = Object.values(checks).every((value) => value === 'ok');
