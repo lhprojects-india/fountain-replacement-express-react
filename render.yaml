@@ -79,6 +79,8 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://lh-onboarding-backend.onrender.com/api
+      - key: VITE_DRIVER_APP_URL
+        value: https://lh-driver-web.onrender.com
       - key: VITE_FIREBASE_API_KEY
         sync: false
       - key: VITE_FIREBASE_AUTH_DOMAIN
