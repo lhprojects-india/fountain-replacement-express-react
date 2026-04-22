@@ -1,5 +1,10 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
+import {
+  getRedirectResult,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut as firebaseSignOut,
+} from "firebase/auth";
 import { auth, googleProvider } from "../lib/firebase";
 import { useToast, apiClient, saveAuthToken, clearAuthToken, getAuthToken } from "@lh/shared";
 
@@ -12,26 +17,68 @@ export function AdminAuthProvider({ children }) {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [adminRole, setAdminRole] = useState(null);
   const { toast } = useToast();
+  const useRedirectSignIn = import.meta.env.PROD;
+
+  const finishAdminSignIn = async (firebaseUser) => {
+    const idToken = await firebaseUser.getIdToken();
+    const response = await apiClient.post('/auth/admin-google-login', { idToken });
+
+    if (response.success && response.token) {
+      saveAuthToken(response.token);
+      setCurrentUser(response.admin);
+      setAdminRole(response.admin.role);
+      setIsAuthenticated(true);
+      setIsAuthorized(true);
+
+      toast({
+        title: "Welcome to Admin Panel",
+        description: `Signed in as ${response.admin.email}`,
+      });
+      return true;
+    }
+
+    return false;
+  };
 
   // Restore session on mount
   useEffect(() => {
     const restoreSession = async () => {
-      const token = getAuthToken();
-
-      if (token) {
-        try {
-          const result = await apiClient.get('/admin/me');
-          if (result.success && result.admin) {
-            setCurrentUser(result.admin);
-            setAdminRole(result.admin.role);
-            setIsAuthenticated(true);
-            setIsAuthorized(true);
+      try {
+        const redirectResult = await getRedirectResult(auth);
+        if (redirectResult?.user) {
+          const signedIn = await finishAdminSignIn(redirectResult.user);
+          if (signedIn) {
+            setIsLoading(false);
+            return;
           }
-        } catch (error) {
-          clearAuthToken();
         }
+      } catch (error) {
+        toast({
+          title: "Sign in failed",
+          description: error?.message || "Unable to complete Google sign in.",
+          variant: "destructive",
+        });
       }
-      setIsLoading(false);
+
+      const token = getAuthToken();
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const result = await apiClient.get('/admin/me');
+        if (result.success && result.admin) {
+          setCurrentUser(result.admin);
+          setAdminRole(result.admin.role);
+          setIsAuthenticated(true);
+          setIsAuthorized(true);
+        }
+      } catch (error) {
+        clearAuthToken();
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     restoreSession();
@@ -84,30 +131,20 @@ export function AdminAuthProvider({ children }) {
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
-
-      const response = await apiClient.post('/auth/admin-google-login', { idToken });
-
-      if (response.success && response.token) {
-        saveAuthToken(response.token);
-        setCurrentUser(response.admin);
-        setAdminRole(response.admin.role);
-        setIsAuthenticated(true);
-        setIsAuthorized(true);
-
-        toast({
-          title: "Welcome to Admin Panel",
-          description: `Signed in as ${response.admin.email}`,
-        });
-        return true;
+      if (useRedirectSignIn) {
+        await signInWithRedirect(auth, googleProvider);
+        return false;
       }
-      return false;
+
+      const result = await signInWithPopup(auth, googleProvider);
+      return await finishAdminSignIn(result.user);
     } catch (error) {
 
       let description = "An unexpected error occurred. Please try again.";
       if (error.code === "auth/popup-closed-by-user") {
         description = "Sign-in popup was closed. Please try again.";
+      } else if (error.code === "auth/popup-blocked") {
+        description = "Popup was blocked by the browser. Please allow popups and try again.";
       } else if (error.code === "ERR_NETWORK") {
         description = "Backend is unreachable. Start backend server on http://localhost:5001 and try again.";
       } else if (error.message) {

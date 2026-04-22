@@ -11,7 +11,10 @@ export const createJobSchema = z.object({
 
 export const updateJobSchema = createJobSchema.partial();
 
-export const publishJobSchema = z.object({}).strict();
+// Publish/unpublish/close endpoints don't consume request body.
+// Accept any JSON object (or missing body) for client compatibility,
+// then normalize to an empty object for downstream handlers.
+export const publishJobSchema = z.object({}).passthrough().default({}).transform(() => ({}));
 
 export const createPublicLinkSchema = z.object({
   expiresAt: z.coerce.date().optional().nullable(),
