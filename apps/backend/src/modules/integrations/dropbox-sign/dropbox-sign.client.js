@@ -8,6 +8,10 @@ function apiKey() {
   return String(process.env.DROPBOX_SIGN_API_KEY || '').trim();
 }
 
+function clientId() {
+  return String(process.env.DROPBOX_SIGN_CLIENT_ID || '').trim();
+}
+
 function authHeader() {
   return `Basic ${Buffer.from(`${apiKey()}:`).toString('base64')}`;
 }
@@ -94,6 +98,10 @@ export async function createTemplateFromFile({
   if (!fileBuffer || !fileName) {
     throw new Error('Template file is required');
   }
+  const cid = clientId();
+  if (!cid) {
+    throw new Error('DROPBOX_SIGN_CLIENT_ID missing. Embedded template editor requires a Dropbox Sign API app Client ID.');
+  }
   const title = String(templateTitle || '').trim();
   if (!title) {
     throw new Error('Template title is required');
@@ -102,7 +110,7 @@ export async function createTemplateFromFile({
 
   const formData = new FormData();
   formData.append('test_mode', '1');
-  formData.append('client_id', String(process.env.DROPBOX_SIGN_CLIENT_ID || '').trim());
+  formData.append('client_id', cid);
   formData.append('title', title);
   formData.append('subject', `${PRODUCT_DISPLAY_NAME} contract`);
   formData.append('message', `Please sign your ${PRODUCT_DISPLAY_NAME} contract.`);
@@ -122,6 +130,25 @@ export async function createTemplateFromFile({
   return {
     templateId: template.template_id || null,
     title: template.title || title,
+    raw: json,
+  };
+}
+
+export async function getEmbeddedTemplateEditUrl(templateId) {
+  if (!templateId) {
+    throw new Error('Missing Dropbox Sign template id');
+  }
+  const payload = new URLSearchParams();
+  const json = await request(`/embedded/edit_url/${encodeURIComponent(templateId)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: payload.toString(),
+  });
+
+  const embedded = json?.embedded || {};
+  return {
+    editUrl: embedded.edit_url || null,
+    expiresAt: embedded.expires_at || null,
     raw: json,
   };
 }

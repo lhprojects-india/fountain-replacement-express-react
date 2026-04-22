@@ -5,7 +5,10 @@ import {
   formatZodError,
   updateContractSchema,
 } from './contract.schemas.js';
-import { createTemplateFromFile } from '../integrations/dropbox-sign/dropbox-sign.client.js';
+import {
+  createTemplateFromFile,
+  getEmbeddedTemplateEditUrl,
+} from '../integrations/dropbox-sign/dropbox-sign.client.js';
 
 export class ContractServiceError extends Error {
   constructor(message, statusCode = 400) {
@@ -127,6 +130,9 @@ export async function createAndLinkDropboxTemplate(id, raw, file) {
   if (!existing) {
     throw new ContractServiceError('Contract template not found.', 404);
   }
+  if (!existing.isActive) {
+    throw new ContractServiceError('Contract template is inactive.', 409);
+  }
   if (!file?.buffer || !file?.originalname) {
     throw new ContractServiceError('A template file is required.', 400);
   }
@@ -151,7 +157,11 @@ export async function createAndLinkDropboxTemplate(id, raw, file) {
       mimeType: file.mimetype,
     });
   } catch (error) {
-    throw new ContractServiceError(error?.message || 'Failed to create Dropbox Sign template.', 502);
+    const msg = error?.message || 'Failed to create Dropbox Sign template.';
+    if (msg.includes('DROPBOX_SIGN_CLIENT_ID missing')) {
+      throw new ContractServiceError(msg, 500);
+    }
+    throw new ContractServiceError(msg, 502);
   }
 
   if (!created?.templateId) {
@@ -163,11 +173,53 @@ export async function createAndLinkDropboxTemplate(id, raw, file) {
     data: { dropboxSignTemplateId: created.templateId },
   });
 
+  let embeddedEditor = null;
+  try {
+    const edit = await getEmbeddedTemplateEditUrl(created.templateId);
+    embeddedEditor = { editUrl: edit.editUrl, expiresAt: edit.expiresAt };
+  } catch {
+    embeddedEditor = null;
+  }
+
   return {
     template: updatedTemplate,
     dropboxTemplate: {
       templateId: created.templateId,
       title: created.title,
+    },
+    embeddedEditor,
+  };
+}
+
+export async function getDropboxTemplateEditUrlForContract(id) {
+  const templateId = Number(id);
+  if (!Number.isInteger(templateId) || templateId <= 0) {
+    throw new ContractServiceError('Invalid contract template id.', 400);
+  }
+  const existing = await prisma.contractTemplate.findUnique({ where: { id: templateId } });
+  if (!existing) {
+    throw new ContractServiceError('Contract template not found.', 404);
+  }
+  if (!existing.dropboxSignTemplateId) {
+    throw new ContractServiceError('No Dropbox Sign template ID linked to this contract template.', 400);
+  }
+  let edit;
+  try {
+    edit = await getEmbeddedTemplateEditUrl(existing.dropboxSignTemplateId);
+  } catch (error) {
+    throw new ContractServiceError(
+      error?.message || 'Failed to get Dropbox Sign embedded editor URL.',
+      502
+    );
+  }
+  if (!edit?.editUrl) {
+    throw new ContractServiceError('Dropbox Sign did not return an embedded edit URL.', 502);
+  }
+  return {
+    template: existing,
+    embeddedEditor: {
+      editUrl: edit.editUrl,
+      expiresAt: edit.expiresAt,
     },
   };
 }

@@ -79,3 +79,12 @@ export async function createAndLinkDropboxTemplateHandler(req, res) {
     return handleError(res, error);
   }
 }
+
+export async function getDropboxTemplateEditUrlHandler(req, res) {
+  try {
+    const result = await contractService.getDropboxTemplateEditUrlForContract(req.params.id);
+    return res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}

@@ -137,6 +137,9 @@ export default function CityManager() {
     templateFile: null,
   });
   const [creatingDropboxTemplate, setCreatingDropboxTemplate] = useState(false);
+  const [dropboxEditorOpen, setDropboxEditorOpen] = useState(false);
+  const [dropboxEditorUrl, setDropboxEditorUrl] = useState("");
+  const [dropboxEditorLoading, setDropboxEditorLoading] = useState(false);
 
   const canMutate = adminRole && adminRole !== "admin_view";
   const canCreateCity =
@@ -362,7 +365,7 @@ export default function CityManager() {
     }
     setCreatingDropboxTemplate(true);
     try {
-      await adminServices.createAndLinkDropboxTemplate(dropboxTargetContract.id, {
+      const result = await adminServices.createAndLinkDropboxTemplate(dropboxTargetContract.id, {
         templateTitle: dropboxForm.templateTitle.trim(),
         signerRole: dropboxForm.signerRole.trim() || "Driver",
         templateFile: dropboxForm.templateFile,
@@ -371,6 +374,10 @@ export default function CityManager() {
       setDropboxCreateOpen(false);
       setDropboxTargetContract(null);
       await loadCities();
+      if (result?.embeddedEditor?.editUrl) {
+        setDropboxEditorUrl(result.embeddedEditor.editUrl);
+        setDropboxEditorOpen(true);
+      }
     } catch (e) {
       toast({
         title: "Could not create template",
@@ -379,6 +386,28 @@ export default function CityManager() {
       });
     } finally {
       setCreatingDropboxTemplate(false);
+    }
+  };
+
+  const openDropboxEditor = async (contractTemplate) => {
+    if (!contractTemplate?.id) return;
+    setDropboxEditorLoading(true);
+    try {
+      const result = await adminServices.getDropboxTemplateEditUrl(contractTemplate.id);
+      const url = result?.embeddedEditor?.editUrl;
+      if (!url) {
+        throw new Error("Dropbox Sign did not return an editor URL");
+      }
+      setDropboxEditorUrl(url);
+      setDropboxEditorOpen(true);
+    } catch (e) {
+      toast({
+        title: "Could not open Dropbox editor",
+        description: errMessage(e),
+        variant: "destructive",
+      });
+    } finally {
+      setDropboxEditorLoading(false);
     }
   };
 
@@ -599,6 +628,18 @@ export default function CityManager() {
                                               >
                                                 Create DS
                                               </Button>
+                                              {t.dropboxSignTemplateId && (
+                                                <Button
+                                                  type="button"
+                                                  variant="outline"
+                                                  size="sm"
+                                                  className="h-8"
+                                                  disabled={dropboxEditorLoading}
+                                                  onClick={() => openDropboxEditor(t)}
+                                                >
+                                                  Edit DS
+                                                </Button>
+                                              )}
                                               <Button
                                                 type="button"
                                                 variant="outline"
@@ -956,6 +997,35 @@ export default function CityManager() {
               disabled={creatingDropboxTemplate}
             >
               {creatingDropboxTemplate ? "Creating..." : "Create and link"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={dropboxEditorOpen} onOpenChange={setDropboxEditorOpen}>
+        <DialogContent className="adm-modal max-w-6xl z-[230] h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Dropbox Sign Embedded Editor</DialogTitle>
+            <DialogDescription>
+              Place signature fields and save your template from this embedded editor.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="h-full min-h-[70vh] rounded-md border overflow-hidden">
+            {dropboxEditorUrl ? (
+              <iframe
+                title="Dropbox Sign Template Editor"
+                src={dropboxEditorUrl}
+                className="w-full h-full min-h-[70vh]"
+              />
+            ) : (
+              <div className="h-full min-h-[70vh] flex items-center justify-center text-sm text-slate-500">
+                Loading editor...
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDropboxEditorOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

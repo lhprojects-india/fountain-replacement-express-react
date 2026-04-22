@@ -4,6 +4,7 @@ import {
   createAndLinkDropboxTemplateHandler,
   createContractTemplateHandler,
   deleteContractTemplateHandler,
+  getDropboxTemplateEditUrlHandler,
   getContractTemplateById,
   listByCity,
   listContractTemplates,
@@ -45,6 +46,11 @@ router.post(
   upload.single('templateFile'),
   validate(createDropboxTemplateSchema),
   asyncHandler(createAndLinkDropboxTemplateHandler)
+);
+router.get(
+  '/:id/dropbox-sign-template/edit-url',
+  requireDbAdminRoles(...REGION_MUTATE_ROLES),
+  asyncHandler(getDropboxTemplateEditUrlHandler)
 );
 router.delete('/:id', requireDbAdminRoles(...REGION_MUTATE_ROLES), asyncHandler(deleteContractTemplateHandler));
 
