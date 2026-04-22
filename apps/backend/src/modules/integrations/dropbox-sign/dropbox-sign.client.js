@@ -84,6 +84,48 @@ export async function createSignatureRequest({
   };
 }
 
+export async function createTemplateFromFile({
+  templateTitle,
+  signerRole,
+  fileBuffer,
+  fileName,
+  mimeType,
+}) {
+  if (!fileBuffer || !fileName) {
+    throw new Error('Template file is required');
+  }
+  const title = String(templateTitle || '').trim();
+  if (!title) {
+    throw new Error('Template title is required');
+  }
+  const roleName = String(signerRole || '').trim() || 'Signer';
+
+  const formData = new FormData();
+  formData.append('test_mode', '1');
+  formData.append('client_id', String(process.env.DROPBOX_SIGN_CLIENT_ID || '').trim());
+  formData.append('title', title);
+  formData.append('subject', `${PRODUCT_DISPLAY_NAME} contract`);
+  formData.append('message', `Please sign your ${PRODUCT_DISPLAY_NAME} contract.`);
+  formData.append('signer_roles[0][name]', roleName);
+  formData.append(
+    'files[0]',
+    new Blob([fileBuffer], { type: mimeType || 'application/octet-stream' }),
+    fileName
+  );
+
+  const json = await request('/template/create_embedded_draft', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const template = json?.template || {};
+  return {
+    templateId: template.template_id || null,
+    title: template.title || title,
+    raw: json,
+  };
+}
+
 export async function getSignatureRequestStatus(signatureRequestId) {
   const json = await request(`/signature_request/${encodeURIComponent(signatureRequestId)}`);
   return json?.signature_request || null;

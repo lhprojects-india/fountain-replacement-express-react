@@ -129,6 +129,14 @@ export default function CityManager() {
 
   const [deleteCityTarget, setDeleteCityTarget] = useState(null);
   const [deleteContractTarget, setDeleteContractTarget] = useState(null);
+  const [dropboxCreateOpen, setDropboxCreateOpen] = useState(false);
+  const [dropboxTargetContract, setDropboxTargetContract] = useState(null);
+  const [dropboxForm, setDropboxForm] = useState({
+    templateTitle: "",
+    signerRole: "Driver",
+    templateFile: null,
+  });
+  const [creatingDropboxTemplate, setCreatingDropboxTemplate] = useState(false);
 
   const canMutate = adminRole && adminRole !== "admin_view";
   const canCreateCity =
@@ -322,6 +330,55 @@ export default function CityManager() {
         description: errMessage(e),
         variant: "destructive",
       });
+    }
+  };
+
+  const openCreateDropboxTemplate = (contractTemplate) => {
+    setDropboxTargetContract(contractTemplate);
+    setDropboxForm({
+      templateTitle: contractTemplate?.name || "",
+      signerRole: "Driver",
+      templateFile: null,
+    });
+    setDropboxCreateOpen(true);
+  };
+
+  const createDropboxTemplate = async () => {
+    if (!dropboxTargetContract?.id) return;
+    if (!dropboxForm.templateTitle.trim()) {
+      toast({
+        title: "Template title is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!dropboxForm.templateFile) {
+      toast({
+        title: "Template file is required",
+        description: "Upload a PDF document to create the Dropbox Sign template.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setCreatingDropboxTemplate(true);
+    try {
+      await adminServices.createAndLinkDropboxTemplate(dropboxTargetContract.id, {
+        templateTitle: dropboxForm.templateTitle.trim(),
+        signerRole: dropboxForm.signerRole.trim() || "Driver",
+        templateFile: dropboxForm.templateFile,
+      });
+      toast({ title: "Dropbox Sign template created and linked" });
+      setDropboxCreateOpen(false);
+      setDropboxTargetContract(null);
+      await loadCities();
+    } catch (e) {
+      toast({
+        title: "Could not create template",
+        description: errMessage(e),
+        variant: "destructive",
+      });
+    } finally {
+      setCreatingDropboxTemplate(false);
     }
   };
 
@@ -532,6 +589,15 @@ export default function CityManager() {
                                                 onClick={() => openEditContract(t, c.id)}
                                               >
                                                 <Edit className="h-3.5 w-3.5" />
+                                              </Button>
+                                              <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-8"
+                                                onClick={() => openCreateDropboxTemplate(t)}
+                                              >
+                                                Create DS
                                               </Button>
                                               <Button
                                                 type="button"
@@ -822,6 +888,74 @@ export default function CityManager() {
               onClick={saveContract}
             >
               Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={dropboxCreateOpen} onOpenChange={setDropboxCreateOpen}>
+        <DialogContent className="adm-modal max-w-lg z-[220]">
+          <DialogHeader>
+            <DialogTitle>Create Dropbox Sign template</DialogTitle>
+            <DialogDescription>
+              Upload a PDF and create a template in Dropbox Sign. On success we will link the
+              generated template ID to this contract template automatically.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-2">
+            <div className="grid gap-2">
+              <Label>Contract template</Label>
+              <div className="text-sm text-slate-700">
+                {dropboxTargetContract?.name || "N/A"}
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="dbx-title">Dropbox template title</Label>
+              <Input
+                id="dbx-title"
+                value={dropboxForm.templateTitle}
+                onChange={(e) =>
+                  setDropboxForm((f) => ({ ...f, templateTitle: e.target.value }))
+                }
+                placeholder="Driver agreement - London"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="dbx-role">Signer role</Label>
+              <Input
+                id="dbx-role"
+                value={dropboxForm.signerRole}
+                onChange={(e) =>
+                  setDropboxForm((f) => ({ ...f, signerRole: e.target.value }))
+                }
+                placeholder="Driver"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="dbx-file">Template file (PDF)</Label>
+              <Input
+                id="dbx-file"
+                type="file"
+                accept="application/pdf"
+                onChange={(e) =>
+                  setDropboxForm((f) => ({
+                    ...f,
+                    templateFile: e.target.files?.[0] || null,
+                  }))
+                }
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDropboxCreateOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-brand-blue hover:bg-brand-shadeBlue"
+              onClick={createDropboxTemplate}
+              disabled={creatingDropboxTemplate}
+            >
+              {creatingDropboxTemplate ? "Creating..." : "Create and link"}
             </Button>
           </DialogFooter>
         </DialogContent>

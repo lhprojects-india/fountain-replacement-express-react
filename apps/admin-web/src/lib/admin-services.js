@@ -220,6 +220,17 @@ export const adminServices = {
     return result.template;
   },
 
+  async createAndLinkDropboxTemplate(id, { templateTitle, signerRole, templateFile }) {
+    const formData = new FormData();
+    formData.append("templateTitle", templateTitle);
+    if (signerRole) formData.append("signerRole", signerRole);
+    formData.append("templateFile", templateFile);
+    const result = await apiClient.post(`/contract-templates/${id}/dropbox-sign-template`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return result;
+  },
+
   async getAllJobs(filters = {}) {
     const params = new URLSearchParams();
     if (filters.cityId != null && filters.cityId !== "") {

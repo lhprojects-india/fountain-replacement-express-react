@@ -10,6 +10,7 @@ import EmailTemplateManager from "../components/admin/EmailTemplateManager";
 import NotificationSettingsManager from "../components/admin/NotificationSettingsManager";
 import CommunicationsOverview from "../components/admin/CommunicationsOverview";
 import QuestionnaireBuilder from "../components/admin/QuestionnaireBuilder";
+import CityManager from "../components/admin/CityManager";
 import ApplicationPipeline from "../components/admin/ApplicationPipeline";
 import AnalyticsDashboard from "../components/admin/AnalyticsDashboard";
 import AdminErrorBoundary from "../components/admin/AdminErrorBoundary";
@@ -1157,6 +1158,7 @@ export default function AdminDashboard() {
                 <TabsTrigger value="regions">Regions</TabsTrigger>
                 <TabsTrigger value="fee-structures">Fee Structures</TabsTrigger>
                 <TabsTrigger value="facilities">Facilities</TabsTrigger>
+                <TabsTrigger value="contracts">Contracts</TabsTrigger>
                 <TabsTrigger value="email-templates">Email Templates</TabsTrigger>
                 <TabsTrigger value="notifications">Notifications</TabsTrigger>
                 <TabsTrigger value="communications">Communications</TabsTrigger>
@@ -1173,6 +1175,9 @@ export default function AdminDashboard() {
               </TabsContent>
               <TabsContent value="facilities">
                 <FacilityManager />
+              </TabsContent>
+              <TabsContent value="contracts">
+                <CityManager />
               </TabsContent>
               <TabsContent value="email-templates">
                 <EmailTemplateManager />

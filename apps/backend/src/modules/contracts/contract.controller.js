@@ -66,3 +66,16 @@ export async function deleteContractTemplateHandler(req, res) {
     return handleError(res, error);
   }
 }
+
+export async function createAndLinkDropboxTemplateHandler(req, res) {
+  try {
+    const result = await contractService.createAndLinkDropboxTemplate(
+      req.params.id,
+      req.body,
+      req.file
+    );
+    return res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}

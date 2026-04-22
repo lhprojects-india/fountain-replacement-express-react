@@ -1,5 +1,6 @@
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
+import { getStorage } from 'firebase-admin/storage';
 import { createRequire } from 'module';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -22,9 +23,12 @@ if (!getApps().length) {
 
   firebaseAdminApp = initializeApp({
     credential: cert(serviceAccount),
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || undefined,
   });
 } else {
   firebaseAdminApp = getApps()[0];
 }
 
 export const adminAuth = getAuth(firebaseAdminApp);
+export const adminStorage = getStorage(firebaseAdminApp);
+export { firebaseAdminApp };
