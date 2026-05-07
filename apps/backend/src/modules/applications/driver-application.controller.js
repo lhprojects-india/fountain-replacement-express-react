@@ -4,6 +4,8 @@ import {
   completeScreening,
   DriverApplicationServiceError,
   getDriverApplication,
+  getMockContractForDriver,
+  mockSignContract,
   resendDriverContract,
   getScreeningProgress,
   getStageConfig,
@@ -144,6 +146,26 @@ export async function getApplicationCityConfigHandler(req, res) {
   if (!assertDriverUser(req, res)) return undefined;
   try {
     const result = await getApplicationCityConfig(req.user.applicationId, req.user.email);
+    return res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function getMockContractHandler(req, res) {
+  if (!assertDriverUser(req, res)) return undefined;
+  try {
+    const result = await getMockContractForDriver(req.user.applicationId, req.user.email);
+    return res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function mockSignContractHandler(req, res) {
+  if (!assertDriverUser(req, res)) return undefined;
+  try {
+    const result = await mockSignContract(req.user.applicationId, req.user.email);
     return res.status(200).json({ success: true, ...result });
   } catch (error) {
     return handleError(res, error);

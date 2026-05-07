@@ -25,13 +25,19 @@ const StageActionPanel = ({ application, documentProgress = null }) => {
     acknowledgements: {
       text: "Your screening has been submitted. Our team is reviewing your responses. You'll be notified about next steps.",
     },
-    contract_sent: {
-      text: `A contract has been sent to ${application?.email || "your email"}. Please check your inbox (including spam) and sign it.`,
-      buttonLabel: "Request Contract Resend",
-      action: async () => {
-        await publicServices.resendContract();
-      },
-    },
+    contract_sent: contractStatus === "sent_mock"
+      ? {
+          text: "Your contract is ready to review and sign.",
+          buttonLabel: "Review & Sign Contract",
+          route: "/contract",
+        }
+      : {
+          text: `A contract has been sent to ${application?.email || "your email"}. Please check your inbox (including spam) and sign it.`,
+          buttonLabel: "Request Contract Resend",
+          action: async () => {
+            await publicServices.resendContract();
+          },
+        },
     contract_signed: {
       text: "Your contract has been signed! We will let you know about next steps.",
     },

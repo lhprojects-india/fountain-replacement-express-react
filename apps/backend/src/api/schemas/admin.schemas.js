@@ -10,6 +10,7 @@ export const setAdminSchema = z.object({
   email: z.string().trim().email(),
   role: z.string().trim().min(1).max(100),
   name: z.string().trim().max(255).optional().nullable(),
+  password: z.string().trim().min(8).max(255).optional().nullable(),
 });
 
 export const upsertFeeStructuresSchema = z.object({

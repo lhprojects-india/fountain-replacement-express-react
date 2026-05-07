@@ -6,9 +6,14 @@ import {
   deleteContractTemplateHandler,
   getDropboxTemplateEditUrlHandler,
   getContractTemplateById,
+  getTemplatePdfFileHandler,
+  getTemplatePdfDownloadUrlHandler,
+  getTemplatePdfUploadUrlHandler,
+  uploadTemplatePdfHandler,
   listByCity,
   listContractTemplates,
   removeDropboxTemplateHandler,
+  saveTemplateFieldsHandler,
   updateContractTemplateHandler,
 } from './contract.controller.js';
 import asyncHandler from '../../api/middleware/asyncHandler.js';
@@ -58,6 +63,17 @@ router.delete(
   requireDbAdminRoles(...REGION_MUTATE_ROLES),
   asyncHandler(removeDropboxTemplateHandler)
 );
+// Mock template editor routes
+router.get('/:id/pdf-upload-url', requireDbAdminRoles(...REGION_MUTATE_ROLES), asyncHandler(getTemplatePdfUploadUrlHandler));
+router.get('/:id/pdf', requireDbAdminRoles(...REGION_MUTATE_ROLES), asyncHandler(getTemplatePdfFileHandler));
+router.post(
+  '/:id/pdf-upload',
+  requireDbAdminRoles(...REGION_MUTATE_ROLES),
+  upload.single('templateFile'),
+  asyncHandler(uploadTemplatePdfHandler)
+);
+router.get('/:id/pdf-download-url', requireDbAdminRoles(...REGION_MUTATE_ROLES), asyncHandler(getTemplatePdfDownloadUrlHandler));
+router.put('/:id/fields', requireDbAdminRoles(...REGION_MUTATE_ROLES), asyncHandler(saveTemplateFieldsHandler));
 router.delete('/:id', requireDbAdminRoles(...REGION_MUTATE_ROLES), asyncHandler(deleteContractTemplateHandler));
 
 export default router;

@@ -3,6 +3,7 @@ import {
   createContractSchema,
   createDropboxTemplateSchema,
   formatZodError,
+  saveTemplateFieldsSchema,
   updateContractSchema,
 } from './contract.schemas.js';
 import {
@@ -10,6 +11,13 @@ import {
   deleteDropboxTemplate,
   getEmbeddedTemplateEditUrl,
 } from '../integrations/dropbox-sign/dropbox-sign.client.js';
+import {
+  generateUploadUrl as storageUploadUrl,
+  generateDownloadUrl as storageDownloadUrl,
+  uploadBuffer as storageUploadBuffer,
+  downloadBuffer as storageDownloadBuffer,
+  deleteFile as storageDeleteFile,
+} from '../documents/storage.service.js';
 
 export class ContractServiceError extends Error {
   constructor(message, statusCode = 400) {
@@ -269,5 +277,99 @@ export async function removeDropboxTemplateForContract(id) {
       templateId: providerTemplateId,
       deleted: providerDeleted,
     },
+  };
+}
+
+// ─── Mock template PDF + field editor ────────────────────────────────────────
+
+export async function getTemplatePdfUploadUrl(id) {
+  const templateId = Number(id);
+  if (!Number.isInteger(templateId) || templateId <= 0) {
+    throw new ContractServiceError('Invalid contract template id.', 400);
+  }
+  const existing = await prisma.contractTemplate.findUnique({ where: { id: templateId } });
+  if (!existing) throw new ContractServiceError('Contract template not found.', 404);
+
+  const key = `contract-templates/${templateId}/template.pdf`;
+  const { uploadUrl, expiresAt } = await storageUploadUrl(key, 'application/pdf');
+  await prisma.contractTemplate.update({ where: { id: templateId }, data: { templatePdfKey: key } });
+  return { uploadUrl, key, expiresAt };
+}
+
+export async function uploadTemplatePdf(id, file) {
+  const templateId = Number(id);
+  if (!Number.isInteger(templateId) || templateId <= 0) {
+    throw new ContractServiceError('Invalid contract template id.', 400);
+  }
+  const existing = await prisma.contractTemplate.findUnique({ where: { id: templateId } });
+  if (!existing) throw new ContractServiceError('Contract template not found.', 404);
+  if (!file?.buffer || !file?.originalname) {
+    throw new ContractServiceError('A template PDF file is required.', 400);
+  }
+  if (!String(file.mimetype || '').includes('pdf')) {
+    throw new ContractServiceError('Only PDF files are supported.', 400);
+  }
+
+  const key = `contract-templates/${templateId}/template.pdf`;
+  await storageUploadBuffer(key, file.buffer, 'application/pdf');
+  const updated = await prisma.contractTemplate.update({
+    where: { id: templateId },
+    data: { templatePdfKey: key },
+  });
+  return { template: updated, key };
+}
+
+export async function getTemplatePdfDownloadUrl(id) {
+  const templateId = Number(id);
+  if (!Number.isInteger(templateId) || templateId <= 0) {
+    throw new ContractServiceError('Invalid contract template id.', 400);
+  }
+  const existing = await prisma.contractTemplate.findUnique({ where: { id: templateId } });
+  if (!existing) throw new ContractServiceError('Contract template not found.', 404);
+  if (!existing.templatePdfKey) throw new ContractServiceError('No PDF uploaded for this template.', 404);
+
+  const { downloadUrl } = await storageDownloadUrl(existing.templatePdfKey, {
+    contentType: 'application/pdf',
+    fileName: `${existing.name}.pdf`,
+  });
+  return { downloadUrl };
+}
+
+export async function saveTemplateFields(id, raw) {
+  const templateId = Number(id);
+  if (!Number.isInteger(templateId) || templateId <= 0) {
+    throw new ContractServiceError('Invalid contract template id.', 400);
+  }
+  const existing = await prisma.contractTemplate.findUnique({ where: { id: templateId } });
+  if (!existing) throw new ContractServiceError('Contract template not found.', 404);
+
+  let data;
+  try {
+    data = saveTemplateFieldsSchema.parse(raw);
+  } catch (e) {
+    throw new ContractServiceError(formatZodError(e), 400);
+  }
+
+  const updated = await prisma.contractTemplate.update({
+    where: { id: templateId },
+    data: { templateFields: data.fields },
+  });
+  return { template: updated };
+}
+
+export async function getTemplatePdfFile(id) {
+  const templateId = Number(id);
+  if (!Number.isInteger(templateId) || templateId <= 0) {
+    throw new ContractServiceError('Invalid contract template id.', 400);
+  }
+  const existing = await prisma.contractTemplate.findUnique({ where: { id: templateId } });
+  if (!existing) throw new ContractServiceError('Contract template not found.', 404);
+  if (!existing.templatePdfKey) throw new ContractServiceError('No PDF uploaded for this template.', 404);
+
+  const buffer = await storageDownloadBuffer(existing.templatePdfKey);
+  return {
+    fileName: `${existing.name || 'contract-template'}.pdf`,
+    buffer,
+    contentType: 'application/pdf',
   };
 }

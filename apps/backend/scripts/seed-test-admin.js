@@ -1,5 +1,5 @@
 /**
- * Upserts a local test admin for email/password login (see VITE_ENABLE_EMAIL_ADMIN_LOGIN).
+ * Upserts a local test admin for email/password login.
  *
  * Usage (from repo root, with DATABASE_URL in .env):
  *   npm run seed:test-admin -w backend
@@ -50,7 +50,7 @@ try {
   console.log(`  Password: ${password === process.env.TEST_ADMIN_PASSWORD ? '(from TEST_ADMIN_PASSWORD)' : '(default — change via env)'}`);
   console.log(`  Role:     ${admin.role}`);
   console.log('');
-  console.log('Next: in admin-web .env set VITE_ENABLE_EMAIL_ADMIN_LOGIN=true, restart Vite, then sign in with email + password.');
+  console.log('Next: restart admin-web and sign in with this email + password.');
 } catch (e) {
   console.error(e);
   process.exit(1);

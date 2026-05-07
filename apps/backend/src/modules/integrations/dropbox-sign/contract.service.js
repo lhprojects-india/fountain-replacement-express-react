@@ -70,6 +70,41 @@ export async function sendContract(applicationId, prisma) {
     throw new DropboxContractError('Contract send retry limit reached (3 attempts).', 409);
   }
 
+  const hasMockTemplate = Boolean(application.job?.contractTemplate?.templatePdfKey);
+
+  if (!templateId && hasMockTemplate) {
+    const mockRequestId = `mock_${application.id}_${Date.now()}`;
+    const updated = await prisma.application.update({
+      where: { id: application.id },
+      data: {
+        contractRequestId: mockRequestId,
+        contractStatus: 'sent_mock',
+        updatedAt: new Date(),
+      },
+    });
+    await logCommunication({
+      applicationId: application.id,
+      channel: 'contract',
+      templateEventKey: 'contract.mock_sent',
+      recipientEmail: application.email,
+      subject: `${application.job?.title || 'Driver'} Contract (Mock)`,
+      body: null,
+      providerMessageId: mockRequestId,
+      status: 'sent',
+      sentAt: new Date(),
+    });
+    void dispatchNotifications('stage.contract_sent', application).catch((error) => {
+      logger.error({ msg: '[contract] failed to dispatch mock contract sent notifications', error: error?.message || error });
+    });
+    return {
+      application: updated,
+      signatureRequestId: mockRequestId,
+      signatureId: null,
+      signingUrl: null,
+      method: 'mock',
+    };
+  }
+
   if (!templateId && hasManualTemplateContent) {
     const updated = await prisma.application.update({
       where: { id: application.id },

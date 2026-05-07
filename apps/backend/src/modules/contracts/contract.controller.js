@@ -6,7 +6,11 @@ function handleError(res, error) {
   if (error instanceof ContractServiceError) {
     return res.status(error.statusCode).json({ success: false, message: error.message });
   }
-  logger.error({ msg: 'Contract controller error', error });
+  logger.error({
+    msg: 'Contract controller error',
+    error: error?.message || String(error),
+    stack: error?.stack,
+  });
   return res.status(500).json({ success: false, message: 'Internal server error' });
 }
 
@@ -93,6 +97,53 @@ export async function removeDropboxTemplateHandler(req, res) {
   try {
     const result = await contractService.removeDropboxTemplateForContract(req.params.id);
     return res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function getTemplatePdfUploadUrlHandler(req, res) {
+  try {
+    const result = await contractService.getTemplatePdfUploadUrl(req.params.id);
+    return res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function getTemplatePdfDownloadUrlHandler(req, res) {
+  try {
+    const result = await contractService.getTemplatePdfDownloadUrl(req.params.id);
+    return res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function uploadTemplatePdfHandler(req, res) {
+  try {
+    const result = await contractService.uploadTemplatePdf(req.params.id, req.file);
+    return res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function saveTemplateFieldsHandler(req, res) {
+  try {
+    const result = await contractService.saveTemplateFields(req.params.id, req.body);
+    return res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function getTemplatePdfFileHandler(req, res) {
+  try {
+    const result = await contractService.getTemplatePdfFile(req.params.id);
+    res.setHeader('Content-Type', result.contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${result.fileName}"`);
+    return res.status(200).send(result.buffer);
   } catch (error) {
     return handleError(res, error);
   }

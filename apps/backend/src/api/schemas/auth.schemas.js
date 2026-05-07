@@ -5,10 +5,6 @@ export const adminLoginSchema = z.object({
   password: z.string().min(1),
 });
 
-export const adminGoogleLoginSchema = z.object({
-  idToken: z.string().min(1),
-});
-
 export const checkFountainEmailSchema = z.object({
   email: z.string().trim().email(),
 });

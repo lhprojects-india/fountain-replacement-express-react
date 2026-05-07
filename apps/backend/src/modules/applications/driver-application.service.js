@@ -2,7 +2,8 @@ import prisma from '../../lib/prisma.js';
 import { PRODUCT_DISPLAY_NAME } from '../../lib/product-name.js';
 import { STAGES } from '../workflow/transition-matrix.js';
 import { transitionApplication, WorkflowError } from '../workflow/stage-engine.js';
-import { resendContract } from '../integrations/dropbox-sign/contract.service.js';
+import { resendContract, markContractAsSigned } from '../integrations/dropbox-sign/contract.service.js';
+import { generateDownloadUrl as storageDownloadUrl } from '../documents/storage.service.js';
 
 export class DriverApplicationServiceError extends Error {
   constructor(message, statusCode = 400) {
@@ -789,6 +790,63 @@ export async function getApplicationRegionConfig(applicationId, rawEmail) {
     scheduling: config.scheduling,
     cancellation: config.cancellation,
   };
+}
+
+export async function getMockContractForDriver(applicationId, rawEmail) {
+  const id = Number(applicationId);
+  const email = String(rawEmail || '').trim().toLowerCase();
+  if (!Number.isInteger(id) || id <= 0) throw new DriverApplicationServiceError('Invalid application id.', 400);
+  if (!email) throw new DriverApplicationServiceError('Invalid session.', 401);
+
+  const app = await prisma.application.findFirst({
+    where: { id, email },
+    include: {
+      job: {
+        include: {
+          contractTemplate: { select: { id: true, name: true, templatePdfKey: true, templateFields: true } },
+        },
+      },
+    },
+  });
+  if (!app) throw new DriverApplicationServiceError('Application not found.', 404);
+
+  const template = app.job?.contractTemplate;
+  if (!template?.templatePdfKey) {
+    throw new DriverApplicationServiceError('No mock contract template configured.', 404);
+  }
+
+  const { downloadUrl } = await storageDownloadUrl(template.templatePdfKey, {
+    contentType: 'application/pdf',
+    fileName: `${template.name}.pdf`,
+  });
+
+  return {
+    contractStatus: app.contractStatus,
+    templateName: template.name,
+    pdfUrl: downloadUrl,
+    fields: Array.isArray(template.templateFields) ? template.templateFields : [],
+    applicant: {
+      firstName: app.firstName,
+      lastName: app.lastName,
+      email: app.email,
+    },
+  };
+}
+
+export async function mockSignContract(applicationId, rawEmail) {
+  const id = Number(applicationId);
+  const email = String(rawEmail || '').trim().toLowerCase();
+  if (!Number.isInteger(id) || id <= 0) throw new DriverApplicationServiceError('Invalid application id.', 400);
+  if (!email) throw new DriverApplicationServiceError('Invalid session.', 401);
+
+  const app = await prisma.application.findFirst({
+    where: { id, email },
+    select: { id: true, currentStage: true, contractStatus: true },
+  });
+  if (!app) throw new DriverApplicationServiceError('Application not found.', 404);
+  if (app.contractStatus === 'signed') throw new DriverApplicationServiceError('Contract already signed.', 409);
+
+  return markContractAsSigned(id, prisma);
 }
 
 export async function resendDriverContract(applicationId, rawEmail) {

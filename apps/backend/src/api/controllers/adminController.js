@@ -1,4 +1,5 @@
 import prisma from '../../lib/prisma.js';
+import bcrypt from 'bcrypt';
 import {
   normalizeCity,
   dbRowsToLegacyList,
@@ -63,7 +64,16 @@ export const getAdminData = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Admin not found' });
     }
 
-    return res.status(200).json({ success: true, admin });
+    return res.status(200).json({
+      success: true,
+      admin: {
+        email: admin.email,
+        role: admin.role,
+        name: admin.name,
+        createdAt: admin.createdAt,
+        updatedAt: admin.updatedAt,
+      },
+    });
   } catch (error) {
     logger.error({ msg: 'Error fetching admin data', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
@@ -129,7 +139,16 @@ export const getAllAdmins = async (req, res) => {
     const admins = await prisma.admin.findMany({
       orderBy: { createdAt: 'desc' }
     });
-    return res.status(200).json({ success: true, admins });
+    return res.status(200).json({
+      success: true,
+      admins: admins.map((admin) => ({
+        email: admin.email,
+        role: admin.role,
+        name: admin.name,
+        createdAt: admin.createdAt,
+        updatedAt: admin.updatedAt,
+      })),
+    });
   } catch (error) {
     logger.error({ msg: 'Error fetching admins', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
@@ -137,15 +156,36 @@ export const getAllAdmins = async (req, res) => {
 };
 
 export const setAdmin = async (req, res) => {
-  const { email, role, name } = req.validatedBody || req.body;
+  const { email, role, name, password } = req.validatedBody || req.body;
 
   try {
+    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedPassword = typeof password === 'string' ? password.trim() : '';
+    const existing = await prisma.admin.findUnique({ where: { email: normalizedEmail } });
+
+    if (!existing && !normalizedPassword) {
+      return res.status(400).json({ success: false, message: 'Password is required when creating a new admin.' });
+    }
+
+    const passwordToStore = normalizedPassword
+      ? await bcrypt.hash(normalizedPassword, 12)
+      : existing?.password ?? null;
+
     const admin = await prisma.admin.upsert({
-      where: { email: email.toLowerCase().trim() },
-      update: { role, name, updatedAt: new Date() },
-      create: { email: email.toLowerCase().trim(), role, name }
+      where: { email: normalizedEmail },
+      update: { role, name, password: passwordToStore, updatedAt: new Date() },
+      create: { email: normalizedEmail, role, name, password: passwordToStore }
     });
-    return res.status(200).json({ success: true, admin });
+    return res.status(200).json({
+      success: true,
+      admin: {
+        email: admin.email,
+        role: admin.role,
+        name: admin.name,
+        createdAt: admin.createdAt,
+        updatedAt: admin.updatedAt,
+      },
+    });
   } catch (error) {
     logger.error({ msg: 'Error setting admin', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });

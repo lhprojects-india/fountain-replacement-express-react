@@ -1,12 +1,15 @@
 import { adminStorage } from '../../lib/firebase-admin.js';
 
-const FIREBASE_STORAGE_BUCKET = process.env.FIREBASE_STORAGE_BUCKET;
+const FIREBASE_STORAGE_BUCKET =
+  process.env.FIREBASE_STORAGE_BUCKET ||
+  process.env.FIREBASE_BUCKET ||
+  process.env.GCLOUD_STORAGE_BUCKET;
 
 function getBucket() {
   const bucketName = FIREBASE_STORAGE_BUCKET || adminStorage.app.options.storageBucket;
   if (!bucketName) {
     throw new Error(
-      'Firebase storage is not configured. Set FIREBASE_STORAGE_BUCKET to your bucket name.'
+      'Firebase storage is not configured. Set FIREBASE_STORAGE_BUCKET (or FIREBASE_BUCKET) to your bucket name.'
     );
   }
   return adminStorage.bucket(bucketName);
@@ -23,6 +26,20 @@ export async function generateUploadUrl(key, contentType, { expiresInSeconds = 1
     contentType,
   });
   return { uploadUrl, key, expiresAt };
+}
+
+export async function uploadBuffer(key, buffer, contentType = 'application/octet-stream') {
+  const bucket = getBucket();
+  const file = bucket.file(key);
+  await file.save(buffer, {
+    resumable: false,
+    contentType,
+    metadata: {
+      contentType,
+      cacheControl: 'private, max-age=0, no-transform',
+    },
+  });
+  return { key };
 }
 
 export async function generateDownloadUrl(
@@ -53,4 +70,11 @@ export async function deleteFile(key) {
 export async function checkStorageHealth() {
   const bucket = getBucket();
   await bucket.getMetadata();
+}
+
+export async function downloadBuffer(key) {
+  const bucket = getBucket();
+  const file = bucket.file(key);
+  const [contents] = await file.download();
+  return contents;
 }

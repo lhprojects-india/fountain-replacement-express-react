@@ -9,6 +9,8 @@ import {
   getDriverApplicationHandler,
   getDriverApplicationStageInfoHandler,
   getDriverApplicationTimelineHandler,
+  getMockContractHandler,
+  mockSignContractHandler,
   getScreeningProgressHandler,
   resendDriverContractHandler,
   updateApplicationProfileHandler,
@@ -55,6 +57,8 @@ router.put(
 );
 router.get('/application/fee-structure', asyncHandler(getApplicationFeeStructureHandler));
 router.get('/application/city-config', asyncHandler(getApplicationCityConfigHandler));
+router.get('/application/contract/mock', asyncHandler(getMockContractHandler));
+router.post('/application/contract/mock-sign', invalidateCacheOnSuccess(['analytics']), asyncHandler(mockSignContractHandler));
 router.post(
   '/application/contract/resend',
   validate(resendContractSchema),

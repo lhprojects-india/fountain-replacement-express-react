@@ -54,6 +54,7 @@ export default function AdminManager() {
     email: '',
     name: '',
     role: 'admin_view',
+    password: '',
     accessibleCities: []
   });
   const [currentUserRole, setCurrentUserRole] = useState(null);
@@ -143,6 +144,7 @@ export default function AdminManager() {
       email: '',
       name: '',
       role: 'admin_view',
+      password: '',
       accessibleCities: []
     });
     setEditingAdmin(null);
@@ -154,6 +156,7 @@ export default function AdminManager() {
       email: admin.email,
       name: admin.name || '',
       role: admin.role || 'admin_view',
+      password: '',
       accessibleCities: admin.accessibleCities || []
     });
     setEditingAdmin(admin.email);
@@ -189,6 +192,24 @@ export default function AdminManager() {
         return;
       }
 
+      if (!editingAdmin && !formData.password.trim()) {
+        toast({
+          title: "Validation error",
+          description: "Password is required when creating a new admin.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (formData.password && formData.password.trim().length < 8) {
+        toast({
+          title: "Validation error",
+          description: "Password must be at least 8 characters.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
@@ -203,6 +224,7 @@ export default function AdminManager() {
       await adminServices.setAdmin(formData.email, {
         name: formData.name,
         role: formData.role,
+        password: formData.password ? formData.password.trim() : undefined,
         accessibleCities: formData.accessibleCities
       });
 
@@ -335,6 +357,18 @@ export default function AdminManager() {
                         value={formData.name}
                         onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                         placeholder="Admin Name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="password">
+                        {editingAdmin ? "New Password (optional)" : "Password"}
+                      </Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                        placeholder={editingAdmin ? "Leave blank to keep current password" : "Minimum 8 characters"}
                       />
                     </div>
                     <div>

@@ -19,6 +19,23 @@ export const createDropboxTemplateSchema = z.object({
   signerRole: z.string().min(1).max(100).optional(),
 });
 
+const fieldSchema = z.object({
+  id: z.string(),
+  type: z.enum(['signature', 'initials', 'date', 'fullName', 'email', 'text', 'checkbox']),
+  page: z.number().int().min(1),
+  x: z.number(),
+  y: z.number(),
+  width: z.number(),
+  height: z.number(),
+  label: z.string().optional(),
+  required: z.boolean().optional().default(true),
+  signerRole: z.string().optional(),
+});
+
+export const saveTemplateFieldsSchema = z.object({
+  fields: z.array(fieldSchema),
+});
+
 export function formatZodError(error) {
   if (!error?.issues?.length) return 'Validation failed';
   return error.issues.map((i) => `${i.path.join('.') || 'body'}: ${i.message}`).join('; ');

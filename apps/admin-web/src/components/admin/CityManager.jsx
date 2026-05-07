@@ -47,8 +47,10 @@ import {
   ChevronRight,
   FileText,
   Globe,
+  PenLine,
 } from "lucide-react";
 import DocumentRequirementManager from "./DocumentRequirementManager";
+import TemplateFieldEditor from "./TemplateFieldEditor";
 
 const DEFAULT_PAYMENT_SCHEMA = `{\n  "fields": [\n    { "key": "bank_name", "label": "Bank Name", "type": "text", "required": true }\n  ]\n}`;
 
@@ -141,6 +143,8 @@ export default function CityManager() {
   const [dropboxEditorUrl, setDropboxEditorUrl] = useState("");
   const [dropboxEditorLoading, setDropboxEditorLoading] = useState(false);
   const [dropboxDeleteLoadingId, setDropboxDeleteLoadingId] = useState(null);
+  const [templateEditorOpen, setTemplateEditorOpen] = useState(false);
+  const [templateEditorTarget, setTemplateEditorTarget] = useState(null);
 
   const canMutate = adminRole && adminRole !== "admin_view";
   const canCreateCity =
@@ -617,8 +621,15 @@ export default function CityManager() {
                                           {t.type?.replace("_", " ")}
                                         </TableCell>
                                         <TableCell className="text-sm text-slate-600">
-                                          {t.dropboxSignTemplateId ? (
-                                            <span className="text-emerald-700">Configured</span>
+                                          {t.templatePdfKey ? (
+                                            <span className="text-emerald-700 flex items-center gap-1">
+                                              Local
+                                              {Array.isArray(t.templateFields) && t.templateFields.length > 0 && (
+                                                <Badge className="bg-emerald-100 text-emerald-800 text-[10px] px-1 py-0">{t.templateFields.length} fields</Badge>
+                                              )}
+                                            </span>
+                                          ) : t.dropboxSignTemplateId ? (
+                                            <span className="text-emerald-700">DS Configured</span>
                                           ) : (
                                             <span className="text-amber-700">Not set</span>
                                           )}
@@ -650,35 +661,15 @@ export default function CityManager() {
                                                 type="button"
                                                 variant="outline"
                                                 size="sm"
-                                                className="h-8"
-                                                onClick={() => openCreateDropboxTemplate(t)}
+                                                className="h-8 text-brand-blue border-brand-blue/30 hover:bg-blue-50"
+                                                onClick={() => {
+                                                  setTemplateEditorTarget(t);
+                                                  setTemplateEditorOpen(true);
+                                                }}
                                               >
-                                                Create DS
+                                                <PenLine className="h-3.5 w-3.5 mr-1" />
+                                                Edit Template
                                               </Button>
-                                              {t.dropboxSignTemplateId && (
-                                                <Button
-                                                  type="button"
-                                                  variant="outline"
-                                                  size="sm"
-                                                  className="h-8"
-                                                  disabled={dropboxEditorLoading}
-                                                  onClick={() => openDropboxEditor(t)}
-                                                >
-                                                  Edit DS
-                                                </Button>
-                                              )}
-                                              {t.dropboxSignTemplateId && (
-                                                <Button
-                                                  type="button"
-                                                  variant="outline"
-                                                  size="sm"
-                                                  className="h-8"
-                                                  disabled={dropboxDeleteLoadingId === t.id}
-                                                  onClick={() => removeDropboxTemplateLink(t)}
-                                                >
-                                                  {dropboxDeleteLoadingId === t.id ? "Removing..." : "Delete DS"}
-                                                </Button>
-                                              )}
                                               <Button
                                                 type="button"
                                                 variant="outline"
@@ -1069,6 +1060,13 @@ export default function CityManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <TemplateFieldEditor
+        contractTemplate={templateEditorTarget}
+        open={templateEditorOpen}
+        onClose={() => { setTemplateEditorOpen(false); setTemplateEditorTarget(null); }}
+        onSaved={() => { setTemplateEditorOpen(false); setTemplateEditorTarget(null); loadCities(); }}
+      />
 
       <AlertDialog
         open={!!deleteCityTarget}

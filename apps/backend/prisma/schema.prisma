@@ -87,6 +87,10 @@ model ContractTemplate {
   dropboxSignTemplateId String?   @map("dropbox_sign_template_id")
   content               String?   @db.Text
   isActive              Boolean   @default(true) @map("is_active")
+  /// Firebase Storage key for the uploaded template PDF
+  templatePdfKey        String?   @map("template_pdf_key")
+  /// JSON array of field definitions placed on the PDF
+  templateFields        Json?     @map("template_fields")
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
 

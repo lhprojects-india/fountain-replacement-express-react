@@ -1,16 +1,9 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import prisma from '../../lib/prisma.js';
-import { adminAuth } from '../../lib/firebase-admin.js';
 import { upsertOnboardingStep } from '../../lib/driverSerialize.js';
 import { JWT_SECRET, jwtSignOptionsByRole } from '../../lib/jwt.js';
 import logger from '../../lib/logger.js';
-
-function getBootstrapSuperAdminEmail() {
-  return String(process.env.BOOTSTRAP_SUPER_ADMIN_EMAIL || '')
-    .toLowerCase()
-    .trim();
-}
 
 export const checkFountainEmail = async (req, res) => {
   const { email } = req.validatedBody || req.body;
@@ -101,65 +94,6 @@ export const verifyApplicantPhone = async (req, res) => {
   }
 };
 
-export const adminGoogleLogin = async (req, res) => {
-  const { idToken } = req.validatedBody || req.body;
-
-  if (!idToken) {
-    return res.status(400).json({ success: false, message: 'Firebase ID token is required' });
-  }
-
-  try {
-    const decoded = await adminAuth.verifyIdToken(idToken);
-    const email = decoded.email?.toLowerCase().trim();
-
-    if (!email) {
-      return res.status(401).json({ success: false, message: 'Could not retrieve email from Google account' });
-    }
-
-    let admin = await prisma.admin.findUnique({ where: { email } });
-
-    if (!admin) {
-      const bootstrapEmail = getBootstrapSuperAdminEmail();
-      if (bootstrapEmail && email === bootstrapEmail) {
-        const adminCount = await prisma.admin.count();
-        if (adminCount === 0) {
-          admin = await prisma.admin.create({
-            data: {
-              email,
-              role: 'super_admin',
-              name: decoded.name || 'Bootstrap Super Admin',
-            },
-          });
-          logger.info({ msg: 'Bootstrap super admin created from Google login', email });
-        }
-      }
-    }
-
-    if (!admin) {
-      return res.status(403).json({ success: false, message: 'Access denied. This Google account is not authorised as an admin.' });
-    }
-
-    const token = jwt.sign(
-      { email: admin.email, role: 'admin' },
-      JWT_SECRET,
-      jwtSignOptionsByRole.admin
-    );
-
-    return res.status(200).json({
-      success: true,
-      token,
-      admin: {
-        email: admin.email,
-        role: admin.role,
-        name: admin.name,
-      },
-    });
-  } catch (error) {
-    logger.error({ msg: 'Error verifying Google token', error });
-    return res.status(401).json({ success: false, message: 'Invalid or expired Google token.' });
-  }
-};
-
 export const adminLogin = async (req, res) => {
   const { email, password } = req.validatedBody || req.body;
 
@@ -176,24 +110,26 @@ export const adminLogin = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    if (admin.password) {
-      const isBcryptHash = admin.password.startsWith('$2a$') || admin.password.startsWith('$2b$');
-      const isValid = isBcryptHash
-        ? await bcrypt.compare(password, admin.password)
-        : admin.password === password;
+    if (!admin.password) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
 
-      if (!isValid) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-      }
+    const isBcryptHash = admin.password.startsWith('$2a$') || admin.password.startsWith('$2b$');
+    const isValid = isBcryptHash
+      ? await bcrypt.compare(password, admin.password)
+      : admin.password === password;
 
-      if (!isBcryptHash) {
-        // Seamless migration path: upgrade plaintext passwords on successful login.
-        const hashedPassword = await bcrypt.hash(password, 12);
-        await prisma.admin.update({
-          where: { email: admin.email },
-          data: { password: hashedPassword },
-        });
-      }
+    if (!isValid) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    if (!isBcryptHash) {
+      // Seamless migration path: upgrade plaintext passwords on successful login.
+      const hashedPassword = await bcrypt.hash(password, 12);
+      await prisma.admin.update({
+        where: { email: admin.email },
+        data: { password: hashedPassword },
+      });
     }
 
     // Generate JWT for admin

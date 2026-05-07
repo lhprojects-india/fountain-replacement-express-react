@@ -187,6 +187,24 @@ export const publicServices = {
     return data;
   },
 
+  async getMockContract() {
+    const token = getAuthToken();
+    const { data } = await axios.get(`${base()}/driver/application/contract/mock`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    return data;
+  },
+
+  async mockSignContract() {
+    const token = getAuthToken();
+    const { data } = await axios.post(
+      `${base()}/driver/application/contract/mock-sign`,
+      {},
+      { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+    );
+    return data;
+  },
+
   async getDriverDocuments() {
     const token = getAuthToken();
     const { data } = await axios.get(`${base()}/driver/documents`, {
