@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Document, Page, pdfjs } from "react-pdf";
 import pdfWorkerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
@@ -45,22 +45,45 @@ export default function ContractSigning() {
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(false);
   const pageRef = useRef(null);
+  const pdfBlobUrlRef = useRef(null);
 
   useEffect(() => {
-    publicServices.getMockContract()
-      .then((data) => {
-        setContractData(data);
+    let alive = true;
+    const run = async () => {
+      try {
+        const meta = await publicServices.getMockContract();
+        const pdfBlob = await publicServices.getMockContractPdf();
+        if (!alive) return;
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        pdfBlobUrlRef.current = blobUrl;
+        setContractData({
+          contractStatus: meta.contractStatus,
+          templateName: meta.templateName,
+          fields: meta.fields || [],
+          applicant: meta.applicant,
+          pdfUrl: blobUrl,
+        });
         const initVals = {};
-        (data.fields || []).forEach((f) => {
-          initVals[f.id] = autoFillValue(f, data.applicant);
+        (meta.fields || []).forEach((f) => {
+          initVals[f.id] = autoFillValue(f, meta.applicant);
         });
         setFieldValues(initVals);
         setLoading(false);
-      })
-      .catch((err) => {
-        setError(err?.message || "Could not load contract.");
-        setLoading(false);
-      });
+      } catch (err) {
+        if (alive) {
+          setError(err?.message || "Could not load contract.");
+          setLoading(false);
+        }
+      }
+    };
+    run();
+    return () => {
+      alive = false;
+      if (pdfBlobUrlRef.current) {
+        URL.revokeObjectURL(pdfBlobUrlRef.current);
+        pdfBlobUrlRef.current = null;
+      }
+    };
   }, []);
 
   const pageFields = (contractData?.fields || []).filter((f) => f.page === currentPage);

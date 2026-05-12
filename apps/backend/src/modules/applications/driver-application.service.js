@@ -3,7 +3,7 @@ import { PRODUCT_DISPLAY_NAME } from '../../lib/product-name.js';
 import { STAGES } from '../workflow/transition-matrix.js';
 import { transitionApplication, WorkflowError } from '../workflow/stage-engine.js';
 import { resendContract, markContractAsSigned } from '../integrations/dropbox-sign/contract.service.js';
-import { generateDownloadUrl as storageDownloadUrl } from '../documents/storage.service.js';
+import { downloadBuffer } from '../documents/storage.service.js';
 import { REQUIRED_SCREENING_STEPS, SCREENING_STEP_LABELS } from './screening-requirements.js';
 
 export class DriverApplicationServiceError extends Error {
@@ -769,7 +769,8 @@ export async function getApplicationRegionConfig(applicationId, rawEmail) {
   };
 }
 
-export async function getMockContractForDriver(applicationId, rawEmail) {
+/** Validates driver session and returns application + contract template for in-app signing. */
+async function loadMockContractTemplateOrThrow(applicationId, rawEmail) {
   const id = Number(applicationId);
   const email = String(rawEmail || '').trim().toLowerCase();
   if (!Number.isInteger(id) || id <= 0) throw new DriverApplicationServiceError('Invalid application id.', 400);
@@ -799,15 +800,15 @@ export async function getMockContractForDriver(applicationId, rawEmail) {
     throw new DriverApplicationServiceError('No contract PDF is configured for this role.', 404);
   }
 
-  const { downloadUrl } = await storageDownloadUrl(template.templatePdfKey, {
-    contentType: 'application/pdf',
-    fileName: `${template.name}.pdf`,
-  });
+  return { app, template };
+}
+
+export async function getMockContractForDriver(applicationId, rawEmail) {
+  const { app, template } = await loadMockContractTemplateOrThrow(applicationId, rawEmail);
 
   return {
     contractStatus: app.contractStatus,
     templateName: template.name,
-    pdfUrl: downloadUrl,
     fields: Array.isArray(template.templateFields) ? template.templateFields : [],
     applicant: {
       firstName: app.firstName,
@@ -815,6 +816,11 @@ export async function getMockContractForDriver(applicationId, rawEmail) {
       email: app.email,
     },
   };
+}
+
+export async function getMockContractPdfBufferForDriver(applicationId, rawEmail) {
+  const { template } = await loadMockContractTemplateOrThrow(applicationId, rawEmail);
+  return downloadBuffer(template.templatePdfKey);
 }
 
 export async function mockSignContract(applicationId, rawEmail) {

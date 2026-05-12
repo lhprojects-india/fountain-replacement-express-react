@@ -5,6 +5,7 @@ import {
   DriverApplicationServiceError,
   getDriverApplication,
   getMockContractForDriver,
+  getMockContractPdfBufferForDriver,
   mockSignContract,
   resendDriverContract,
   getScreeningProgress,
@@ -147,6 +148,19 @@ export async function getApplicationCityConfigHandler(req, res) {
   try {
     const result = await getApplicationCityConfig(req.user.applicationId, req.user.email);
     return res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function getMockContractPdfHandler(req, res) {
+  if (!assertDriverUser(req, res)) return undefined;
+  try {
+    const buffer = await getMockContractPdfBufferForDriver(req.user.applicationId, req.user.email);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    return res.status(200).send(buffer);
   } catch (error) {
     return handleError(res, error);
   }
