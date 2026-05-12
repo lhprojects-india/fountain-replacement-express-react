@@ -25,7 +25,7 @@ const StageActionPanel = ({ application, documentProgress = null }) => {
     acknowledgements: {
       text: "Your screening has been submitted. Our team is reviewing your responses. You'll be notified about next steps.",
     },
-    contract_sent: contractStatus === "sent_mock"
+    contract_sent: application?.inAppContractSigning
       ? {
           text: "Your contract is ready to review and sign.",
           buttonLabel: "Review & Sign Contract",
@@ -107,7 +107,7 @@ const StageActionPanel = ({ application, documentProgress = null }) => {
           Typical processing time: 1-2 business days
         </p>
       ) : null}
-      {stage === "contract_sent" && contractStatus ? (
+      {stage === "contract_sent" && contractStatus && !application?.inAppContractSigning ? (
         <p className="text-xs text-gray-500 mt-2">Current contract status: {contractStatus}</p>
       ) : null}
       {stage === "onboarding_call" ? (

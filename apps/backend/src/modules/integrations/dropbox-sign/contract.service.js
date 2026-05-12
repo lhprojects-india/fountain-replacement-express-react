@@ -57,7 +57,10 @@ async function loadApplication(applicationId, prisma) {
 
 export async function sendContract(applicationId, prisma) {
   const application = await loadApplication(applicationId, prisma);
-  const templateId = application.job?.contractTemplate?.dropboxSignTemplateId;
+  const rawDropboxTemplateId = application.job?.contractTemplate?.dropboxSignTemplateId;
+  const dropboxTemplateId =
+    typeof rawDropboxTemplateId === 'string' ? rawDropboxTemplateId.trim() : rawDropboxTemplateId || '';
+  const hasDropboxTemplate = Boolean(dropboxTemplateId);
   const hasManualTemplateContent = Boolean(application.job?.contractTemplate?.content);
   const previousFailures = await prisma.communicationLog.count({
     where: {
@@ -70,9 +73,11 @@ export async function sendContract(applicationId, prisma) {
     throw new DropboxContractError('Contract send retry limit reached (3 attempts).', 409);
   }
 
-  const hasMockTemplate = Boolean(application.job?.contractTemplate?.templatePdfKey);
+  const hasPdfTemplate = Boolean(application.job?.contractTemplate?.templatePdfKey);
 
-  if (!templateId && hasMockTemplate) {
+  // When a template PDF is configured, always use in-app signing (no Dropbox call),
+  // even if a legacy Dropbox template id is still stored on the contract template.
+  if (hasPdfTemplate) {
     const mockRequestId = `mock_${application.id}_${Date.now()}`;
     const updated = await prisma.application.update({
       where: { id: application.id },
@@ -87,7 +92,7 @@ export async function sendContract(applicationId, prisma) {
       channel: 'contract',
       templateEventKey: 'contract.mock_sent',
       recipientEmail: application.email,
-      subject: `${application.job?.title || 'Driver'} Contract (Mock)`,
+      subject: `${application.job?.title || 'Driver'} Contract`,
       body: null,
       providerMessageId: mockRequestId,
       status: 'sent',
@@ -101,11 +106,11 @@ export async function sendContract(applicationId, prisma) {
       signatureRequestId: mockRequestId,
       signatureId: null,
       signingUrl: null,
-      method: 'mock',
+      method: 'in_app_pdf',
     };
   }
 
-  if (!templateId && hasManualTemplateContent) {
+  if (hasManualTemplateContent) {
     const updated = await prisma.application.update({
       where: { id: application.id },
       data: {
@@ -142,13 +147,16 @@ export async function sendContract(applicationId, prisma) {
     };
   }
 
-  if (!templateId) {
-    throw new DropboxContractError('No Dropbox Sign template configured for this application.', 400);
+  if (!hasDropboxTemplate) {
+    throw new DropboxContractError(
+      'No contract template configured for this job. Add a PDF template in admin or configure Dropbox Sign.',
+      400
+    );
   }
 
   try {
     const request = await createSignatureRequest({
-      templateId,
+      templateId: dropboxTemplateId,
       signerEmail: application.email,
       signerName: `${application.firstName || ''} ${application.lastName || ''}`.trim(),
       customFields: buildCustomFields(application),
@@ -300,13 +308,16 @@ export async function getContractStatus(applicationId, prisma) {
       providerStatus = { error: error?.message || 'Unable to fetch provider status' };
     }
   }
+  const method =
+    app.contractStatus === 'sent_mock' ? 'in_app_pdf' : app.contractStatus === 'sent' ? 'dropbox_sign' : 'manual';
+
   return {
     applicationId: app.id,
     contractRequestId: app.contractRequestId,
     contractStatus: app.contractStatus,
     contractSignedAt: app.contractSignedAt,
     sendFailedAttempts,
-    method: app.contractRequestId ? 'dropbox_sign' : 'manual',
+    method,
     providerStatus,
   };
 }
