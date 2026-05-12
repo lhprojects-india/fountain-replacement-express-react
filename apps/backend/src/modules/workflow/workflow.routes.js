@@ -13,6 +13,7 @@ import {
   reopenApplication,
   WorkflowError,
 } from './stage-engine.js';
+import { DropboxContractError } from '../integrations/dropbox-sign/contract.service.js';
 import {
   bulkTransitionApplicationsSchema,
   reopenApplicationSchema,
@@ -49,6 +50,9 @@ router.post(
     if (error instanceof WorkflowError) {
       return res.status(error.statusCode).json({ success: false, message: error.message });
     }
+    if (error instanceof DropboxContractError) {
+      return res.status(error.statusCode || 400).json({ success: false, message: error.message });
+    }
     logger.error({ msg: 'Workflow transition error', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
@@ -76,6 +80,9 @@ router.post(
   } catch (error) {
     if (error instanceof WorkflowError) {
       return res.status(error.statusCode).json({ success: false, message: error.message });
+    }
+    if (error instanceof DropboxContractError) {
+      return res.status(error.statusCode || 400).json({ success: false, message: error.message });
     }
     logger.error({ msg: 'Workflow bulk transition error', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });

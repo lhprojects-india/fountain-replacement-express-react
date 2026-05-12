@@ -105,7 +105,14 @@ export default function AdminLogin() {
               </p>
             </div>
 
-            <div className="space-y-3">
+            <form
+              className="space-y-3"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const ok = await signInWithEmailPassword(devEmail, devPassword);
+                if (ok) navigate("/", { replace: true });
+              }}
+            >
               <div className="space-y-1.5">
                 <Label htmlFor="admin-email" className="text-xs">
                   Email
@@ -134,20 +141,13 @@ export default function AdminLogin() {
                 />
               </div>
               <Button
-                type="button"
+                type="submit"
                 className="w-full h-11 bg-blue-700 hover:bg-blue-800 text-white"
                 disabled={isLoading}
-                onClick={async () => {
-                  const ok = await signInWithEmailPassword(
-                    devEmail,
-                    devPassword
-                  );
-                  if (ok) navigate("/", { replace: true });
-                }}
               >
                 {isLoading ? "Signing in..." : "Sign in"}
               </Button>
-            </div>
+            </form>
 
             {/* Footer links */}
             <div

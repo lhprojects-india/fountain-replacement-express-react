@@ -4,6 +4,7 @@ import { STAGES } from '../workflow/transition-matrix.js';
 import { transitionApplication, WorkflowError } from '../workflow/stage-engine.js';
 import { resendContract, markContractAsSigned } from '../integrations/dropbox-sign/contract.service.js';
 import { generateDownloadUrl as storageDownloadUrl } from '../documents/storage.service.js';
+import { REQUIRED_SCREENING_STEPS, SCREENING_STEP_LABELS } from './screening-requirements.js';
 
 export class DriverApplicationServiceError extends Error {
   constructor(message, statusCode = 400) {
@@ -113,40 +114,6 @@ const STAGE_CONFIG = {
     description: 'The first block was not successful.',
     driverActionRequired: false,
   },
-};
-
-const REQUIRED_SCREENING_STEPS = [
-  'confirm_details',
-  'vehicle_check',
-  'introduction',
-  'about',
-  'role',
-  'availability',
-  'facility_locations',
-  'blocks_classification',
-  'fee_structure',
-  'payment_cycle_schedule',
-  'routes_policy',
-  'cancellation_policy',
-  'smoking_fitness_check',
-  'liabilities',
-];
-
-const SCREENING_STEP_LABELS = {
-  confirm_details: 'Personal Details',
-  vehicle_check: 'Vehicle Check',
-  introduction: 'Introduction',
-  about: 'Company Overview',
-  role: 'Role Understanding',
-  availability: 'Availability',
-  facility_locations: 'Facility Locations',
-  blocks_classification: 'Blocks Classification',
-  fee_structure: 'Fee Structure',
-  payment_cycle_schedule: 'Payment Cycle',
-  routes_policy: 'Route Policy',
-  cancellation_policy: 'Cancellation Policy',
-  smoking_fitness_check: 'Health & Fitness Check',
-  liabilities: 'Liabilities',
 };
 
 const PROFILE_APPLICATION_FIELDS = [

@@ -3,6 +3,7 @@ import {
   Button,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -1005,6 +1006,7 @@ const ApplicationPipeline = () => {
         <DialogContent className="adm-modal">
           <DialogHeader>
             <DialogTitle>Save filter preset</DialogTitle>
+            <DialogDescription>Give this filter combination a name so you can reuse it later.</DialogDescription>
           </DialogHeader>
           <Input value={presetName} onChange={(e) => setPresetName(e.target.value)} placeholder="Preset name" />
           <DialogFooter>
@@ -1017,6 +1019,7 @@ const ApplicationPipeline = () => {
         <DialogContent className="adm-modal max-w-2xl">
           <DialogHeader>
             <DialogTitle>Quick Jump</DialogTitle>
+            <DialogDescription>Search across applications, jobs, and cities to open a record quickly.</DialogDescription>
           </DialogHeader>
           <Input
             autoFocus

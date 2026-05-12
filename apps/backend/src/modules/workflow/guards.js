@@ -1,4 +1,5 @@
 import { STAGES } from './transition-matrix.js';
+import { REQUIRED_SCREENING_STEPS } from '../applications/screening-requirements.js';
 
 const allow = { allowed: true };
 const deny = (reason) => ({ allowed: false, reason });
@@ -18,15 +19,18 @@ async function acknowledgementsToContractSent(application, prisma) {
 
   const steps = await prisma.driverOnboardingStep.findMany({
     where: { driverId: application.driverId },
-    select: { isConfirmed: true },
+    select: { stepName: true, isConfirmed: true },
   });
 
-  if (steps.length === 0) {
-    return deny('No onboarding steps found for this driver.');
+  const confirmed = new Set(steps.filter((s) => s.isConfirmed).map((s) => s.stepName));
+  const missing = REQUIRED_SCREENING_STEPS.filter((name) => !confirmed.has(name));
+  if (missing.length > 0) {
+    return deny(
+      `Required screening steps not completed (${missing.length} missing). Complete them in the driver app before sending the contract.`
+    );
   }
 
-  const allConfirmed = steps.every((step) => step.isConfirmed);
-  return allConfirmed ? allow : deny('All onboarding steps must be completed.');
+  return allow;
 }
 
 async function contractSentToContractSigned(application) {

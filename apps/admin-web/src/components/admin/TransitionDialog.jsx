@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Alert, AlertDescription, AlertTitle, Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from "@lh/shared";
+import { Alert, AlertDescription, AlertTitle, Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from "@lh/shared";
 import { AlertTriangle } from "lucide-react";
 import { adminServices } from "../../lib/admin-services";
 
@@ -81,7 +81,7 @@ const TransitionDialog = ({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <p className="text-sm text-gray-600">{description}</p>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         {isReject ? (

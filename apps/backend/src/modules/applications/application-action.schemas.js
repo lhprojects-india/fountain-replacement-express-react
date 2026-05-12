@@ -2,7 +2,11 @@ import { z } from 'zod';
 
 const optionalText = z.string().trim().min(1).max(5000).optional();
 
-export const emptyBodySchema = z.object({}).strict();
+/** POST bodies are often omitted or undefined; normalize before strict empty-object check. */
+export const emptyBodySchema = z.preprocess(
+  (val) => (val === undefined || val === null ? {} : val),
+  z.object({}).strict()
+);
 
 export const approveApplicationSchema = z.object({
   notes: optionalText,

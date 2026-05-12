@@ -769,7 +769,7 @@ export const adminServices = {
   },
 
   async sendContract(id) {
-    return apiClient.post(`/applications/${id}/contract/send`);
+    return apiClient.post(`/applications/${id}/contract/send`, {});
   },
 
   async getContractStatus(id) {
@@ -777,15 +777,15 @@ export const adminServices = {
   },
 
   async resendContract(id) {
-    return apiClient.post(`/applications/${id}/contract/resend`);
+    return apiClient.post(`/applications/${id}/contract/resend`, {});
   },
 
   async cancelContract(id) {
-    return apiClient.post(`/applications/${id}/contract/cancel`);
+    return apiClient.post(`/applications/${id}/contract/cancel`, {});
   },
 
   async markContractSigned(id) {
-    return apiClient.post(`/applications/${id}/contract/mark-signed`);
+    return apiClient.post(`/applications/${id}/contract/mark-signed`, {});
   },
 
   async pollAllPendingContracts() {
