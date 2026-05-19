@@ -48,7 +48,12 @@ router.post(
     return res.status(200).json({ success: true, ...result });
   } catch (error) {
     if (error instanceof WorkflowError) {
-      return res.status(error.statusCode).json({ success: false, message: error.message });
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        code: error.code,
+        errors: error.errors,
+      });
     }
     if (error instanceof ContractError) {
       return res.status(error.statusCode || 400).json({ success: false, message: error.message });
@@ -79,7 +84,12 @@ router.post(
     return res.status(200).json({ success: true, ...result });
   } catch (error) {
     if (error instanceof WorkflowError) {
-      return res.status(error.statusCode).json({ success: false, message: error.message });
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        code: error.code,
+        errors: error.errors,
+      });
     }
     if (error instanceof ContractError) {
       return res.status(error.statusCode || 400).json({ success: false, message: error.message });
@@ -95,7 +105,12 @@ router.get('/applications/:id/history', asyncHandler(async (req, res) => {
     return res.status(200).json({ success: true, history });
   } catch (error) {
     if (error instanceof WorkflowError) {
-      return res.status(error.statusCode).json({ success: false, message: error.message });
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        code: error.code,
+        errors: error.errors,
+      });
     }
     logger.error({ msg: 'Workflow history error', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
@@ -108,7 +123,12 @@ router.get('/applications/:id/available-transitions', asyncHandler(async (req, r
     return res.status(200).json({ success: true, transitions });
   } catch (error) {
     if (error instanceof WorkflowError) {
-      return res.status(error.statusCode).json({ success: false, message: error.message });
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        code: error.code,
+        errors: error.errors,
+      });
     }
     logger.error({ msg: 'Workflow available transitions error', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });
@@ -131,7 +151,12 @@ router.post(
     return res.status(200).json({ success: true, ...result });
   } catch (error) {
     if (error instanceof WorkflowError) {
-      return res.status(error.statusCode).json({ success: false, message: error.message });
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        code: error.code,
+        errors: error.errors,
+      });
     }
     logger.error({ msg: 'Workflow reopen error', error });
     return res.status(500).json({ success: false, message: 'Internal server error' });

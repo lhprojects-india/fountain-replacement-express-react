@@ -7,11 +7,15 @@ import {
 import { getGuard } from './guards.js';
 import { getActions } from './actions.js';
 
+const BYPASSABLE_GUARD_CODES = new Set(['MISSING_SCREENING_STEPS']);
+
 class WorkflowError extends Error {
-  constructor(message, statusCode = 400) {
+  constructor(message, statusCode = 400, { code, errors } = {}) {
     super(message);
     this.name = 'WorkflowError';
     this.statusCode = statusCode;
+    this.code = code;
+    this.errors = errors;
   }
 }
 
@@ -35,9 +39,30 @@ export async function performTransition(tx, application, toStage, { actorEmail, 
 
   const guard = getGuard(fromStage, toStage);
   const guardResult = await guard(application, tx);
+  let bypassMetadata = null;
   if (!guardResult?.allowed) {
-    throw new WorkflowError(guardResult?.reason || 'Transition guard failed.', 400);
+    const bypassRequested = actorType === 'admin' && metadata?.bypassGuard === true;
+    const bypassAllowed = bypassRequested && BYPASSABLE_GUARD_CODES.has(String(guardResult?.code || ''));
+    if (!bypassAllowed) {
+      throw new WorkflowError(guardResult?.reason || 'Transition guard failed.', 400, {
+        code: guardResult?.code,
+        errors: guardResult?.errors,
+      });
+    }
+    bypassMetadata = {
+      code: guardResult?.code || null,
+      reason: guardResult?.reason || null,
+      errors: guardResult?.errors || null,
+      bypassedAt: new Date().toISOString(),
+    };
   }
+
+  const transitionMetadata = bypassMetadata
+    ? {
+        ...(metadata || {}),
+        workflowBypass: bypassMetadata,
+      }
+    : (metadata ?? null);
 
   const transitionMeta = {
     fromStage,
@@ -45,7 +70,7 @@ export async function performTransition(tx, application, toStage, { actorEmail, 
     reason: reason ?? null,
     actorEmail: actorEmail ?? null,
     actorType: actorType ?? 'admin',
-    metadata: metadata ?? null,
+    metadata: transitionMetadata,
   };
 
   const updatedApplication = await tx.application.update({
@@ -214,7 +239,12 @@ export async function bulkTransitionApplications(
       );
       succeeded.push(id);
     } catch (error) {
-      failed.push({ id, error: error?.message || 'Transition failed.' });
+      failed.push({
+        id,
+        error: error?.message || 'Transition failed.',
+        code: error?.code,
+        errors: error?.errors,
+      });
     }
   }
 

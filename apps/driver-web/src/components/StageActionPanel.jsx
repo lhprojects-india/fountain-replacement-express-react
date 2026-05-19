@@ -8,6 +8,9 @@ const StageActionPanel = ({ application, documentProgress = null }) => {
   const stage = application?.currentStage;
   const reason = application?.rejectionReason;
   const contractStatus = application?.contractStatus;
+  const missingScreeningLabels = Array.isArray(application?.screeningProgress?.missingStepLabels)
+    ? application.screeningProgress.missingStepLabels.filter(Boolean)
+    : [];
 
   if (!stage) return null;
 
@@ -22,9 +25,17 @@ const StageActionPanel = ({ application, documentProgress = null }) => {
       buttonLabel: "Begin Screening",
       route: "/screening",
     },
-    acknowledgements: {
-      text: "Your screening has been submitted. Our team is reviewing your responses. You'll be notified about next steps.",
-    },
+    acknowledgements:
+      missingScreeningLabels.length > 0
+        ? {
+            text: `Your application is under review, but one or more screening steps are still missing: ${missingScreeningLabels.join(", ")}.`,
+            buttonLabel: "Complete Missing Step",
+            route: "/screening/summary",
+            tone: "warning",
+          }
+        : {
+            text: "Your screening has been submitted. Our team is reviewing your responses. You'll be notified about next steps.",
+          },
     contract_sent: application?.contractSigningUrl
       ? {
           text: `Your contract is ready to review and sign. We've also emailed you a copy at ${application?.email || "your email"}.`,
@@ -99,11 +110,25 @@ const StageActionPanel = ({ application, documentProgress = null }) => {
   return (
     <div
       className={`rounded-lg border p-4 ${
-        config.tone === "danger" ? "border-red-200 bg-red-50" : "border-gray-200 bg-gray-50"
+        config.tone === "danger"
+          ? "border-red-200 bg-red-50"
+          : config.tone === "warning"
+            ? "border-amber-200 bg-amber-50"
+            : "border-gray-200 bg-gray-50"
       }`}
     >
-      <p className={config.tone === "danger" ? "text-red-700" : "text-gray-700"}>{config.text}</p>
-      {config.tone !== "danger" ? (
+      <p
+        className={
+          config.tone === "danger"
+            ? "text-red-700"
+            : config.tone === "warning"
+              ? "text-amber-800"
+              : "text-gray-700"
+        }
+      >
+        {config.text}
+      </p>
+      {config.tone !== "danger" && config.tone !== "warning" ? (
         <p className="text-xs text-gray-500 mt-2 inline-flex items-center gap-1">
           <CalendarClock className="h-3.5 w-3.5" />
           Typical processing time: 1-2 business days

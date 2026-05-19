@@ -362,8 +362,12 @@ export const adminServices = {
     return result.application;
   },
 
-  async transitionApplication(id, toStage, reason = "") {
-    const result = await apiClient.post(`/workflow/applications/${id}/transition`, { toStage, reason });
+  async transitionApplication(id, toStage, reason = "", metadata = {}) {
+    const payload = { toStage, reason };
+    if (metadata && Object.keys(metadata).length > 0) {
+      payload.metadata = metadata;
+    }
+    const result = await apiClient.post(`/workflow/applications/${id}/transition`, payload);
     const summary = result.applicationSummary || result.application;
     if (!summary) return null;
     return {

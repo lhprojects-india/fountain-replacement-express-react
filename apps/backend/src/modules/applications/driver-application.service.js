@@ -202,7 +202,7 @@ export async function getDriverApplication(applicationId, rawEmail) {
     return acc;
   }, {});
 
-  const stageConfig = getStageConfig(application.currentStage);
+  const stageConfig = { ...getStageConfig(application.currentStage) };
   const stepMap = new Map(
     (application.driver?.onboardingSteps || []).map((s) => [s.stepName, s])
   );
@@ -217,6 +217,17 @@ export async function getDriverApplication(applicationId, rawEmail) {
   });
   const screeningCompleted = screeningSteps.filter((s) => s.completed).length;
   const screeningTotal = screeningSteps.length;
+  const missingScreeningSteps = screeningSteps.filter((s) => !s.completed);
+  const missingScreeningStepNames = missingScreeningSteps.map((s) => s.name);
+  const missingScreeningStepLabels = missingScreeningSteps.map((s) => s.label);
+
+  if (application.currentStage === STAGES.ACKNOWLEDGEMENTS && missingScreeningStepLabels.length > 0) {
+    stageConfig.label = 'Screening Incomplete';
+    stageConfig.description = `Your application is under review, but we still need ${missingScreeningStepLabels.length} screening step${missingScreeningStepLabels.length > 1 ? 's' : ''}: ${missingScreeningStepLabels.join(', ')}.`;
+    stageConfig.driverActionRequired = true;
+    stageConfig.driverActionLabel = 'Complete Missing Step';
+    stageConfig.driverActionRoute = '/screening/summary';
+  }
 
   const contractSigningUrl =
     application.currentStage === STAGES.CONTRACT_SENT && application.docusealSubmitterSlug
@@ -270,6 +281,8 @@ export async function getDriverApplication(applicationId, rawEmail) {
       completedSteps: screeningCompleted,
       percentage: screeningTotal ? Math.round((screeningCompleted / screeningTotal) * 100) : 0,
       steps: screeningSteps,
+      missingSteps: missingScreeningStepNames,
+      missingStepLabels: missingScreeningStepLabels,
     },
     availableActions: stageConfig.driverActionRequired
       ? [

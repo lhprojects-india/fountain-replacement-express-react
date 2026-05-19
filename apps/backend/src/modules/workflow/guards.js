@@ -2,7 +2,9 @@ import { STAGES } from './transition-matrix.js';
 import { REQUIRED_SCREENING_STEPS } from '../applications/screening-requirements.js';
 
 const allow = { allowed: true };
-const deny = (reason) => ({ allowed: false, reason });
+const deny = (reason, extra = {}) => ({ allowed: false, reason, ...extra });
+const formatStage = (stage) => String(stage || '').replaceAll('_', ' ');
+const formatStep = (step) => String(step || '').replaceAll('_', ' ');
 
 async function screeningToAcknowledgements(application) {
   if (!application.driverId) {
@@ -13,8 +15,16 @@ async function screeningToAcknowledgements(application) {
 }
 
 async function acknowledgementsToContractSent(application, prisma) {
+  const fromStage = STAGES.ACKNOWLEDGEMENTS;
+  const toStage = STAGES.CONTRACT_SENT;
   if (!application.driverId) {
-    return deny('Driver must be linked before contract can be sent.');
+    return deny('Driver must be linked before contract can be sent.', {
+      code: 'MISSING_DRIVER_LINK',
+      errors: {
+        fromStage,
+        toStage,
+      },
+    });
   }
 
   const steps = await prisma.driverOnboardingStep.findMany({
@@ -26,7 +36,19 @@ async function acknowledgementsToContractSent(application, prisma) {
   const missing = REQUIRED_SCREENING_STEPS.filter((name) => !confirmed.has(name));
   if (missing.length > 0) {
     return deny(
-      `Required screening steps not completed (${missing.length} missing). Complete them in the driver app before sending the contract.`
+      `Cannot move from ${formatStage(fromStage)} to ${formatStage(toStage)}. Missing screening steps: ${missing
+        .map(formatStep)
+        .join(', ')}.`,
+      {
+        code: 'MISSING_SCREENING_STEPS',
+        errors: {
+          fromStage,
+          toStage,
+          missingCount: missing.length,
+          missingSteps: missing,
+          missingStepLabels: missing.map(formatStep),
+        },
+      }
     );
   }
 
