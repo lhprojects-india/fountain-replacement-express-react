@@ -56,7 +56,13 @@ const actionRegistry = {
       } catch (error) {
         // Keep the stage transition successful when external provider/config is down.
         // Admin can resend later from contract actions.
-        if (error instanceof ContractError && Number(error.statusCode || 0) >= 500) {
+        const statusCode = Number(error?.statusCode || 0);
+        const isRetryLimitConflict =
+          statusCode === 409 &&
+          String(error?.message || '')
+            .toLowerCase()
+            .includes('retry limit');
+        if (error instanceof ContractError && (statusCode >= 500 || isRetryLimitConflict)) {
           await prisma.application.update({
             where: { id: application.id },
             data: {
@@ -67,7 +73,7 @@ const actionRegistry = {
           logger.warn({
             msg: '[workflow-action] contract send failed after stage transition',
             applicationId: application.id,
-            statusCode: error.statusCode,
+            statusCode,
             error: error.message,
           });
           return;
