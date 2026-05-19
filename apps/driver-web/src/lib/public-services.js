@@ -187,42 +187,11 @@ export const publicServices = {
     return data;
   },
 
-  async getMockContract() {
+  async getContractSigningUrl() {
     const token = getAuthToken();
-    const { data } = await axios.get(`${base()}/driver/application/contract/mock`, {
+    const { data } = await axios.get(`${base()}/driver/application/contract/signing-url`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
-    return data;
-  },
-
-  async getMockContractPdf() {
-    const token = getAuthToken();
-    const response = await axios.get(`${base()}/driver/application/contract/mock/pdf`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      responseType: "arraybuffer",
-      validateStatus: () => true,
-    });
-    if (response.status !== 200) {
-      let message = "Could not load contract PDF.";
-      try {
-        const text = new TextDecoder().decode(new Uint8Array(response.data).slice(0, 2000));
-        const parsed = JSON.parse(text);
-        if (parsed?.message) message = parsed.message;
-      } catch {
-        /* ignore */
-      }
-      throw new Error(message);
-    }
-    return new Blob([response.data], { type: "application/pdf" });
-  },
-
-  async mockSignContract() {
-    const token = getAuthToken();
-    const { data } = await axios.post(
-      `${base()}/driver/application/contract/mock-sign`,
-      {},
-      { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-    );
     return data;
   },
 

@@ -74,6 +74,7 @@ Typical error response:
 - `POST /driver/application/withdraw`
 - `GET /driver/application/fee-structure`
 - `GET /driver/application/region-config`
+- `GET /driver/application/contract/signing-url` — returns the Docuseal signing URL for the driver
 - `POST /driver/application/contract/resend`
 
 ### Driver Documents (`/driver/documents`)
@@ -177,11 +178,14 @@ Workflow transition endpoints:
 ### Contracts (`/contract-templates`)
 
 - `GET /contract-templates`
-- `GET /contract-templates/region/:regionId`
+- `GET /contract-templates/city/:cityId`
 - `GET /contract-templates/:id`
 - `POST /contract-templates`
 - `PUT /contract-templates/:id`
 - `DELETE /contract-templates/:id`
+- `GET /contract-templates/docuseal/templates` — list templates available in Docuseal
+- `POST /contract-templates/:id/docuseal-template` — link an existing Docuseal template id
+- `DELETE /contract-templates/:id/docuseal-template` — unlink the Docuseal template
 
 ### Documents (Admin under `/applications/:id/documents`)
 
@@ -224,10 +228,8 @@ Document requirement management (`/document-requirements`):
 
 ## Webhooks
 
-- `GET /webhooks/dropbox-sign`
-  - Purpose: Dropbox Sign challenge verification
-- `POST /webhooks/dropbox-sign`
-  - Purpose: contract signature events
+- `POST /webhooks/docuseal`
+  - Purpose: contract signature events (form.completed / declined / expired)
 - `POST /webhooks/resend`
   - Purpose: email delivery/status events
 - `POST /webhooks/twilio`

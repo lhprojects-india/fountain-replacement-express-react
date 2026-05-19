@@ -47,10 +47,11 @@ import {
   ChevronRight,
   FileText,
   Globe,
-  PenLine,
+  ExternalLink,
+  Unlink,
+  Link as LinkIcon,
 } from "lucide-react";
 import DocumentRequirementManager from "./DocumentRequirementManager";
-import TemplateFieldEditor from "./TemplateFieldEditor";
 
 const DEFAULT_PAYMENT_SCHEMA = `{\n  "fields": [\n    { "key": "bank_name", "label": "Bank Name", "type": "text", "required": true }\n  ]\n}`;
 
@@ -124,27 +125,21 @@ export default function CityManager() {
   const [contractForm, setContractForm] = useState({
     name: "",
     type: "full_time",
-    dropboxSignTemplateId: "",
+    docusealTemplateId: "",
     content: "",
     isActive: true,
   });
 
   const [deleteCityTarget, setDeleteCityTarget] = useState(null);
   const [deleteContractTarget, setDeleteContractTarget] = useState(null);
-  const [dropboxCreateOpen, setDropboxCreateOpen] = useState(false);
-  const [dropboxTargetContract, setDropboxTargetContract] = useState(null);
-  const [dropboxForm, setDropboxForm] = useState({
-    templateTitle: "",
-    signerRole: "Driver",
-    templateFile: null,
-  });
-  const [creatingDropboxTemplate, setCreatingDropboxTemplate] = useState(false);
-  const [dropboxEditorOpen, setDropboxEditorOpen] = useState(false);
-  const [dropboxEditorUrl, setDropboxEditorUrl] = useState("");
-  const [dropboxEditorLoading, setDropboxEditorLoading] = useState(false);
-  const [dropboxDeleteLoadingId, setDropboxDeleteLoadingId] = useState(null);
-  const [templateEditorOpen, setTemplateEditorOpen] = useState(false);
-  const [templateEditorTarget, setTemplateEditorTarget] = useState(null);
+  const [docusealLinkOpen, setDocusealLinkOpen] = useState(false);
+  const [docusealLinkTarget, setDocusealLinkTarget] = useState(null);
+  const [docusealTemplates, setDocusealTemplates] = useState([]);
+  const [docusealLoading, setDocusealLoading] = useState(false);
+  const [docusealSearch, setDocusealSearch] = useState("");
+  const [docusealSelectedId, setDocusealSelectedId] = useState("");
+  const [docusealLinking, setDocusealLinking] = useState(false);
+  const [docusealUnlinkLoadingId, setDocusealUnlinkLoadingId] = useState(null);
 
   const canMutate = adminRole && adminRole !== "admin_view";
   const canCreateCity =
@@ -276,7 +271,7 @@ export default function CityManager() {
     setContractForm({
       name: "",
       type: "full_time",
-      dropboxSignTemplateId: "",
+      docusealTemplateId: "",
       content: "",
       isActive: true,
     });
@@ -289,7 +284,7 @@ export default function CityManager() {
     setContractForm({
       name: tpl.name,
       type: tpl.type,
-      dropboxSignTemplateId: tpl.dropboxSignTemplateId || "",
+      docusealTemplateId: tpl.docusealTemplateId || "",
       content: tpl.content || "",
       isActive: tpl.isActive,
     });
@@ -301,7 +296,7 @@ export default function CityManager() {
       cityId: contractCityId,
       name: contractForm.name.trim(),
       type: contractForm.type,
-      dropboxSignTemplateId: contractForm.dropboxSignTemplateId.trim() || null,
+      docusealTemplateId: contractForm.docusealTemplateId.trim() || null,
       content: contractForm.content.trim() || null,
       isActive: contractForm.isActive,
     };
@@ -341,104 +336,91 @@ export default function CityManager() {
     }
   };
 
-  const openCreateDropboxTemplate = (contractTemplate) => {
-    setDropboxTargetContract(contractTemplate);
-    setDropboxForm({
-      templateTitle: contractTemplate?.name || "",
-      signerRole: "Driver",
-      templateFile: null,
-    });
-    setDropboxCreateOpen(true);
+  const openDocusealLinkDialog = async (contractTemplate) => {
+    setDocusealLinkTarget(contractTemplate);
+    setDocusealSearch("");
+    setDocusealSelectedId(contractTemplate?.docusealTemplateId || "");
+    setDocusealLinkOpen(true);
+    setDocusealLoading(true);
+    try {
+      const templates = await adminServices.listDocusealTemplates();
+      setDocusealTemplates(templates);
+    } catch (e) {
+      setDocusealTemplates([]);
+      toast({
+        title: "Could not load Docuseal templates",
+        description: errMessage(e),
+        variant: "destructive",
+      });
+    } finally {
+      setDocusealLoading(false);
+    }
   };
 
-  const createDropboxTemplate = async () => {
-    if (!dropboxTargetContract?.id) return;
-    if (!dropboxForm.templateTitle.trim()) {
+  const refreshDocusealTemplates = async (query = "") => {
+    setDocusealLoading(true);
+    try {
+      const templates = await adminServices.listDocusealTemplates(query);
+      setDocusealTemplates(templates);
+    } catch (e) {
+      setDocusealTemplates([]);
       toast({
-        title: "Template title is required",
+        title: "Search failed",
+        description: errMessage(e),
+        variant: "destructive",
+      });
+    } finally {
+      setDocusealLoading(false);
+    }
+  };
+
+  const linkDocusealTemplate = async () => {
+    if (!docusealLinkTarget?.id) return;
+    const docusealTemplateId =
+      docusealSelectedId?.toString().trim() ||
+      docusealLinkTarget?.docusealTemplateId ||
+      "";
+    if (!docusealTemplateId) {
+      toast({
+        title: "Pick a Docuseal template",
+        description: "Select a template from the list, or type its ID.",
         variant: "destructive",
       });
       return;
     }
-    if (!dropboxForm.templateFile) {
-      toast({
-        title: "Template file is required",
-        description: "Upload a PDF document to create the Dropbox Sign template.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setCreatingDropboxTemplate(true);
+    setDocusealLinking(true);
     try {
-      const result = await adminServices.createAndLinkDropboxTemplate(dropboxTargetContract.id, {
-        templateTitle: dropboxForm.templateTitle.trim(),
-        signerRole: dropboxForm.signerRole.trim() || "Driver",
-        templateFile: dropboxForm.templateFile,
-      });
-      toast({ title: "Dropbox Sign template created and linked" });
-      setDropboxCreateOpen(false);
-      setDropboxTargetContract(null);
-      await loadCities();
-      if (result?.embeddedEditor?.editUrl) {
-        setDropboxEditorUrl(result.embeddedEditor.editUrl);
-        setDropboxEditorOpen(true);
-      }
-    } catch (e) {
-      toast({
-        title: "Could not create template",
-        description: errMessage(e),
-        variant: "destructive",
-      });
-    } finally {
-      setCreatingDropboxTemplate(false);
-    }
-  };
-
-  const openDropboxEditor = async (contractTemplate) => {
-    if (!contractTemplate?.id) return;
-    setDropboxEditorLoading(true);
-    try {
-      const result = await adminServices.getDropboxTemplateEditUrl(contractTemplate.id);
-      const url = result?.embeddedEditor?.editUrl;
-      if (!url) {
-        throw new Error("Dropbox Sign did not return an editor URL");
-      }
-      setDropboxEditorUrl(url);
-      setDropboxEditorOpen(true);
-    } catch (e) {
-      toast({
-        title: "Could not open Dropbox editor",
-        description: errMessage(e),
-        variant: "destructive",
-      });
-    } finally {
-      setDropboxEditorLoading(false);
-    }
-  };
-
-  const removeDropboxTemplateLink = async (contractTemplate) => {
-    if (!contractTemplate?.id) return;
-    setDropboxDeleteLoadingId(contractTemplate.id);
-    try {
-      const result = await adminServices.removeDropboxTemplate(contractTemplate.id);
-      const deletedInProvider = Boolean(result?.dropboxTemplate?.deleted);
-      toast({
-        title: deletedInProvider
-          ? "Dropbox template deleted and unlinked"
-          : "Dropbox template link removed",
-        description: deletedInProvider
-          ? undefined
-          : "Template was not found in Dropbox Sign, but local link was removed.",
-      });
+      await adminServices.linkDocusealTemplate(docusealLinkTarget.id, docusealTemplateId);
+      toast({ title: "Docuseal template linked" });
+      setDocusealLinkOpen(false);
+      setDocusealLinkTarget(null);
       await loadCities();
     } catch (e) {
       toast({
-        title: "Could not remove Dropbox template",
+        title: "Could not link template",
         description: errMessage(e),
         variant: "destructive",
       });
     } finally {
-      setDropboxDeleteLoadingId(null);
+      setDocusealLinking(false);
+    }
+  };
+
+  const unlinkDocusealTemplate = async (contractTemplate) => {
+    if (!contractTemplate?.id) return;
+    setDocusealUnlinkLoadingId(contractTemplate.id);
+    try {
+      await adminServices.unlinkDocusealTemplate(contractTemplate.id);
+      toast({ title: "Docuseal template unlinked" });
+      await loadCities();
+    } catch (e) {
+      toast({
+        title: "Could not unlink template",
+        description: errMessage(e),
+        variant: "destructive",
+      });
+    } finally {
+      setDocusealUnlinkLoadingId(null);
     }
   };
 
@@ -463,8 +445,8 @@ export default function CityManager() {
             </CardTitle>
             <CardDescription>
               Cities and markets: currency, timezone, and payment field definitions for
-              drivers. Dropbox Sign template IDs on contracts are optional until you configure
-              signing.
+              drivers. Link a Docuseal template to each contract template to enable
+              automatic e-signature.
             </CardDescription>
           </div>
           {canCreateCity && (
@@ -608,7 +590,7 @@ export default function CityManager() {
                                     <TableRow>
                                       <TableHead>Name</TableHead>
                                       <TableHead>Type</TableHead>
-                                      <TableHead>Dropbox Sign</TableHead>
+                                      <TableHead>Docuseal</TableHead>
                                       <TableHead>Status</TableHead>
                                       <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
@@ -621,17 +603,25 @@ export default function CityManager() {
                                           {t.type?.replace("_", " ")}
                                         </TableCell>
                                         <TableCell className="text-sm text-slate-600">
-                                          {t.templatePdfKey ? (
-                                            <span className="text-emerald-700 flex items-center gap-1">
-                                              Local
-                                              {Array.isArray(t.templateFields) && t.templateFields.length > 0 && (
-                                                <Badge className="bg-emerald-100 text-emerald-800 text-[10px] px-1 py-0">{t.templateFields.length} fields</Badge>
-                                              )}
+                                          {t.docusealTemplateId ? (
+                                            <span className="text-emerald-700 inline-flex items-center gap-1">
+                                              <Badge className="bg-emerald-100 text-emerald-800 text-[10px] px-1 py-0">
+                                                #{t.docusealTemplateId}
+                                              </Badge>
+                                              {t.docusealEditUrl ? (
+                                                <a
+                                                  href={t.docusealEditUrl}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="inline-flex items-center text-brand-blue hover:underline"
+                                                  title="Open in Docuseal"
+                                                >
+                                                  <ExternalLink className="h-3 w-3" />
+                                                </a>
+                                              ) : null}
                                             </span>
-                                          ) : t.dropboxSignTemplateId ? (
-                                            <span className="text-emerald-700">DS Configured</span>
                                           ) : (
-                                            <span className="text-amber-700">Not set</span>
+                                            <span className="text-amber-700">Not linked</span>
                                           )}
                                         </TableCell>
                                         <TableCell>
@@ -662,14 +652,24 @@ export default function CityManager() {
                                                 variant="outline"
                                                 size="sm"
                                                 className="h-8 text-brand-blue border-brand-blue/30 hover:bg-blue-50"
-                                                onClick={() => {
-                                                  setTemplateEditorTarget(t);
-                                                  setTemplateEditorOpen(true);
-                                                }}
+                                                onClick={() => openDocusealLinkDialog(t)}
                                               >
-                                                <PenLine className="h-3.5 w-3.5 mr-1" />
-                                                Edit Template
+                                                <LinkIcon className="h-3.5 w-3.5 mr-1" />
+                                                {t.docusealTemplateId ? "Change Docuseal" : "Link Docuseal"}
                                               </Button>
+                                              {t.docusealTemplateId ? (
+                                                <Button
+                                                  type="button"
+                                                  variant="outline"
+                                                  size="sm"
+                                                  className="h-8"
+                                                  onClick={() => unlinkDocusealTemplate(t)}
+                                                  disabled={docusealUnlinkLoadingId === t.id}
+                                                  title="Unlink Docuseal template"
+                                                >
+                                                  <Unlink className="h-3.5 w-3.5" />
+                                                </Button>
+                                              ) : null}
                                               <Button
                                                 type="button"
                                                 variant="outline"
@@ -874,7 +874,8 @@ export default function CityManager() {
               {editingContract ? "Edit contract template" : "New contract template"}
             </DialogTitle>
             <DialogDescription>
-              Dropbox Sign template ID is optional; add it when signing is configured.
+              Use the &quot;Link Docuseal&quot; action after creating the template to attach a
+              Docuseal template, or paste an existing Docuseal template ID here.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-2">
@@ -910,17 +911,17 @@ export default function CityManager() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="ct-dbx">Dropbox Sign template ID (optional)</Label>
+              <Label htmlFor="ct-docuseal">Docuseal template ID (optional)</Label>
               <Input
-                id="ct-dbx"
-                value={contractForm.dropboxSignTemplateId}
+                id="ct-docuseal"
+                value={contractForm.docusealTemplateId}
                 onChange={(e) =>
                   setContractForm((f) => ({
                     ...f,
-                    dropboxSignTemplateId: e.target.value,
+                    docusealTemplateId: e.target.value,
                   }))
                 }
-                placeholder="Leave blank until Dropbox Sign is set up"
+                placeholder="Use Link Docuseal to pick from the list"
               />
             </div>
             <div className="grid gap-2">
@@ -964,109 +965,106 @@ export default function CityManager() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={dropboxCreateOpen} onOpenChange={setDropboxCreateOpen}>
-        <DialogContent className="adm-modal max-w-lg z-[220]">
+      <Dialog open={docusealLinkOpen} onOpenChange={setDocusealLinkOpen}>
+        <DialogContent className="adm-modal max-w-2xl z-[220]">
           <DialogHeader>
-            <DialogTitle>Create Dropbox Sign template</DialogTitle>
+            <DialogTitle>Link Docuseal template</DialogTitle>
             <DialogDescription>
-              Upload a PDF and create a template in Dropbox Sign. On success we will link the
-              generated template ID to this contract template automatically.
+              Pick a template from the connected Docuseal instance to use for{" "}
+              <span className="font-medium">{docusealLinkTarget?.name || "this contract"}</span>.
+              Create new templates directly in Docuseal admin.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-2">
-            <div className="grid gap-2">
-              <Label>Contract template</Label>
-              <div className="text-sm text-slate-700">
-                {dropboxTargetContract?.name || "N/A"}
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="dbx-title">Dropbox template title</Label>
+          <div className="grid gap-3 py-2">
+            <div className="flex gap-2">
               <Input
-                id="dbx-title"
-                value={dropboxForm.templateTitle}
-                onChange={(e) =>
-                  setDropboxForm((f) => ({ ...f, templateTitle: e.target.value }))
-                }
-                placeholder="Driver agreement - London"
+                placeholder="Search Docuseal templates by name"
+                value={docusealSearch}
+                onChange={(e) => setDocusealSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    refreshDocusealTemplates(docusealSearch);
+                  }
+                }}
               />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => refreshDocusealTemplates(docusealSearch)}
+                disabled={docusealLoading}
+              >
+                Search
+              </Button>
+            </div>
+            <div className="rounded-md border max-h-72 overflow-y-auto">
+              {docusealLoading ? (
+                <div className="p-4 text-sm text-slate-500">Loading templates…</div>
+              ) : docusealTemplates.length === 0 ? (
+                <div className="p-4 text-sm text-slate-500">
+                  No templates found. Create one in Docuseal first.
+                </div>
+              ) : (
+                <ul className="divide-y">
+                  {docusealTemplates.map((tpl) => {
+                    const selected = String(docusealSelectedId) === String(tpl.id);
+                    return (
+                      <li
+                        key={tpl.id}
+                        className={`flex items-center justify-between px-3 py-2 cursor-pointer ${
+                          selected ? "bg-blue-50" : "hover:bg-slate-50"
+                        }`}
+                        onClick={() => setDocusealSelectedId(String(tpl.id))}
+                      >
+                        <div>
+                          <div className="text-sm font-medium">{tpl.name || `Template #${tpl.id}`}</div>
+                          <div className="text-xs text-slate-500">
+                            #{tpl.id}
+                            {tpl.folderName ? ` · ${tpl.folderName}` : ""}
+                            {tpl.updatedAt ? ` · updated ${new Date(tpl.updatedAt).toLocaleString()}` : ""}
+                          </div>
+                        </div>
+                        {tpl.editUrl ? (
+                          <a
+                            href={tpl.editUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-brand-blue inline-flex items-center gap-1 hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Open <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="dbx-role">Signer role</Label>
+              <Label htmlFor="docuseal-manual-id">Or paste a Docuseal template ID</Label>
               <Input
-                id="dbx-role"
-                value={dropboxForm.signerRole}
-                onChange={(e) =>
-                  setDropboxForm((f) => ({ ...f, signerRole: e.target.value }))
-                }
-                placeholder="Driver"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="dbx-file">Template file (PDF)</Label>
-              <Input
-                id="dbx-file"
-                type="file"
-                accept="application/pdf"
-                onChange={(e) =>
-                  setDropboxForm((f) => ({
-                    ...f,
-                    templateFile: e.target.files?.[0] || null,
-                  }))
-                }
+                id="docuseal-manual-id"
+                value={docusealSelectedId}
+                onChange={(e) => setDocusealSelectedId(e.target.value)}
+                placeholder="e.g. 142"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDropboxCreateOpen(false)}>
+            <Button variant="outline" onClick={() => setDocusealLinkOpen(false)}>
               Cancel
             </Button>
             <Button
               className="bg-brand-blue hover:bg-brand-shadeBlue"
-              onClick={createDropboxTemplate}
-              disabled={creatingDropboxTemplate}
+              onClick={linkDocusealTemplate}
+              disabled={docusealLinking || !docusealSelectedId}
             >
-              {creatingDropboxTemplate ? "Creating..." : "Create and link"}
+              {docusealLinking ? "Linking..." : "Link template"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <Dialog open={dropboxEditorOpen} onOpenChange={setDropboxEditorOpen}>
-        <DialogContent className="adm-modal max-w-6xl z-[230] h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>Dropbox Sign Embedded Editor</DialogTitle>
-            <DialogDescription>
-              Place signature fields and save your template from this embedded editor.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="h-full min-h-[70vh] rounded-md border overflow-hidden">
-            {dropboxEditorUrl ? (
-              <iframe
-                title="Dropbox Sign Template Editor"
-                src={dropboxEditorUrl}
-                className="w-full h-full min-h-[70vh]"
-              />
-            ) : (
-              <div className="h-full min-h-[70vh] flex items-center justify-center text-sm text-slate-500">
-                Loading editor...
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDropboxEditorOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <TemplateFieldEditor
-        contractTemplate={templateEditorTarget}
-        open={templateEditorOpen}
-        onClose={() => { setTemplateEditorOpen(false); setTemplateEditorTarget(null); }}
-        onSaved={() => { setTemplateEditorOpen(false); setTemplateEditorTarget(null); loadCities(); }}
-      />
 
       <AlertDialog
         open={!!deleteCityTarget}

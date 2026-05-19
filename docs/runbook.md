@@ -46,9 +46,9 @@
 
 ### Contract not progressing
 
-- Confirm Dropbox Sign webhook secret is valid.
-- Check `/api/webhooks/dropbox-sign` delivery logs.
-- Poll contract status from admin endpoint.
+- Confirm `DOCUSEAL_WEBHOOK_SECRET` matches the secret configured in Docuseal.
+- Check `/api/webhooks/docuseal` delivery logs.
+- Poll contract status from admin endpoint (`POST /admin/contract/poll-status`).
 
 ### Frequent `403` for admin actions
 

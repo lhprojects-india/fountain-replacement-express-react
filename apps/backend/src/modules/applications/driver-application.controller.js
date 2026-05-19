@@ -4,9 +4,7 @@ import {
   completeScreening,
   DriverApplicationServiceError,
   getDriverApplication,
-  getMockContractForDriver,
-  getMockContractPdfBufferForDriver,
-  mockSignContract,
+  getDriverContractSigningUrl,
   resendDriverContract,
   getScreeningProgress,
   getStageConfig,
@@ -153,33 +151,10 @@ export async function getApplicationCityConfigHandler(req, res) {
   }
 }
 
-export async function getMockContractPdfHandler(req, res) {
+export async function getDriverContractSigningUrlHandler(req, res) {
   if (!assertDriverUser(req, res)) return undefined;
   try {
-    const buffer = await getMockContractPdfBufferForDriver(req.user.applicationId, req.user.email);
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Cache-Control', 'private, no-store');
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    return res.status(200).send(buffer);
-  } catch (error) {
-    return handleError(res, error);
-  }
-}
-
-export async function getMockContractHandler(req, res) {
-  if (!assertDriverUser(req, res)) return undefined;
-  try {
-    const result = await getMockContractForDriver(req.user.applicationId, req.user.email);
-    return res.status(200).json({ success: true, ...result });
-  } catch (error) {
-    return handleError(res, error);
-  }
-}
-
-export async function mockSignContractHandler(req, res) {
-  if (!assertDriverUser(req, res)) return undefined;
-  try {
-    const result = await mockSignContract(req.user.applicationId, req.user.email);
+    const result = await getDriverContractSigningUrl(req.user.applicationId, req.user.email);
     return res.status(200).json({ success: true, ...result });
   } catch (error) {
     return handleError(res, error);

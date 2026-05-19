@@ -71,12 +71,11 @@ export async function deleteContractTemplateHandler(req, res) {
   }
 }
 
-export async function createAndLinkDropboxTemplateHandler(req, res) {
+export async function linkDocusealTemplateHandler(req, res) {
   try {
-    const result = await contractService.createAndLinkDropboxTemplate(
+    const result = await contractService.linkDocusealTemplate(
       req.params.id,
-      req.body,
-      req.file
+      req.validatedBody || req.body
     );
     return res.status(200).json({ success: true, ...result });
   } catch (error) {
@@ -84,66 +83,22 @@ export async function createAndLinkDropboxTemplateHandler(req, res) {
   }
 }
 
-export async function getDropboxTemplateEditUrlHandler(req, res) {
+export async function unlinkDocusealTemplateHandler(req, res) {
   try {
-    const result = await contractService.getDropboxTemplateEditUrlForContract(req.params.id);
+    const result = await contractService.unlinkDocusealTemplate(req.params.id);
     return res.status(200).json({ success: true, ...result });
   } catch (error) {
     return handleError(res, error);
   }
 }
 
-export async function removeDropboxTemplateHandler(req, res) {
+export async function listAvailableDocusealTemplatesHandler(req, res) {
   try {
-    const result = await contractService.removeDropboxTemplateForContract(req.params.id);
-    return res.status(200).json({ success: true, ...result });
-  } catch (error) {
-    return handleError(res, error);
-  }
-}
-
-export async function getTemplatePdfUploadUrlHandler(req, res) {
-  try {
-    const result = await contractService.getTemplatePdfUploadUrl(req.params.id);
-    return res.status(200).json({ success: true, ...result });
-  } catch (error) {
-    return handleError(res, error);
-  }
-}
-
-export async function getTemplatePdfDownloadUrlHandler(req, res) {
-  try {
-    const result = await contractService.getTemplatePdfDownloadUrl(req.params.id);
-    return res.status(200).json({ success: true, ...result });
-  } catch (error) {
-    return handleError(res, error);
-  }
-}
-
-export async function uploadTemplatePdfHandler(req, res) {
-  try {
-    const result = await contractService.uploadTemplatePdf(req.params.id, req.file);
-    return res.status(200).json({ success: true, ...result });
-  } catch (error) {
-    return handleError(res, error);
-  }
-}
-
-export async function saveTemplateFieldsHandler(req, res) {
-  try {
-    const result = await contractService.saveTemplateFields(req.params.id, req.body);
-    return res.status(200).json({ success: true, ...result });
-  } catch (error) {
-    return handleError(res, error);
-  }
-}
-
-export async function getTemplatePdfFileHandler(req, res) {
-  try {
-    const result = await contractService.getTemplatePdfFile(req.params.id);
-    res.setHeader('Content-Type', result.contentType);
-    res.setHeader('Content-Disposition', `inline; filename="${result.fileName}"`);
-    return res.status(200).send(result.buffer);
+    const templates = await contractService.listAvailableDocusealTemplates({
+      q: req.query.q,
+      limit: req.query.limit ? Number(req.query.limit) : undefined,
+    });
+    return res.status(200).json({ success: true, templates });
   } catch (error) {
     return handleError(res, error);
   }

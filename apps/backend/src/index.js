@@ -45,10 +45,7 @@ const questionnaireRoutesModule = await import('./modules/questionnaire/question
 const { adminQuestionnaireRoutes, driverQuestionnaireRoutes } = questionnaireRoutesModule;
 const { handleResendWebhook } = await import('./modules/communications/resend-webhook.js');
 const { handleTwilioWebhook } = await import('./modules/communications/twilio-webhook.js');
-const {
-  handleDropboxSignWebhook,
-  handleDropboxSignWebhookChallenge,
-} = await import('./modules/integrations/dropbox-sign/dropbox-sign.webhook.js');
+const { handleDocusealWebhook } = await import('./modules/integrations/docuseal/docuseal.webhook.js');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -116,6 +113,7 @@ app.use(
   })
 );
 app.use('/api/webhooks/resend', express.raw({ type: 'application/json' }));
+app.use('/api/webhooks/docuseal', express.raw({ type: 'application/json' }));
 app.use(express.json());
 app.use('/api', globalLimiter);
 // Single limiter for all /api/auth/* (including /api/auth/driver/*). Do not mount twice — that double-counts each request.
@@ -144,8 +142,7 @@ app.use('/api/driver/documents', authenticateToken, driverDocumentRoutes);
 app.use('/api/applications', authenticateToken, authorizeAdmin, adminDocumentRoutes);
 app.use('/api/analytics', authenticateToken, authorizeAdmin, analyticsRoutes);
 app.use('/api/communications', authenticateToken, authorizeAdmin, communicationRoutes);
-app.get('/api/webhooks/dropbox-sign', handleDropboxSignWebhookChallenge);
-app.post('/api/webhooks/dropbox-sign', express.urlencoded({ extended: true }), handleDropboxSignWebhook);
+app.post('/api/webhooks/docuseal', handleDocusealWebhook);
 app.post('/api/webhooks/resend', handleResendWebhook);
 app.post('/api/webhooks/twilio', express.urlencoded({ extended: false }), handleTwilioWebhook);
 

@@ -36,7 +36,6 @@ const DocumentUpload = lazy(() => import("./pages/DocumentUpload"));
 const PaymentDetails = lazy(() => import("./pages/PaymentDetails"));
 const QuestionnairePage = lazy(() => import("./pages/QuestionnairePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-const ContractSigning = lazy(() => import("./pages/ContractSigning"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -127,14 +126,6 @@ function App() {
                   }
                 />
 
-                <Route
-                  path="/contract"
-                  element={
-                    <ProtectedRoute>
-                      <ContractSigning />
-                    </ProtectedRoute>
-                  }
-                />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

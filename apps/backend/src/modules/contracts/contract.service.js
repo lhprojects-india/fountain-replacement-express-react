@@ -1,23 +1,16 @@
 import prisma from '../../lib/prisma.js';
 import {
   createContractSchema,
-  createDropboxTemplateSchema,
   formatZodError,
-  saveTemplateFieldsSchema,
+  linkDocusealTemplateSchema,
   updateContractSchema,
 } from './contract.schemas.js';
 import {
-  createTemplateFromFile,
-  deleteDropboxTemplate,
-  getEmbeddedTemplateEditUrl,
-} from '../integrations/dropbox-sign/dropbox-sign.client.js';
-import {
-  generateUploadUrl as storageUploadUrl,
-  generateDownloadUrl as storageDownloadUrl,
-  uploadBuffer as storageUploadBuffer,
-  downloadBuffer as storageDownloadBuffer,
-  deleteFile as storageDeleteFile,
-} from '../documents/storage.service.js';
+  buildTemplateEditUrl,
+  getTemplate as getDocusealTemplate,
+  hasClientConfig as hasDocusealConfig,
+  listTemplates as listDocusealTemplates,
+} from '../integrations/docuseal/docuseal.client.js';
 
 export class ContractServiceError extends Error {
   constructor(message, statusCode = 400) {
@@ -25,6 +18,16 @@ export class ContractServiceError extends Error {
     this.name = 'ContractServiceError';
     this.statusCode = statusCode;
   }
+}
+
+function decorateTemplate(template) {
+  if (!template) return template;
+  return {
+    ...template,
+    docusealEditUrl: template.docusealTemplateId
+      ? buildTemplateEditUrl(template.docusealTemplateId)
+      : null,
+  };
 }
 
 export async function createContractTemplate(raw) {
@@ -38,7 +41,7 @@ export async function createContractTemplate(raw) {
   if (!city) {
     throw new ContractServiceError('City not found.', 404);
   }
-  return prisma.contractTemplate.create({ data });
+  return decorateTemplate(await prisma.contractTemplate.create({ data }));
 }
 
 export async function updateContractTemplate(id, raw) {
@@ -62,10 +65,12 @@ export async function updateContractTemplate(id, raw) {
   if (!existing.isActive) {
     throw new ContractServiceError('Contract template is inactive.', 409);
   }
-  return prisma.contractTemplate.update({
-    where: { id: templateId },
-    data,
-  });
+  return decorateTemplate(
+    await prisma.contractTemplate.update({
+      where: { id: templateId },
+      data,
+    })
+  );
 }
 
 export async function getContractTemplate(id) {
@@ -80,7 +85,7 @@ export async function getContractTemplate(id) {
   if (!template) {
     throw new ContractServiceError('Contract template not found.', 404);
   }
-  return template;
+  return decorateTemplate(template);
 }
 
 export async function getContractTemplatesByCity(cityId) {
@@ -92,18 +97,20 @@ export async function getContractTemplatesByCity(cityId) {
   if (!city) {
     throw new ContractServiceError('City not found.', 404);
   }
-  return prisma.contractTemplate.findMany({
+  const templates = await prisma.contractTemplate.findMany({
     where: { cityId: cid },
     orderBy: { name: 'asc' },
     include: { city: { select: { id: true, city: true, cityCode: true } } },
   });
+  return templates.map(decorateTemplate);
 }
 
 export async function getAllContractTemplates() {
-  return prisma.contractTemplate.findMany({
+  const templates = await prisma.contractTemplate.findMany({
     orderBy: [{ cityId: 'asc' }, { name: 'asc' }],
     include: { city: { select: { id: true, city: true, cityCode: true } } },
   });
+  return templates.map(decorateTemplate);
 }
 
 export async function deleteContractTemplate(id) {
@@ -124,13 +131,20 @@ export async function deleteContractTemplate(id) {
       409
     );
   }
-  return prisma.contractTemplate.update({
-    where: { id: templateId },
-    data: { isActive: false },
-  });
+  return decorateTemplate(
+    await prisma.contractTemplate.update({
+      where: { id: templateId },
+      data: { isActive: false },
+    })
+  );
 }
 
-export async function createAndLinkDropboxTemplate(id, raw, file) {
+/**
+ * Link a Docuseal template id (already created in the Docuseal admin UI) to a
+ * local contract template. Optionally validates the id by fetching the
+ * template metadata from Docuseal.
+ */
+export async function linkDocusealTemplate(id, raw) {
   const templateId = Number(id);
   if (!Number.isInteger(templateId) || templateId <= 0) {
     throw new ContractServiceError('Invalid contract template id.', 400);
@@ -142,105 +156,46 @@ export async function createAndLinkDropboxTemplate(id, raw, file) {
   if (!existing.isActive) {
     throw new ContractServiceError('Contract template is inactive.', 409);
   }
-  if (!file?.buffer || !file?.originalname) {
-    throw new ContractServiceError('A template file is required.', 400);
-  }
-  if (!file.mimetype?.includes('pdf')) {
-    throw new ContractServiceError('Only PDF files are supported for template creation.', 400);
-  }
 
   let data;
   try {
-    data = createDropboxTemplateSchema.parse(raw);
+    data = linkDocusealTemplateSchema.parse(raw);
   } catch (e) {
     throw new ContractServiceError(formatZodError(e), 400);
   }
 
-  let created;
-  try {
-    created = await createTemplateFromFile({
-      templateTitle: data.templateTitle,
-      signerRole: data.signerRole,
-      fileBuffer: file.buffer,
-      fileName: file.originalname,
-      mimeType: file.mimetype,
-    });
-  } catch (error) {
-    const msg = error?.message || 'Failed to create Dropbox Sign template.';
-    if (msg.includes('DROPBOX_SIGN_CLIENT_ID missing')) {
-      throw new ContractServiceError(msg, 500);
-    }
-    throw new ContractServiceError(msg, 502);
-  }
-
-  if (!created?.templateId) {
-    throw new ContractServiceError('Dropbox Sign did not return a template ID.', 502);
-  }
-
-  const updatedTemplate = await prisma.contractTemplate.update({
-    where: { id: templateId },
-    data: { dropboxSignTemplateId: created.templateId },
-  });
-
-  let embeddedEditor = null;
-  try {
-    const edit = await getEmbeddedTemplateEditUrl(created.templateId);
-    embeddedEditor = { editUrl: edit.editUrl, expiresAt: edit.expiresAt };
-  } catch {
-    embeddedEditor = null;
-  }
-
-  return {
-    template: updatedTemplate,
-    dropboxTemplate: {
-      templateId: created.templateId,
-      title: created.title,
-    },
-    embeddedEditor,
-  };
-}
-
-export async function getDropboxTemplateEditUrlForContract(id) {
-  const templateId = Number(id);
-  if (!Number.isInteger(templateId) || templateId <= 0) {
-    throw new ContractServiceError('Invalid contract template id.', 400);
-  }
-  const existing = await prisma.contractTemplate.findUnique({ where: { id: templateId } });
-  if (!existing) {
-    throw new ContractServiceError('Contract template not found.', 404);
-  }
-  if (!existing.dropboxSignTemplateId) {
-    throw new ContractServiceError('No Dropbox Sign template ID linked to this contract template.', 400);
-  }
-  let edit;
-  try {
-    edit = await getEmbeddedTemplateEditUrl(existing.dropboxSignTemplateId);
-  } catch (error) {
-    const msg = error?.message || 'Failed to get Dropbox Sign embedded editor URL.';
-    if (msg.toLowerCase().includes('template not found')) {
+  let providerTemplate = null;
+  if (hasDocusealConfig()) {
+    try {
+      providerTemplate = await getDocusealTemplate(data.docusealTemplateId);
+    } catch (error) {
+      const status = error?.statusCode || 502;
       throw new ContractServiceError(
-        'Linked Dropbox template was not found for this API app/account. Recreate it using "Create DS" to enable in-app editing.',
-        409
+        error?.message || 'Could not verify Docuseal template.',
+        status === 404 ? 404 : 502
       );
     }
-    throw new ContractServiceError(
-      msg,
-      502
-    );
   }
-  if (!edit?.editUrl) {
-    throw new ContractServiceError('Dropbox Sign did not return an embedded edit URL.', 502);
-  }
+
+  const updated = await prisma.contractTemplate.update({
+    where: { id: templateId },
+    data: { docusealTemplateId: data.docusealTemplateId },
+  });
+
   return {
-    template: existing,
-    embeddedEditor: {
-      editUrl: edit.editUrl,
-      expiresAt: edit.expiresAt,
-    },
+    template: decorateTemplate(updated),
+    docusealTemplate: providerTemplate
+      ? {
+          id: providerTemplate.id,
+          name: providerTemplate.name,
+          slug: providerTemplate.slug,
+          updatedAt: providerTemplate.updated_at,
+        }
+      : null,
   };
 }
 
-export async function removeDropboxTemplateForContract(id) {
+export async function unlinkDocusealTemplate(id) {
   const templateId = Number(id);
   if (!Number.isInteger(templateId) || templateId <= 0) {
     throw new ContractServiceError('Invalid contract template id.', 400);
@@ -249,127 +204,40 @@ export async function removeDropboxTemplateForContract(id) {
   if (!existing) {
     throw new ContractServiceError('Contract template not found.', 404);
   }
-
-  const providerTemplateId = String(existing.dropboxSignTemplateId || '').trim();
-  if (!providerTemplateId) {
-    throw new ContractServiceError('No Dropbox Sign template is linked to this contract template.', 400);
+  if (!existing.docusealTemplateId) {
+    throw new ContractServiceError('No Docuseal template linked to this contract template.', 400);
   }
+  const updated = await prisma.contractTemplate.update({
+    where: { id: templateId },
+    data: { docusealTemplateId: null },
+  });
+  return { template: decorateTemplate(updated) };
+}
 
-  let providerDeleted = false;
+/**
+ * Proxy /templates listing so admins can pick a Docuseal template without
+ * jumping to the Docuseal UI.
+ */
+export async function listAvailableDocusealTemplates(query) {
+  if (!hasDocusealConfig()) {
+    throw new ContractServiceError(
+      'Docuseal is not configured. Set DOCUSEAL_BASE_URL and DOCUSEAL_API_KEY.',
+      500
+    );
+  }
   try {
-    await deleteDropboxTemplate(providerTemplateId);
-    providerDeleted = true;
+    const list = await listDocusealTemplates({ q: query?.q, limit: query?.limit });
+    const items = Array.isArray(list) ? list : list?.data || list?.templates || [];
+    return items.map((t) => ({
+      id: t.id,
+      name: t.name,
+      slug: t.slug,
+      folderName: t.folder_name || null,
+      updatedAt: t.updated_at,
+      createdAt: t.created_at,
+      editUrl: buildTemplateEditUrl(t.id),
+    }));
   } catch (error) {
-    const msg = error?.message || 'Failed to delete Dropbox Sign template.';
-    if (!msg.toLowerCase().includes('template not found')) {
-      throw new ContractServiceError(msg, 502);
-    }
+    throw new ContractServiceError(error?.message || 'Docuseal template list failed.', 502);
   }
-
-  const updatedTemplate = await prisma.contractTemplate.update({
-    where: { id: templateId },
-    data: { dropboxSignTemplateId: null },
-  });
-
-  return {
-    template: updatedTemplate,
-    dropboxTemplate: {
-      templateId: providerTemplateId,
-      deleted: providerDeleted,
-    },
-  };
-}
-
-// ─── Mock template PDF + field editor ────────────────────────────────────────
-
-export async function getTemplatePdfUploadUrl(id) {
-  const templateId = Number(id);
-  if (!Number.isInteger(templateId) || templateId <= 0) {
-    throw new ContractServiceError('Invalid contract template id.', 400);
-  }
-  const existing = await prisma.contractTemplate.findUnique({ where: { id: templateId } });
-  if (!existing) throw new ContractServiceError('Contract template not found.', 404);
-
-  const key = `contract-templates/${templateId}/template.pdf`;
-  const { uploadUrl, expiresAt } = await storageUploadUrl(key, 'application/pdf');
-  await prisma.contractTemplate.update({ where: { id: templateId }, data: { templatePdfKey: key } });
-  return { uploadUrl, key, expiresAt };
-}
-
-export async function uploadTemplatePdf(id, file) {
-  const templateId = Number(id);
-  if (!Number.isInteger(templateId) || templateId <= 0) {
-    throw new ContractServiceError('Invalid contract template id.', 400);
-  }
-  const existing = await prisma.contractTemplate.findUnique({ where: { id: templateId } });
-  if (!existing) throw new ContractServiceError('Contract template not found.', 404);
-  if (!file?.buffer || !file?.originalname) {
-    throw new ContractServiceError('A template PDF file is required.', 400);
-  }
-  if (!String(file.mimetype || '').includes('pdf')) {
-    throw new ContractServiceError('Only PDF files are supported.', 400);
-  }
-
-  const key = `contract-templates/${templateId}/template.pdf`;
-  await storageUploadBuffer(key, file.buffer, 'application/pdf');
-  const updated = await prisma.contractTemplate.update({
-    where: { id: templateId },
-    data: { templatePdfKey: key },
-  });
-  return { template: updated, key };
-}
-
-export async function getTemplatePdfDownloadUrl(id) {
-  const templateId = Number(id);
-  if (!Number.isInteger(templateId) || templateId <= 0) {
-    throw new ContractServiceError('Invalid contract template id.', 400);
-  }
-  const existing = await prisma.contractTemplate.findUnique({ where: { id: templateId } });
-  if (!existing) throw new ContractServiceError('Contract template not found.', 404);
-  if (!existing.templatePdfKey) throw new ContractServiceError('No PDF uploaded for this template.', 404);
-
-  const { downloadUrl } = await storageDownloadUrl(existing.templatePdfKey, {
-    contentType: 'application/pdf',
-    fileName: `${existing.name}.pdf`,
-  });
-  return { downloadUrl };
-}
-
-export async function saveTemplateFields(id, raw) {
-  const templateId = Number(id);
-  if (!Number.isInteger(templateId) || templateId <= 0) {
-    throw new ContractServiceError('Invalid contract template id.', 400);
-  }
-  const existing = await prisma.contractTemplate.findUnique({ where: { id: templateId } });
-  if (!existing) throw new ContractServiceError('Contract template not found.', 404);
-
-  let data;
-  try {
-    data = saveTemplateFieldsSchema.parse(raw);
-  } catch (e) {
-    throw new ContractServiceError(formatZodError(e), 400);
-  }
-
-  const updated = await prisma.contractTemplate.update({
-    where: { id: templateId },
-    data: { templateFields: data.fields },
-  });
-  return { template: updated };
-}
-
-export async function getTemplatePdfFile(id) {
-  const templateId = Number(id);
-  if (!Number.isInteger(templateId) || templateId <= 0) {
-    throw new ContractServiceError('Invalid contract template id.', 400);
-  }
-  const existing = await prisma.contractTemplate.findUnique({ where: { id: templateId } });
-  if (!existing) throw new ContractServiceError('Contract template not found.', 404);
-  if (!existing.templatePdfKey) throw new ContractServiceError('No PDF uploaded for this template.', 404);
-
-  const buffer = await storageDownloadBuffer(existing.templatePdfKey);
-  return {
-    fileName: `${existing.name || 'contract-template'}.pdf`,
-    buffer,
-    contentType: 'application/pdf',
-  };
 }

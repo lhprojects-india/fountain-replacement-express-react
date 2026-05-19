@@ -27,11 +27,13 @@ services:
         sync: false
       - key: TWILIO_PHONE_NUMBER
         sync: false
-      - key: DROPBOX_SIGN_API_KEY
+      - key: DOCUSEAL_BASE_URL
         sync: false
-      - key: DROPBOX_SIGN_CLIENT_ID
+      - key: DOCUSEAL_PUBLIC_URL
         sync: false
-      - key: DROPBOX_SIGN_WEBHOOK_SECRET
+      - key: DOCUSEAL_API_KEY
+        sync: false
+      - key: DOCUSEAL_WEBHOOK_SECRET
         sync: false
       - key: FIREBASE_STORAGE_BUCKET
         sync: false

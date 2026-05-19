@@ -1,6 +1,6 @@
 import { STAGES } from './transition-matrix.js';
 import { dispatchNotifications } from '../communications/notification.service.js';
-import { sendContract } from '../integrations/dropbox-sign/contract.service.js';
+import { sendContract } from '../integrations/docuseal/contract.service.js';
 import logger from '../../lib/logger.js';
 
 function logAction(message, payload) {
@@ -50,7 +50,7 @@ const actionRegistry = {
   ],
   [`${STAGES.ACKNOWLEDGEMENTS}->${STAGES.CONTRACT_SENT}`]: [
     async (application, _transition, prisma) => {
-      logAction('Trigger Dropbox Sign contract send', { applicationId: application.id });
+      logAction('Trigger Docuseal contract send', { applicationId: application.id });
       await sendContract(application.id, prisma);
     },
   ],

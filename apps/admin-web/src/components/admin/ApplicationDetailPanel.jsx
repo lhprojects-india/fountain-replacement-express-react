@@ -648,7 +648,20 @@ const ApplicationDetailPanel = ({ applicationId, open, onClose, onTransitioned, 
                       : ""}
                   </div>
                   <div className="text-xs text-gray-500">
-                    Method: {(contractStatusData?.contractStatus || application.contractStatus) === "sent_manual" ? "Manual" : "Dropbox Sign"}
+                    Method: {(contractStatusData?.contractStatus || application.contractStatus) === "sent_manual" ? "Manual" : "Docuseal"}
+                    {contractStatusData?.signingUrl ? (
+                      <>
+                        {" · "}
+                        <a
+                          href={contractStatusData.signingUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline"
+                        >
+                          Open signing page
+                        </a>
+                      </>
+                    ) : null}
                   </div>
                   <div className="flex gap-2 flex-wrap">
                     {application.currentStage === "acknowledgements" && (

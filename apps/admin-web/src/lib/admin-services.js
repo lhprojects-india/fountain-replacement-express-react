@@ -220,68 +220,26 @@ export const adminServices = {
     return result.template;
   },
 
-  async createAndLinkDropboxTemplate(id, { templateTitle, signerRole, templateFile }) {
-    const formData = new FormData();
-    formData.append("templateTitle", templateTitle);
-    if (signerRole) formData.append("signerRole", signerRole);
-    formData.append("templateFile", templateFile);
-    const result = await apiClient.post(`/contract-templates/${id}/dropbox-sign-template`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+  async listDocusealTemplates(query = "") {
+    const params = new URLSearchParams();
+    const q = String(query || "").trim();
+    if (q) params.set("q", q);
+    const suffix = params.toString();
+    const result = await apiClient.get(
+      suffix ? `/contract-templates/docuseal/templates?${suffix}` : "/contract-templates/docuseal/templates"
+    );
+    return result.templates || [];
+  },
+
+  async linkDocusealTemplate(id, docusealTemplateId) {
+    const result = await apiClient.post(`/contract-templates/${id}/docuseal-template`, {
+      docusealTemplateId,
     });
     return result;
   },
 
-  async getDropboxTemplateEditUrl(id) {
-    const result = await apiClient.get(`/contract-templates/${id}/dropbox-sign-template/edit-url`);
-    return result;
-  },
-
-  async removeDropboxTemplate(id) {
-    const result = await apiClient.delete(`/contract-templates/${id}/dropbox-sign-template`);
-    return result;
-  },
-
-  async getTemplatePdfUploadUrl(id) {
-    const result = await apiClient.get(`/contract-templates/${id}/pdf-upload-url`);
-    return result;
-  },
-
-  async uploadTemplatePdf(id, file) {
-    const formData = new FormData();
-    formData.append("templateFile", file);
-    const result = await apiClient.post(`/contract-templates/${id}/pdf-upload`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return result;
-  },
-
-  async getTemplatePdfDownloadUrl(id) {
-    const result = await apiClient.get(`/contract-templates/${id}/pdf-download-url`);
-    return result;
-  },
-
-  async getTemplatePdfBlobUrl(id) {
-    const token = getAuthToken();
-    const baseURL = (import.meta.env.VITE_API_URL || "http://localhost:5001/api").replace(/\/$/, "");
-    const response = await fetch(`${baseURL}/contract-templates/${id}/pdf`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!response.ok) {
-      let message = `Failed to load PDF (${response.status})`;
-      try {
-        const payload = await response.json();
-        if (payload?.message) message = payload.message;
-      } catch {
-        // no-op
-      }
-      throw new Error(message);
-    }
-    const blob = await response.blob();
-    return URL.createObjectURL(blob);
-  },
-
-  async saveTemplateFields(id, data) {
-    const result = await apiClient.put(`/contract-templates/${id}/fields`, data);
+  async unlinkDocusealTemplate(id) {
+    const result = await apiClient.delete(`/contract-templates/${id}/docuseal-template`);
     return result;
   },
 

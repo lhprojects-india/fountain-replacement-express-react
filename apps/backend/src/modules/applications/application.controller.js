@@ -1,13 +1,13 @@
 import { ApplicationServiceError } from './application.service.js';
 import * as applicationService from './application.service.js';
-import { DropboxContractError } from '../integrations/dropbox-sign/contract.service.js';
+import { ContractError } from '../integrations/docuseal/contract.service.js';
 import logger from '../../lib/logger.js';
 
 function handleError(res, error) {
   if (error instanceof ApplicationServiceError) {
     return res.status(error.statusCode).json({ success: false, message: error.message });
   }
-  if (error instanceof DropboxContractError) {
+  if (error instanceof ContractError) {
     return res.status(error.statusCode || 400).json({ success: false, message: error.message });
   }
   logger.error({ msg: 'Application controller error', error });

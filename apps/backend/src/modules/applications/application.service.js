@@ -9,7 +9,7 @@ import {
   markContractAsSigned,
   resendContract,
   sendContract,
-} from '../integrations/dropbox-sign/contract.service.js';
+} from '../integrations/docuseal/contract.service.js';
 
 export class ApplicationServiceError extends Error {
   constructor(message, statusCode = 400) {

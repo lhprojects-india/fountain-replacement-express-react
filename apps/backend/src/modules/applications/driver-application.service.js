@@ -2,8 +2,8 @@ import prisma from '../../lib/prisma.js';
 import { PRODUCT_DISPLAY_NAME } from '../../lib/product-name.js';
 import { STAGES } from '../workflow/transition-matrix.js';
 import { transitionApplication, WorkflowError } from '../workflow/stage-engine.js';
-import { resendContract, markContractAsSigned } from '../integrations/dropbox-sign/contract.service.js';
-import { downloadBuffer } from '../documents/storage.service.js';
+import { resendContract } from '../integrations/docuseal/contract.service.js';
+import { buildSigningUrl } from '../integrations/docuseal/docuseal.client.js';
 import { REQUIRED_SCREENING_STEPS, SCREENING_STEP_LABELS } from './screening-requirements.js';
 
 export class DriverApplicationServiceError extends Error {
@@ -40,7 +40,7 @@ const STAGE_CONFIG = {
   },
   [STAGES.CONTRACT_SENT]: {
     label: 'Contract Sent',
-    description: 'Review and sign your contract, or check your email if we sent a signing link.',
+    description: 'Open the signing link sent to your email (or use the button below) to sign your contract.',
     driverActionRequired: false,
   },
   [STAGES.CONTRACT_SIGNED]: {
@@ -161,7 +161,7 @@ export async function getDriverApplication(applicationId, rawEmail) {
             select: { id: true, city: true, cityCode: true, country: true },
           },
           contractTemplate: {
-            select: { templatePdfKey: true },
+            select: { docusealTemplateId: true, content: true },
           },
         },
       },
@@ -218,11 +218,10 @@ export async function getDriverApplication(applicationId, rawEmail) {
   const screeningCompleted = screeningSteps.filter((s) => s.completed).length;
   const screeningTotal = screeningSteps.length;
 
-  const templatePdfKey = application.job?.contractTemplate?.templatePdfKey;
-  const inAppContractSigning =
-    application.currentStage === STAGES.CONTRACT_SENT &&
-    Boolean(templatePdfKey) &&
-    ['sent_mock', 'sent_manual'].includes(application.contractStatus || '');
+  const contractSigningUrl =
+    application.currentStage === STAGES.CONTRACT_SENT && application.docusealSubmitterSlug
+      ? buildSigningUrl(application.docusealSubmitterSlug)
+      : null;
 
   return {
     id: application.id,
@@ -241,7 +240,7 @@ export async function getDriverApplication(applicationId, rawEmail) {
     firstBlockDate: application.firstBlockDate,
     firstBlockResult: application.firstBlockResult,
     contractStatus: application.contractStatus,
-    inAppContractSigning,
+    contractSigningUrl,
     onboardingCallScheduledAt: application.onboardingCallScheduledAt,
     onboardingCallCompletedAt: application.onboardingCallCompletedAt,
     onboardingCallNotes: application.onboardingCallNotes,
@@ -769,61 +768,7 @@ export async function getApplicationRegionConfig(applicationId, rawEmail) {
   };
 }
 
-/** Validates driver session and returns application + contract template for in-app signing. */
-async function loadMockContractTemplateOrThrow(applicationId, rawEmail) {
-  const id = Number(applicationId);
-  const email = String(rawEmail || '').trim().toLowerCase();
-  if (!Number.isInteger(id) || id <= 0) throw new DriverApplicationServiceError('Invalid application id.', 400);
-  if (!email) throw new DriverApplicationServiceError('Invalid session.', 401);
-
-  const app = await prisma.application.findFirst({
-    where: { id, email },
-    include: {
-      job: {
-        include: {
-          contractTemplate: { select: { id: true, name: true, templatePdfKey: true, templateFields: true } },
-        },
-      },
-    },
-  });
-  if (!app) throw new DriverApplicationServiceError('Application not found.', 404);
-
-  if (app.currentStage !== STAGES.CONTRACT_SENT) {
-    throw new DriverApplicationServiceError('Contract is not available for signing yet.', 400);
-  }
-  if (!['sent_mock', 'sent_manual'].includes(app.contractStatus || '')) {
-    throw new DriverApplicationServiceError('Please use the signing link sent to your email.', 400);
-  }
-
-  const template = app.job?.contractTemplate;
-  if (!template?.templatePdfKey) {
-    throw new DriverApplicationServiceError('No contract PDF is configured for this role.', 404);
-  }
-
-  return { app, template };
-}
-
-export async function getMockContractForDriver(applicationId, rawEmail) {
-  const { app, template } = await loadMockContractTemplateOrThrow(applicationId, rawEmail);
-
-  return {
-    contractStatus: app.contractStatus,
-    templateName: template.name,
-    fields: Array.isArray(template.templateFields) ? template.templateFields : [],
-    applicant: {
-      firstName: app.firstName,
-      lastName: app.lastName,
-      email: app.email,
-    },
-  };
-}
-
-export async function getMockContractPdfBufferForDriver(applicationId, rawEmail) {
-  const { template } = await loadMockContractTemplateOrThrow(applicationId, rawEmail);
-  return downloadBuffer(template.templatePdfKey);
-}
-
-export async function mockSignContract(applicationId, rawEmail) {
+export async function getDriverContractSigningUrl(applicationId, rawEmail) {
   const id = Number(applicationId);
   const email = String(rawEmail || '').trim().toLowerCase();
   if (!Number.isInteger(id) || id <= 0) throw new DriverApplicationServiceError('Invalid application id.', 400);
@@ -835,22 +780,23 @@ export async function mockSignContract(applicationId, rawEmail) {
       id: true,
       currentStage: true,
       contractStatus: true,
-      job: { select: { contractTemplate: { select: { templatePdfKey: true } } } },
+      docusealSubmitterSlug: true,
     },
   });
   if (!app) throw new DriverApplicationServiceError('Application not found.', 404);
   if (app.currentStage !== STAGES.CONTRACT_SENT) {
-    throw new DriverApplicationServiceError('Contract signing is not available at this stage.', 400);
+    throw new DriverApplicationServiceError('Contract is not available for signing yet.', 400);
   }
-  if (app.contractStatus === 'signed') throw new DriverApplicationServiceError('Contract already signed.', 409);
-  if (!app.job?.contractTemplate?.templatePdfKey) {
-    throw new DriverApplicationServiceError('In-app contract signing is not available for this application.', 400);
+  if (!app.docusealSubmitterSlug) {
+    throw new DriverApplicationServiceError(
+      'Signing link is not available yet. Please check your email or contact support.',
+      404
+    );
   }
-  if (!['sent_mock', 'sent_manual'].includes(app.contractStatus || '')) {
-    throw new DriverApplicationServiceError('Please sign using the link sent to your email.', 400);
-  }
-
-  return markContractAsSigned(id, prisma);
+  return {
+    signingUrl: buildSigningUrl(app.docusealSubmitterSlug),
+    contractStatus: app.contractStatus,
+  };
 }
 
 export async function resendDriverContract(applicationId, rawEmail) {

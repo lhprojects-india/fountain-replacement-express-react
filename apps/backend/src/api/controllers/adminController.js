@@ -6,7 +6,7 @@ import {
   buildFeeStructureCreatesFromLegacy,
 } from '../../lib/feeStructureMapper.js';
 import { toDriverApiShape } from '../../lib/driverSerialize.js';
-import { pollPendingContracts } from '../../modules/integrations/dropbox-sign/polling.service.js';
+import { pollPendingContracts } from '../../modules/integrations/docuseal/polling.service.js';
 import logger from '../../lib/logger.js';
 
 export const getAdminDashboardData = async (req, res) => {

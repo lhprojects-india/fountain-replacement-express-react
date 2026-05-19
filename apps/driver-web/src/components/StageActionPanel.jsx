@@ -25,11 +25,13 @@ const StageActionPanel = ({ application, documentProgress = null }) => {
     acknowledgements: {
       text: "Your screening has been submitted. Our team is reviewing your responses. You'll be notified about next steps.",
     },
-    contract_sent: application?.inAppContractSigning
+    contract_sent: application?.contractSigningUrl
       ? {
-          text: "Your contract is ready to review and sign.",
+          text: `Your contract is ready to review and sign. We've also emailed you a copy at ${application?.email || "your email"}.`,
           buttonLabel: "Review & Sign Contract",
-          route: "/contract",
+          action: () => {
+            window.open(application.contractSigningUrl, "_blank", "noopener,noreferrer");
+          },
         }
       : {
           text: `A contract has been sent to ${application?.email || "your email"}. Please check your inbox (including spam) and sign it.`,
@@ -107,7 +109,7 @@ const StageActionPanel = ({ application, documentProgress = null }) => {
           Typical processing time: 1-2 business days
         </p>
       ) : null}
-      {stage === "contract_sent" && contractStatus && !application?.inAppContractSigning ? (
+      {stage === "contract_sent" && contractStatus ? (
         <p className="text-xs text-gray-500 mt-2">Current contract status: {contractStatus}</p>
       ) : null}
       {stage === "onboarding_call" ? (
