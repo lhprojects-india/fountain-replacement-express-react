@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "prisma:generate": "prisma generate --schema ./prisma/schema.prisma",
-    "start": "npx prisma generate && node src/index.js",
+    "start": "npx prisma migrate deploy && npx prisma generate && node src/index.js",
     "dev": "nodemon src/index.js",
     "seed:test": "node ./scripts/seed-test-data.js",
     "seed:test-admin": "node ./scripts/seed-test-admin.js",
