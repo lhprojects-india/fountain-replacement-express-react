@@ -1,6 +1,6 @@
 import { STAGES } from './transition-matrix.js';
 import { dispatchNotifications } from '../communications/notification.service.js';
-import { sendContract } from '../integrations/docuseal/contract.service.js';
+import { ContractError, sendContract } from '../integrations/docuseal/contract.service.js';
 import logger from '../../lib/logger.js';
 
 function logAction(message, payload) {
@@ -51,7 +51,29 @@ const actionRegistry = {
   [`${STAGES.ACKNOWLEDGEMENTS}->${STAGES.CONTRACT_SENT}`]: [
     async (application, _transition, prisma) => {
       logAction('Trigger Docuseal contract send', { applicationId: application.id });
-      await sendContract(application.id, prisma);
+      try {
+        await sendContract(application.id, prisma);
+      } catch (error) {
+        // Keep the stage transition successful when external provider/config is down.
+        // Admin can resend later from contract actions.
+        if (error instanceof ContractError && Number(error.statusCode || 0) >= 500) {
+          await prisma.application.update({
+            where: { id: application.id },
+            data: {
+              contractStatus: 'send_failed',
+              updatedAt: new Date(),
+            },
+          });
+          logger.warn({
+            msg: '[workflow-action] contract send failed after stage transition',
+            applicationId: application.id,
+            statusCode: error.statusCode,
+            error: error.message,
+          });
+          return;
+        }
+        throw error;
+      }
     },
   ],
   [`${STAGES.CONTRACT_SIGNED}->${STAGES.DOCUMENTS_PENDING}`]: [
