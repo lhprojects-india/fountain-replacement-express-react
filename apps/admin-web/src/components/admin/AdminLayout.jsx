@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bell, Menu, Search } from "lucide-react";
-import { Button, PRODUCT_DISPLAY_NAME, ProductBrandHeading } from "@lh/shared";
+import { Button, formatDate, PRODUCT_DISPLAY_NAME, ProductBrandHeading } from "@lh/shared";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 import AdminSidebar from "./AdminSidebar";
 import AppBrandMark from "../AppBrandMark";
@@ -50,11 +50,11 @@ export default function AdminLayout({ children, counts = {} }) {
           window.location.assign("/login");
         }}
       />
-      <div className={`${collapsed ? "lg:ml-[84px]" : "lg:ml-[280px]"} transition-all`}>
+      <div className={`${collapsed ? "lg:ml-[84px]" : "lg:ml-[280px]"} transition-[margin] duration-200`}>
         <header className="adm-topbar h-16 px-4 md:px-6 flex items-center justify-between sticky top-0 z-20 gap-3">
           <div className="flex items-center gap-2 min-w-0 shrink-0">
-            <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setMobileOpen(true)}>
-              <Menu className="h-4 w-4" />
+            <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open menu">
+              <Menu className="h-4 w-4" aria-hidden="true" />
             </Button>
             <Link
               to="/"
@@ -70,11 +70,11 @@ export default function AdminLayout({ children, counts = {} }) {
             </Link>
           </div>
           <div className="hidden md:flex items-center gap-2 w-full max-w-md ml-0 lg:ml-0 flex-1 min-w-0">
-            <Search className="h-4 w-4 text-slate-400" />
+            <Search className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
             <input
-              className="adm-search w-full px-3 text-sm outline-none"
-              placeholder="Search applications, candidates..."
-              aria-label="Search"
+              className="adm-search w-full px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-1 rounded-md"
+              placeholder="Search applications, candidates…"
+              aria-label="Search applications and candidates"
             />
           </div>
           <div className="flex items-center gap-3 ml-auto">
@@ -83,9 +83,9 @@ export default function AdminLayout({ children, counts = {} }) {
               className="h-9 w-9 rounded-full border border-slate-200 text-slate-600 inline-flex items-center justify-center bg-white hover:bg-slate-50"
               aria-label="Notifications"
             >
-              <Bell className="h-4 w-4" />
+              <Bell className="h-4 w-4" aria-hidden="true" />
             </button>
-            <div className="text-sm text-slate-500">{new Date().toLocaleDateString()}</div>
+            <div className="text-sm text-slate-500 tabular-nums">{formatDate(new Date())}</div>
           </div>
         </header>
         <main className="p-4 md:p-6 lg:p-7">{children}</main>

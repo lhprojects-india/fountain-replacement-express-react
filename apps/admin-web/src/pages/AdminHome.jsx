@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@lh/shared";
 import { adminServices } from "../lib/admin-services";
 import { useAdminAuth } from "../context/AdminAuthContext";
+import { useApplicationStats } from "../hooks/useAdminQueries";
 
 function Card({ title, value, hint }) {
   return (
@@ -16,7 +17,7 @@ function Card({ title, value, hint }) {
 
 export default function AdminHome({ onCounts }) {
   const { currentUser } = useAdminAuth();
-  const [stats, setStats] = useState({ byStage: {} });
+  const { data: stats = { byStage: {} }, isLoading: statsLoading } = useApplicationStats();
   const [activity, setActivity] = useState([]);
   const [attention, setAttention] = useState({ overdueReview: 0, docsOver48h: 0, callsPastDue: 0 });
   const [loading, setLoading] = useState(true);
@@ -30,8 +31,7 @@ export default function AdminHome({ onCounts }) {
     const run = async () => {
       setLoading(true);
       try {
-        const [s, a, queue, pendingReview, docsReview] = await Promise.all([
-          adminServices.getApplicationStats(),
+        const [a, queue, pendingReview, docsReview] = await Promise.all([
           adminServices.getRecentActivity(10),
           adminServices.getCallQueue().catch(() => ({ all: [] })),
           adminServices.getApplications({
@@ -50,7 +50,6 @@ export default function AdminHome({ onCounts }) {
           }).catch(() => ({ applications: [] })),
         ]);
         if (!live) return;
-        setStats(s || { byStage: {} });
         const rows = a?.activity || [];
         setActivity(rows);
 
@@ -61,10 +60,10 @@ export default function AdminHome({ onCounts }) {
         ).length;
         setAttention({ overdueReview, docsOver48h, callsPastDue });
 
-        const pipeline = Object.entries(s?.byStage || {})
+        const pipeline = Object.entries(stats?.byStage || {})
           .filter(([stage]) => !["active", "rejected", "withdrawn", "first_block_failed"].includes(stage))
           .reduce((sum, [, count]) => sum + Number(count || 0), 0);
-        onCounts?.({ pipeline, calls: Number(s?.byStage?.onboarding_call || 0) });
+        onCounts?.({ pipeline, calls: Number(stats?.byStage?.onboarding_call || 0) });
       } finally {
         if (live) setLoading(false);
       }
@@ -73,7 +72,7 @@ export default function AdminHome({ onCounts }) {
     return () => {
       live = false;
     };
-  }, [onCounts]);
+  }, [onCounts, stats]);
 
   const kpis = useMemo(() => {
     const byStage = stats?.byStage || {};
@@ -102,7 +101,7 @@ export default function AdminHome({ onCounts }) {
       </section>
 
       <section className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        {kpis.map((kpi) => <Card key={kpi.title} title={kpi.title} value={loading ? "..." : kpi.value} />)}
+        {kpis.map((kpi) => <Card key={kpi.title} title={kpi.title} value={loading || statsLoading ? "…" : kpi.value} />)}
       </section>
 
       <section className="adm-card p-5">

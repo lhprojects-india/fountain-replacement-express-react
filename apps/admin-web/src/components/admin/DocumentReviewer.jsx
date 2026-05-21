@@ -223,7 +223,7 @@ const DocumentReviewer = ({ applicationId, onReviewed }) => {
   };
 
   if (!latestDocuments.length) {
-    return <div className="text-sm text-gray-600">{loading ? "Loading documents..." : "No documents uploaded yet."}</div>;
+    return <div className="text-sm text-gray-600">{loading ? "Loading documents…" : "No documents uploaded yet."}</div>;
   }
 
   const context = selectedDoc ? contextByDocId[selectedDoc.id] : null;
@@ -258,7 +258,13 @@ const DocumentReviewer = ({ applicationId, onReviewed }) => {
       <div className="adm-panel grid grid-cols-1 gap-4 p-3 md:grid-cols-2">
         <div className="rounded border border-slate-200 bg-gray-50 p-2 min-h-[300px] flex items-center justify-center">
           {isImage && previewUrl ? (
-            <img src={previewUrl} alt={selectedDoc.fileName} className="max-h-[420px] rounded object-contain" />
+            <img
+              src={previewUrl}
+              alt={selectedDoc.fileName}
+              width={800}
+              height={600}
+              className="max-h-[420px] rounded object-contain"
+            />
           ) : null}
           {isVideo && previewUrl ? (
             <video src={previewUrl} controls className="max-h-[420px] w-full rounded bg-black" />

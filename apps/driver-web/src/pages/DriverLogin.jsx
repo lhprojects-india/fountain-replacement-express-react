@@ -34,7 +34,9 @@ function OtpInput({ value, onChange, disabled }) {
           inputMode="numeric"
           pattern="[0-9]*"
           aria-label={`Digit ${idx + 1}`}
-          className="h-12 w-11 rounded-lg border text-center text-lg font-semibold outline-none focus:ring-2 focus:ring-brand-blue"
+          autoComplete={idx === 0 ? "one-time-code" : "off"}
+          name={`otp-${idx}`}
+          className="h-12 w-11 rounded-lg border text-center text-lg font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
           onChange={(e) => {
             const v = e.target.value.replace(/\D/g, "");
             if (!v) {
@@ -150,7 +152,6 @@ const DriverLogin = () => {
   return (
     <PageLayout title="Driver Login">
       <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-sm space-y-4">
-        <h1 className="text-2xl font-semibold text-brand-shadeBlue">Driver Login</h1>
         {step === "email" ? (
           <form onSubmit={onRequestCode} className="space-y-4">
             <div className="space-y-2">
@@ -159,15 +160,18 @@ const DriverLogin = () => {
                 ref={emailRef}
                 id="email"
                 type="email"
+                name="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="you@example.com…"
+                spellCheck={false}
                 required
                 className="h-12 text-base"
               />
             </div>
             <Button type="submit" className="w-full h-12" disabled={isLoading}>
-              {isLoading ? "Sending..." : "Send Verification Code"}
+              {isLoading ? "Sending…" : "Send Verification Code"}
             </Button>
             <p className="text-sm text-gray-600">
               No application yet? <Link className="touch-target inline-flex items-center text-brand-blue underline" to="/">Go to apply link</Link>
@@ -189,7 +193,7 @@ const DriverLogin = () => {
               />
             </div>
             <Button type="submit" className="w-full h-12" disabled={isLoading || String(code).length !== 6}>
-              {isLoading ? "Verifying..." : "Verify & Continue"}
+              {isLoading ? "Verifying…" : "Verify & Continue"}
             </Button>
             <div className="flex items-center justify-between gap-3">
               <button

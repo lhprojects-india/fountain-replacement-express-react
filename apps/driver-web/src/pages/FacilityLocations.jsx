@@ -156,7 +156,7 @@ const FacilityLocations = () => {
           </h2>
           <div className="w-full max-w-md animate-fade-in">
             <p className="text-sm text-gray-500">
-              Loading facility information...
+              Loading facility information…
             </p>
           </div>
         </div>
@@ -229,7 +229,7 @@ const FacilityLocations = () => {
             className="w-full"
             disabled={selectedFacilities.length === 0 || isSaving || isLoading || isWithdrawing}
           >
-            {isSaving ? "Saving..." : "Continue"}
+            {isSaving ? "Saving…" : "Continue"}
           </Button>
           
           <AlertDialog>
@@ -239,7 +239,7 @@ const FacilityLocations = () => {
                 disabled={isSaving || isLoading || isWithdrawing}
                 showArrow={false}
               >
-                {isWithdrawing ? "Processing..." : "Withdraw my Application"}
+                {isWithdrawing ? "Processing…" : "Withdraw my Application"}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="z-[200]">

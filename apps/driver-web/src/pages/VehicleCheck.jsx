@@ -119,7 +119,7 @@ const VehicleCheck = () => {
         ) : null}
 
         <Button onClick={handleContinue} className="w-full max-w-xs mt-2" disabled={isSaving}>
-          {isSaving ? "Saving..." : "Continue"}
+          {isSaving ? "Saving…" : "Continue"}
         </Button>
       </div>
     </PageLayout>

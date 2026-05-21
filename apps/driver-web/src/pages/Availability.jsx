@@ -121,7 +121,7 @@ const Availability = () => {
           className="w-full mt-2"
           disabled={isButtonDisabled}
         >
-          {isSaving ? "Saving..." : "I confirm my weekly availability"}
+          {isSaving ? "Saving…" : "I confirm my weekly availability"}
         </Button>
       </div>
     </PageLayout>

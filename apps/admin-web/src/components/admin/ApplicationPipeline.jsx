@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Button,
   Dialog,
@@ -25,18 +26,22 @@ import {
   TableHeader,
   TableRow,
   useToast,
+  parsePipelineSearchParams,
+  serializePipelineSearchParams,
 } from "@lh/shared";
 import { Columns3, List, MoreHorizontal } from "lucide-react";
 import { adminServices } from "../../lib/admin-services";
+import { useApplicationStats } from "../../hooks/useAdminQueries";
 import StageBadge from "./StageBadge";
-import ApplicationDetailPanel from "./ApplicationDetailPanel";
 import TransitionDialog from "./TransitionDialog";
 import AdminNotesDialog from "./AdminNotesDialog";
 const KanbanBoard = lazy(() => import("./KanbanBoard"));
-import ActivityFeed from "./ActivityFeed";
-import CallQueue from "./CallQueue";
-import BlockQueue from "./BlockQueue";
+const ApplicationDetailPanel = lazy(() => import("./ApplicationDetailPanel"));
+const ActivityFeed = lazy(() => import("./ActivityFeed"));
+const CallQueue = lazy(() => import("./CallQueue"));
+const BlockQueue = lazy(() => import("./BlockQueue"));
 import { useAdminAuth } from "../../context/AdminAuthContext";
+import { readVersionedJson, writeVersionedJson } from "../../lib/versioned-storage";
 
 const QUICK_STAGES = ["pending_review", "screening", "documents_pending", "approved", "rejected"];
 const VEHICLE_TYPES = [
@@ -182,26 +187,21 @@ const ApplicationPipeline = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [detailInitialTab, setDetailInitialTab] = useState("profile");
   const [selectedRows, setSelectedRows] = useState([]);
-  const [view, setView] = useState(() => localStorage.getItem("adminPipelineView") || "table");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlSnapshotRef = useRef("");
+  const urlReadyRef = useRef(false);
+  const [view, setView] = useState("table");
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [showSavePreset, setShowSavePreset] = useState(false);
   const [presetName, setPresetName] = useState("");
   const [savedPresets, setSavedPresets] = useState(() => {
-    try {
-      const custom = JSON.parse(localStorage.getItem("adminPipelineCustomPresets") || "[]");
-      return [...DEFAULT_PRESETS, ...(Array.isArray(custom) ? custom : [])];
-    } catch {
-      return DEFAULT_PRESETS;
-    }
+    const custom = readVersionedJson("adminPipelineCustomPresets", []);
+    return [...DEFAULT_PRESETS, ...(Array.isArray(custom) ? custom : [])];
   });
   const [visibleColumns, setVisibleColumns] = useState(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem("adminPipelineColumns") || "[]");
-      if (Array.isArray(stored) && stored.length > 0) {
-        return stored.map((k) => (k === "regionName" ? "cityName" : k));
-      }
-    } catch {
-      // ignore parse failure
+    const stored = readVersionedJson("adminPipelineColumns", []);
+    if (Array.isArray(stored) && stored.length > 0) {
+      return stored.map((k) => (k === "regionName" ? "cityName" : k));
     }
     return TABLE_COLUMNS.map((c) => c.key);
   });
@@ -220,14 +220,19 @@ const ApplicationPipeline = () => {
   const [decisionRecommendations, setDecisionRecommendations] = useState({});
   const loadAbortRef = useRef(null);
   const quickSearchAbortRef = useRef(null);
+  const { data: cachedStats } = useApplicationStats();
 
   useEffect(() => {
-    localStorage.setItem("adminPipelineColumns", JSON.stringify(visibleColumns));
+    if (cachedStats) setStats(cachedStats);
+  }, [cachedStats]);
+
+  useEffect(() => {
+    writeVersionedJson("adminPipelineColumns", visibleColumns);
   }, [visibleColumns]);
 
   useEffect(() => {
     const custom = savedPresets.filter((p) => !String(p.id || "").startsWith("default-"));
-    localStorage.setItem("adminPipelineCustomPresets", JSON.stringify(custom));
+    writeVersionedJson("adminPipelineCustomPresets", custom);
   }, [savedPresets]);
 
   useEffect(() => {
@@ -236,6 +241,31 @@ const ApplicationPipeline = () => {
     }, 300);
     return () => clearTimeout(id);
   }, [searchInput]);
+
+  useEffect(() => {
+    const parsed = parsePipelineSearchParams(searchParams, initialFilters);
+    const snapshot = searchParams.toString();
+    if (snapshot === urlSnapshotRef.current && urlReadyRef.current) return;
+    urlSnapshotRef.current = snapshot;
+    urlReadyRef.current = true;
+    if (parsed.view) {
+      setView(parsed.view);
+    } else if (!searchParams.get("view")) {
+      const legacy = localStorage.getItem("adminPipelineView");
+      if (legacy === "kanban" || legacy === "table") setView(legacy);
+    }
+    setFilters(parsed.filters);
+    setSearchInput(parsed.searchInput);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!urlReadyRef.current) return;
+    const params = serializePipelineSearchParams({ view, searchInput, filters });
+    const next = params.toString();
+    if (next === urlSnapshotRef.current) return;
+    urlSnapshotRef.current = next;
+    setSearchParams(params, { replace: true });
+  }, [view, searchInput, filters, setSearchParams]);
 
   const load = async () => {
     if (loadAbortRef.current) {
@@ -252,10 +282,9 @@ const ApplicationPipeline = () => {
       jobId: filters.jobIds[0] || "",
     };
     try {
-      const [list, grouped, stageStats, cityList, jobList] = await Promise.all([
+      const [list, grouped, cityList, jobList] = await Promise.all([
         adminServices.getApplications(baseFilters, { signal: controller.signal }),
         adminServices.getApplicationsByStage(baseFilters, { signal: controller.signal }),
-        adminServices.getApplicationStats(),
         adminServices.getAllCities(),
         adminServices.getAllJobs(),
       ]);
@@ -279,7 +308,7 @@ const ApplicationPipeline = () => {
       setGroupedApplications(groupedData);
     }
     setPagination(list.pagination || { page: 1, pageSize: 25, totalPages: 1, totalCount: 0 });
-    setStats(stageStats || { total: 0, byStage: {} });
+    if (cachedStats) setStats(cachedStats);
     setCities(cityList || []);
     setJobs(jobList || []);
     setSelectedRows([]);
@@ -401,7 +430,7 @@ const ApplicationPipeline = () => {
     if (filters.jobIds.length) chips.push({ key: "j", label: "Job set", clear: () => setFilters((p) => ({ ...p, jobIds: [], page: 1 })) });
     if (filters.contractStatus.length) chips.push({ key: "c", label: `Contract: ${filters.contractStatus.join(", ")}`, clear: () => setFilters((p) => ({ ...p, contractStatus: [], page: 1 })) });
     if (filters.hasDocuments !== "") chips.push({ key: "d", label: `Has docs: ${filters.hasDocuments}`, clear: () => setFilters((p) => ({ ...p, hasDocuments: "", page: 1 })) });
-    if (filters.dateFrom || filters.dateTo) chips.push({ key: "date", label: `Applied: ${filters.dateFrom || "..."} to ${filters.dateTo || "..."}`, clear: () => setFilters((p) => ({ ...p, dateFrom: "", dateTo: "", page: 1 })) });
+    if (filters.dateFrom || filters.dateTo) chips.push({ key: "date", label: `Applied: ${filters.dateFrom || "…"} to ${filters.dateTo || "…"}`, clear: () => setFilters((p) => ({ ...p, dateFrom: "", dateTo: "", page: 1 })) });
     if (filters.stageAgePreset) chips.push({ key: "age", label: `In stage > ${filters.stageAgePreset}`, clear: () => setFilters((p) => ({ ...p, stageAgePreset: "", stageEnteredTo: "", page: 1 })) });
     return chips;
   }, [filters]);
@@ -562,7 +591,7 @@ const ApplicationPipeline = () => {
             variant="outline"
             size="sm"
             className={view === "table" ? "!bg-sky-600 hover:!bg-sky-700 !text-white !border-sky-600 rounded-md" : "text-slate-700 hover:bg-slate-100 rounded-md border-transparent"}
-            onClick={() => { setView("table"); localStorage.setItem("adminPipelineView", "table"); }}
+            onClick={() => setView("table")}
           >
             <List className="h-4 w-4 mr-1" />Table
           </Button>
@@ -570,12 +599,19 @@ const ApplicationPipeline = () => {
             variant="outline"
             size="sm"
             className={view === "kanban" ? "!bg-sky-600 hover:!bg-sky-700 !text-white !border-sky-600 rounded-md" : "text-slate-700 hover:bg-slate-100 rounded-md border-transparent"}
-            onClick={() => { setView("kanban"); localStorage.setItem("adminPipelineView", "kanban"); }}
+            onClick={() => setView("kanban")}
           >
             <Columns3 className="h-4 w-4 mr-1" />Board
           </Button>
         </div>
-        <Input placeholder="Search name/email/phone/city" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="min-w-[220px] flex-1" />
+        <Input
+          id="pipeline-search"
+          aria-label="Search applications by name, email, phone, or city"
+          placeholder="Search name/email/phone/city…"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          className="min-w-[220px] flex-1"
+        />
         <Select value={filters.cityIds[0] || "all"} onValueChange={(v) => setFilters((p) => ({ ...p, cityIds: v === "all" ? [] : [v], page: 1 }))}>
           <SelectTrigger className="w-[180px]"><SelectValue placeholder="City" /></SelectTrigger>
           <SelectContent>
@@ -685,21 +721,25 @@ const ApplicationPipeline = () => {
       ) : null}
 
       {showCallQueue ? (
-        <CallQueue
-          onOpenApplication={(id) => {
-            setDetailInitialTab("actions");
-            setSelectedId(id);
-          }}
-        />
+        <Suspense fallback={<div className="adm-card p-4"><Skeleton className="h-8 w-48" /></div>}>
+          <CallQueue
+            onOpenApplication={(id) => {
+              setDetailInitialTab("actions");
+              setSelectedId(id);
+            }}
+          />
+        </Suspense>
       ) : null}
 
       {showBlockQueue ? (
-        <BlockQueue
-          onOpenApplication={(id) => {
-            setDetailInitialTab("actions");
-            setSelectedId(id);
-          }}
-        />
+        <Suspense fallback={<div className="adm-card p-4"><Skeleton className="h-8 w-48" /></div>}>
+          <BlockQueue
+            onOpenApplication={(id) => {
+              setDetailInitialTab("actions");
+              setSelectedId(id);
+            }}
+          />
+        </Suspense>
       ) : null}
 
       {activeFilterChips.length > 0 ? (
@@ -874,7 +914,9 @@ const ApplicationPipeline = () => {
                       ) : null}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button size="icon" variant="ghost" className="text-slate-500 hover:text-slate-900"><MoreHorizontal className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" className="text-slate-500 hover:text-slate-900" aria-label="More actions">
+                            <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                          </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => { setDetailInitialTab("profile"); setSelectedId(app.id); }}>
@@ -945,7 +987,11 @@ const ApplicationPipeline = () => {
         </div>
       )}
       </div>
-      {showActivity ? <ActivityFeed onOpenApplication={(id) => setSelectedId(id)} /> : null}
+      {showActivity ? (
+        <Suspense fallback={<div className="adm-card p-4"><Skeleton className="h-8 w-48" /></div>}>
+          <ActivityFeed onOpenApplication={(id) => setSelectedId(id)} />
+        </Suspense>
+      ) : null}
       </div>
 
       {canTransition && selectedRows.length > 0 ? (
@@ -977,13 +1023,15 @@ const ApplicationPipeline = () => {
         </div>
       </div>
 
-      <ApplicationDetailPanel
-        applicationId={selectedId}
-        open={Boolean(selectedId)}
-        onClose={() => setSelectedId(null)}
-        onTransitioned={load}
-        initialTab={detailInitialTab}
-      />
+      <Suspense fallback={null}>
+        <ApplicationDetailPanel
+          applicationId={selectedId}
+          open={Boolean(selectedId)}
+          onClose={() => setSelectedId(null)}
+          onTransitioned={load}
+          initialTab={detailInitialTab}
+        />
+      </Suspense>
       <TransitionDialog
         open={canTransition && Boolean(transitionTarget.stage)}
         onClose={() => setTransitionTarget({ stage: "", app: null, bulk: false })}
@@ -1022,8 +1070,7 @@ const ApplicationPipeline = () => {
             <DialogDescription>Search across applications, jobs, and cities to open a record quickly.</DialogDescription>
           </DialogHeader>
           <Input
-            autoFocus
-            placeholder="Search applications, jobs, cities..."
+            placeholder="Search applications, jobs, cities…"
             value={quickQuery}
             onChange={(e) => setQuickQuery(e.target.value)}
           />

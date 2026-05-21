@@ -14,7 +14,9 @@ const FeeStructureManager = lazy(() => import("./components/admin/FeeStructureMa
 const FacilityManager = lazy(() => import("./components/admin/FacilityManager"));
 const AdminManager = lazy(() => import("./components/admin/AdminManager"));
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@lh/shared";
+import { adminQueryClient } from "./lib/query-client";
 import "./index.css";
 
 function AdminRoutes() {
@@ -91,12 +93,14 @@ function ShellRouter() {
 
 function App() {
   return (
-    <AdminAuthProvider>
-      <Suspense fallback={<div className="h-screen w-screen flex items-center justify-center">Loading...</div>}>
-        <AdminRoutes />
-      </Suspense>
-      <Toaster />
-    </AdminAuthProvider>
+    <QueryClientProvider client={adminQueryClient}>
+      <AdminAuthProvider>
+        <Suspense fallback={<div className="h-screen w-screen flex items-center justify-center">Loading...</div>}>
+          <AdminRoutes />
+        </Suspense>
+        <Toaster />
+      </AdminAuthProvider>
+    </QueryClientProvider>
   );
 }
 

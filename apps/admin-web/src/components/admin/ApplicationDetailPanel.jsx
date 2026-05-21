@@ -73,21 +73,29 @@ const ApplicationDetailPanel = ({ applicationId, open, onClose, onTransitioned, 
   }, [application]);
 
   const reloadDetail = async () => {
-    const [detail, transitions, thread] = await Promise.all([
+    const [
+      detail,
+      transitions,
+      thread,
+      logs,
+      contract,
+      payment,
+      summary,
+    ] = await Promise.all([
       adminServices.getApplicationDetail(application.id),
       adminServices.getAvailableTransitions(application.id),
       adminServices.getApplicationNotes(application.id),
+      adminServices.getCommunicationLog(application.id),
+      adminServices.getContractStatus(application.id).catch(() => null),
+      adminServices.getApplicationPaymentDetails(application.id).catch(() => null),
+      adminServices.getDecisionSummary(application.id).catch(() => null),
     ]);
     setApplication(detail);
     setNotes(thread || []);
     setAvailableTransitions(transitions || []);
-    const logs = await adminServices.getCommunicationLog(application.id);
     setCommunications(logs || []);
-    const contract = await adminServices.getContractStatus(application.id).catch(() => null);
     setContractStatusData(contract);
-    const payment = await adminServices.getApplicationPaymentDetails(application.id).catch(() => null);
     setPaymentDetails(payment);
-    const summary = await adminServices.getDecisionSummary(application.id).catch(() => null);
     setDecisionSummary(summary);
   };
 
@@ -439,7 +447,7 @@ const ApplicationDetailPanel = ({ applicationId, open, onClose, onTransitioned, 
             </TabsContent>
 
             <TabsContent value="documents" className="mt-4">
-              <Suspense fallback={<p className="text-sm text-gray-600">Loading document reviewer...</p>}>
+              <Suspense fallback={<p className="text-sm text-gray-600">Loading document reviewer…</p>}>
                 <DocumentReviewer applicationId={application?.id} onReviewed={reloadDetail} />
               </Suspense>
             </TabsContent>
@@ -520,7 +528,7 @@ const ApplicationDetailPanel = ({ applicationId, open, onClose, onTransitioned, 
                               onClick={() => handleRetryCommunication(log.id)}
                               disabled={retryingLogId === log.id}
                             >
-                              {retryingLogId === log.id ? "Retrying..." : "Retry"}
+                              {retryingLogId === log.id ? "Retrying…" : "Retry"}
                             </Button>
                           ) : null}
                         </div>
@@ -569,7 +577,7 @@ const ApplicationDetailPanel = ({ applicationId, open, onClose, onTransitioned, 
                   </div>
                   {!paymentDetails?.verifiedAt ? (
                     <Button variant="outline" onClick={handleVerifyPayment} disabled={verifyingPayment}>
-                      {verifyingPayment ? "Verifying..." : "Verify Payment Details"}
+                      {verifyingPayment ? "Verifying…" : "Verify Payment Details"}
                     </Button>
                   ) : (
                     <p className="text-xs text-gray-500">

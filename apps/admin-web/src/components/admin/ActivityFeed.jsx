@@ -88,7 +88,7 @@ const ActivityFeed = ({ onOpenApplication }) => {
       </div>
       {hasMore ? (
         <Button className="w-full adm-btn-outline" variant="outline" onClick={() => load(offset, true)} disabled={loading}>
-          {loading ? "Loading..." : "Load more"}
+          {loading ? "Loading…" : "Load more"}
         </Button>
       ) : null}
     </div>

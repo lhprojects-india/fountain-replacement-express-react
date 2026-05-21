@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { pageContent } from "@/data/page-content";
@@ -10,6 +10,7 @@ import { CheckboxWithLabel } from "@lh/shared";
 import { useToast } from "@lh/shared";
 import { useOptionalApplication } from "../context/ApplicationContext";
 import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
+import { useAckOverride } from "../hooks/useAckOverride";
 
 const BlocksClassification = () => {
   const navigate = useNavigate();
@@ -18,15 +19,10 @@ const BlocksClassification = () => {
   const { currentUser, updateUserData, isLoading } = useAuth();
   const { toast } = useToast();
 
-  const [policyUnderstood, setPolicyUnderstood] = useState(false);
+  const [policyUnderstood, setPolicyUnderstood] = useAckOverride(
+    currentUser?.blocksClassificationAcknowledged
+  );
   const [isSaving, setIsSaving] = useState(false);
-
-  // Load existing confirmation status
-  useEffect(() => {
-    if (currentUser?.blocksClassificationAcknowledged) {
-      setPolicyUnderstood(true);
-    }
-  }, [currentUser]);
 
   const handleContinue = async () => {
     if (!policyUnderstood) {
@@ -140,7 +136,7 @@ const BlocksClassification = () => {
               className="w-full max-w-xs"
               disabled={isSaving || isLoading}
             >
-              {isSaving ? "Saving..." : "Continue"}
+              {isSaving ? "Saving…" : "Continue"}
             </Button>
           )}
         </div>

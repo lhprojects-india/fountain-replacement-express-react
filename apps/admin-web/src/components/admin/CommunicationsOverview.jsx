@@ -46,11 +46,11 @@ export default function CommunicationsOverview() {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Communications</h3>
         <Button variant="outline" size="sm" className="adm-btn-outline" onClick={load} disabled={loading}>
-          {loading ? "Refreshing..." : "Refresh"}
+          {loading ? "Refreshing…" : "Refresh"}
         </Button>
       </div>
       {!stats ? (
-        <p className="text-sm text-gray-500">{loading ? "Loading..." : "No data available."}</p>
+        <p className="text-sm text-gray-500">{loading ? "Loading…" : "No data available."}</p>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">

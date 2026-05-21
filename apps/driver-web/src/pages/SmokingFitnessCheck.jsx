@@ -203,7 +203,7 @@ const SmokingFitnessCheck = () => {
                   disabled={isSaving || isLoading || isWithdrawing}
                   showArrow={false}
                 >
-                  {isWithdrawing ? "Processing..." : "Withdraw my Application"}
+                  {isWithdrawing ? "Processing…" : "Withdraw my Application"}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent className="z-[200]">
@@ -231,7 +231,7 @@ const SmokingFitnessCheck = () => {
             className="w-full max-w-xs mt-6"
             disabled={isSaving || isLoading || !canProceed}
           >
-            {isSaving ? "Saving..." : "Continue"}
+            {isSaving ? "Saving…" : "Continue"}
           </Button>
         )}
       </div>

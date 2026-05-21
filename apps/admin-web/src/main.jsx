@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import AdminErrorBoundary from './components/admin/AdminErrorBoundary';
+import '@lh/shared/styles/guidelines.css';
 import './index.css';
 import './styles/admin.css';
 

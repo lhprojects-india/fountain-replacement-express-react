@@ -45,7 +45,7 @@ const AdminNotesDialog = ({ open, onClose, application, onSaved }) => {
             Cancel
           </Button>
           <Button onClick={onSave} disabled={saving}>
-            {saving ? "Saving..." : "Save"}
+            {saving ? "Saving…" : "Save"}
           </Button>
         </DialogFooter>
       </DialogContent>

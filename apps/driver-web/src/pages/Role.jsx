@@ -80,9 +80,11 @@ const Role = () => {
         </p>
         
         <div className="w-full max-w-md animate-fade-in mb-6">
-          <img 
-            src={roleExplanationImage} 
-            alt="Role explanation diagram" 
+          <img
+            src={roleExplanationImage}
+            alt="Role explanation diagram"
+            width={400}
+            height={600}
             loading="lazy"
             className="w-full h-auto rounded-lg border-2 border-white mb-8"
           />
@@ -101,7 +103,7 @@ const Role = () => {
           className="w-full max-w-xs mt-6"
           disabled={isSaving || isLoadingScreening}
         >
-          {isSaving ? "Saving..." : "Continue"}
+          {isSaving ? "Saving…" : "Continue"}
         </Button>
       </div>
     </PageLayout>

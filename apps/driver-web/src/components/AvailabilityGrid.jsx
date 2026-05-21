@@ -18,20 +18,27 @@ const TIME_SLOTS = [
   { key: 'evening', label: 'EVENING (NGT)', time: '5PM – 10PM' },
 ];
 
-function SlotToggle({ selected, onClick }) {
+const SLOT_LABELS = { morning: 'morning', noon: 'afternoon', evening: 'evening' };
+
+function SlotToggle({ selected, onClick, ariaLabel }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={selected}
+      aria-label={ariaLabel}
       onClick={onClick}
-      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-shadeTeal focus:ring-offset-1 ${
+      className={`w-10 h-10 rounded-full flex items-center justify-center transition-[color,background-color,border-color,box-shadow] duration-200 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-shadeTeal focus-visible:ring-offset-1 ${
         selected
           ? 'bg-brand-shadeTeal text-white'
           : 'bg-white/70 text-brand-shadeBlue/40 border border-white'
       }`}
     >
-      {selected ? <Check size={16} strokeWidth={3} /> : <Plus size={16} strokeWidth={2} />}
+      {selected ? (
+        <Check size={16} strokeWidth={3} aria-hidden="true" />
+      ) : (
+        <Plus size={16} strokeWidth={2} aria-hidden="true" />
+      )}
     </button>
   );
 }
@@ -50,7 +57,6 @@ function AvailabilityGrid({ availability, onAvailabilityChange }) {
 
   return (
     <div className="w-full animate-fade-in">
-      {/* Time slot summary cards */}
       <div className="flex flex-col gap-2 mb-6">
         {TIME_SLOTS.map((slot) => (
           <div key={slot.key} className="bg-white rounded-xl px-4 py-3 shadow-sm">
@@ -60,9 +66,7 @@ function AvailabilityGrid({ availability, onAvailabilityChange }) {
         ))}
       </div>
 
-      {/* Grid */}
       <div className="bg-white/50 rounded-2xl p-4 shadow-sm">
-        {/* Column headers */}
         <div className="grid grid-cols-4 mb-3 items-center">
           <div className="col-span-1 text-xs font-semibold uppercase tracking-widest text-gray-400">Day</div>
           <div className="col-span-1 text-center text-xs font-semibold uppercase tracking-widest text-gray-400">AM</div>
@@ -70,7 +74,6 @@ function AvailabilityGrid({ availability, onAvailabilityChange }) {
           <div className="col-span-1 text-center text-xs font-semibold uppercase tracking-widest text-gray-400">NGT</div>
         </div>
 
-        {/* Day rows */}
         {DAYS_ORDER.map((day, index) => {
           const slots = availability[day] || { morning: false, noon: false, evening: false };
           return (
@@ -87,6 +90,7 @@ function AvailabilityGrid({ availability, onAvailabilityChange }) {
               <div className="col-span-1 flex justify-center">
                 <SlotToggle
                   selected={slots.morning}
+                  ariaLabel={`${DAY_LABELS[day]} ${SLOT_LABELS.morning}, ${slots.morning ? 'selected' : 'not selected'}`}
                   onClick={() => handleChange(day, 'morning', !slots.morning)}
                 />
               </div>
@@ -94,6 +98,7 @@ function AvailabilityGrid({ availability, onAvailabilityChange }) {
               <div className="col-span-1 flex justify-center">
                 <SlotToggle
                   selected={slots.noon}
+                  ariaLabel={`${DAY_LABELS[day]} ${SLOT_LABELS.noon}, ${slots.noon ? 'selected' : 'not selected'}`}
                   onClick={() => handleChange(day, 'noon', !slots.noon)}
                 />
               </div>
@@ -101,6 +106,7 @@ function AvailabilityGrid({ availability, onAvailabilityChange }) {
               <div className="col-span-1 flex justify-center">
                 <SlotToggle
                   selected={slots.evening}
+                  ariaLabel={`${DAY_LABELS[day]} ${SLOT_LABELS.evening}, ${slots.evening ? 'selected' : 'not selected'}`}
                   onClick={() => handleChange(day, 'evening', !slots.evening)}
                 />
               </div>

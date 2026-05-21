@@ -23,6 +23,7 @@ import {
   AlertDialogTrigger,
 } from "@lh/shared";
 import { useOptionalApplication } from "../context/ApplicationContext";
+import { useAckOverride } from "../hooks/useAckOverride";
 import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
 import { publicServices } from "../lib/public-services";
 
@@ -35,7 +36,9 @@ const FeeStructure = () => {
   const [feeStructures, setFeeStructures] = useState(null);
   const [loadingFeeStructures, setLoadingFeeStructures] = useState(true);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
-  const [feeStructureAcknowledged, setFeeStructureAcknowledged] = useState(false);
+  const [feeStructureAcknowledged, setFeeStructureAcknowledged] = useAckOverride(
+    currentUser?.feeStructureAcknowledged || currentUser?.acknowledgedFeeStructure
+  );
   const [isSaving, setIsSaving] = useState(false);
   // Fee structure has more content, so require 45 seconds minimum read time
   const { canProceed, timeRemaining } = useMinimumReadTime(45);
@@ -95,13 +98,6 @@ const FeeStructure = () => {
       setLoadingFeeStructures(false);
     }
   }, [appContext, currentUser, isLoading, isAuthenticated]);
-
-  // Load existing acknowledgement status
-  useEffect(() => {
-    if (currentUser?.feeStructureAcknowledged || currentUser?.acknowledgedFeeStructure) {
-      setFeeStructureAcknowledged(true);
-    }
-  }, [currentUser]);
 
   const handleContinue = async () => {
     if (!feeStructureAcknowledged) {
@@ -408,7 +404,7 @@ const FeeStructure = () => {
                 className="w-full sm:w-auto"
                 disabled={isSaving || isLoading || loadingFeeStructures || !canProceed || !feeStructureAcknowledged}
               >
-                {isSaving ? "Saving..." : "Continue"}
+                {isSaving ? "Saving…" : "Continue"}
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -417,7 +413,7 @@ const FeeStructure = () => {
                     disabled={isSaving || isLoading || loadingFeeStructures || isWithdrawing}
                     showArrow={false}
                   >
-                    {isWithdrawing ? "Processing..." : "Withdraw my Application"}
+                    {isWithdrawing ? "Processing…" : "Withdraw my Application"}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="z-[200]">

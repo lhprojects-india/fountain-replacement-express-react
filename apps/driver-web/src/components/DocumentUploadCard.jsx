@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { Button, useToast } from "@lh/shared";
 import FileDropZone from "./FileDropZone";
-import VideoRecorder from "./VideoRecorder";
-import VideoPlayer from "./VideoPlayer";
 import { publicServices } from "../lib/public-services";
 import { compressImage, convertHeicToJpeg } from "../lib/image-utils";
+import { useNetworkStatus } from "../context/NetworkStatusContext";
+
+const VideoRecorder = lazy(() => import("./VideoRecorder"));
+const VideoPlayer = lazy(() => import("./VideoPlayer"));
 
 function formatMb(mb) {
   return `${Number(mb || 0)}MB`;
@@ -68,18 +70,7 @@ const DocumentUploadCard = ({ requirement, submission, onUploadComplete, onDelet
   const [videoSrc, setVideoSrc] = useState("");
   const [sizeInfo, setSizeInfo] = useState(null);
   const [retryInfo, setRetryInfo] = useState(null);
-  const [isOffline, setIsOffline] = useState(typeof navigator !== "undefined" ? !navigator.onLine : false);
-
-  useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, []);
+  const { isOffline } = useNetworkStatus();
 
   const isUnderReview = currentStage === "documents_under_review";
   const isLocked = submission?.status === "approved";
@@ -153,7 +144,7 @@ const DocumentUploadCard = ({ requirement, submission, onUploadComplete, onDelet
       for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
         try {
           if (!navigator.onLine) {
-            setRetryInfo("Waiting for connection...");
+            setRetryInfo("Waiting for connection…");
             await waitForOnline();
             setRetryInfo(`Connection restored. Retrying (${attempt}/${maxRetries})...`);
           } else if (attempt > 1) {
@@ -222,11 +213,13 @@ const DocumentUploadCard = ({ requirement, submission, onUploadComplete, onDelet
             </div>
           ) : (
           isVideoRequirement ? (
-            <VideoRecorder
-              maxDurationSec={Number(requirement.maxDurationSec || 120)}
-              minDurationSec={30}
-              onUseVideo={handleUpload}
-            />
+            <Suspense fallback={<p className="text-sm text-gray-500">Loading recorder…</p>}>
+              <VideoRecorder
+                maxDurationSec={Number(requirement.maxDurationSec || 120)}
+                minDurationSec={30}
+                onUseVideo={handleUpload}
+              />
+            </Suspense>
           ) : (
             <FileDropZone accept={acceptedTypes} disabled={uploading || isLocked} onFileSelected={handleUpload} />
           ))
@@ -342,7 +335,11 @@ const DocumentUploadCard = ({ requirement, submission, onUploadComplete, onDelet
       {isUnderReview && submission && submission.status !== "rejected" ? (
         <p className="mt-2 text-xs text-gray-500">Read-only while under review.</p>
       ) : null}
-      {openVideoPlayer && videoSrc ? <VideoPlayer src={videoSrc} onClose={() => setOpenVideoPlayer(false)} /> : null}
+      {openVideoPlayer && videoSrc ? (
+        <Suspense fallback={null}>
+          <VideoPlayer src={videoSrc} onClose={() => setOpenVideoPlayer(false)} />
+        </Suspense>
+      ) : null}
     </div>
   );
 };

@@ -191,7 +191,7 @@ const AcknowledgementsSummary = () => {
               className="w-full max-w-xs"
               disabled={isCompleting || isLoading || !allAcknowledged}
             >
-              {isCompleting || isLoading ? "Completing..." : "Complete Screening"}
+              {isCompleting || isLoading ? "Completing…" : "Complete Screening"}
             </Button>
           </div>
         </div>

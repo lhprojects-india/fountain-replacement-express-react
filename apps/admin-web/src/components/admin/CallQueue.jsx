@@ -34,7 +34,7 @@ const CallQueue = ({ onOpenApplication }) => {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          {loading ? "Loading call queue..." : `${rows.length} onboarding calls pending`}
+          {loading ? "Loading call queue…" : `${rows.length} onboarding calls pending`}
         </p>
         <Button variant="outline" className="adm-btn-outline" onClick={load}>Refresh</Button>
       </div>

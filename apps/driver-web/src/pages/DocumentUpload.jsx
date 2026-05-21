@@ -155,7 +155,7 @@ const DocumentUpload = () => {
               }
             }}
           >
-            {submitting ? "Submitting..." : "Submit Documents"}
+            {submitting ? "Submitting…" : "Submit Documents"}
           </Button>
           <Link className="text-sm text-brand-blue hover:underline" to="/dashboard">
             Back to Dashboard

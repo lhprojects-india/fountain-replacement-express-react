@@ -46,7 +46,7 @@ const BlockQueue = ({ onOpenApplication }) => {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          {loading ? "Loading first-block queue..." : `${rows.length} first block${rows.length === 1 ? "" : "s"} scheduled`}
+          {loading ? "Loading first-block queue…" : `${rows.length} first block${rows.length === 1 ? "" : "s"} scheduled`}
         </p>
         <Button variant="outline" onClick={load}>Refresh</Button>
       </div>

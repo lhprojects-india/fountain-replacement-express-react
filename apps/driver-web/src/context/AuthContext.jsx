@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useCallback, useContext, useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { driverQueryKeys } from "../lib/query-keys";
 import {
   useToast,
   getAuthToken,
@@ -14,6 +16,7 @@ import { publicServices } from "../lib/public-services";
 const AuthContext = createContext(undefined);
 
 export function AuthProvider({ children }) {
+  const queryClient = useQueryClient();
   const [currentUser, setCurrentUser] = useState(null);
   const [application, setApplication] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -45,11 +48,16 @@ export function AuthProvider({ children }) {
               email: storedEmail,
               ...userData,
             });
-            try {
-              const appResult = await publicServices.getDriverApplication();
-              setApplication(appResult?.application || null);
-            } catch (appError) {
-              setApplication(null);
+            const embeddedApp = userData.application;
+            if (embeddedApp) {
+              setApplication(embeddedApp);
+            } else {
+              try {
+                const appResult = await publicServices.getDriverApplication();
+                setApplication(appResult?.application || null);
+              } catch (appError) {
+                setApplication(null);
+              }
             }
             setIsAuthenticated(true);
           } else {
@@ -93,15 +101,20 @@ export function AuthProvider({ children }) {
         saveAuthToken(result.token);
       }
       saveLocalDriverData({ email: normalizedEmail });
+      const appFromResult = result?.application ?? null;
       setCurrentUser({
         email: normalizedEmail,
-        application: result?.application ?? null,
+        application: appFromResult,
       });
-      try {
-        const appResult = await publicServices.getDriverApplication();
-        setApplication(appResult?.application || null);
-      } catch (appError) {
-        setApplication(result?.application ?? null);
+      if (appFromResult) {
+        setApplication(appFromResult);
+      } else {
+        try {
+          const appResult = await publicServices.getDriverApplication();
+          setApplication(appResult?.application || null);
+        } catch (appError) {
+          setApplication(null);
+        }
       }
       setIsAuthenticated(true);
       setIsLoading(false);
@@ -120,22 +133,19 @@ export function AuthProvider({ children }) {
         email: result.application.email || prev?.email,
         application: result.application,
       }));
-      try {
-        const appResult = await publicServices.getDriverApplication();
-        setApplication(appResult?.application || null);
-      } catch (appError) {
-        setApplication(result.application);
-      }
+      setApplication(result.application);
       setIsAuthenticated(true);
     }
     return result;
   };
 
-  const loadDriverApplication = async () => {
+  const loadDriverApplication = useCallback(async () => {
     const result = await publicServices.getDriverApplication();
-    setApplication(result?.application || null);
+    const app = result?.application || null;
+    setApplication(app);
+    queryClient.setQueryData(driverQueryKeys.application, app);
     return result;
-  };
+  }, [queryClient]);
 
   // Update user data
   const updateUserData = async (data) => {

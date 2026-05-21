@@ -293,7 +293,7 @@ const VideoRecorder = ({ maxDurationSec = 120, minDurationSec = 30, onUseVideo }
           <div className="mt-3 flex gap-2">
             {!isRecording ? (
               <Button onClick={startRecording} disabled={countdown > 0}>
-                {countdown > 0 ? "Starting..." : "Start Recording"}
+                {countdown > 0 ? "Starting…" : "Start Recording"}
               </Button>
             ) : (
               <Button onClick={stopRecording}>Stop Recording</Button>

@@ -8,7 +8,7 @@ const ProtectedRoute = ({ children }) => {
   const token = getAuthToken();
 
   if (isLoading) {
-    return <GlobalLoadingScreen message="Loading your session..." />;
+    return <GlobalLoadingScreen message="Loading your session…" />;
   }
 
   if (!isAuthenticated || !token) {

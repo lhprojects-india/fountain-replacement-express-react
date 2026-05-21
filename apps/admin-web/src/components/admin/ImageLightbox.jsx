@@ -5,7 +5,13 @@ const ImageLightbox = ({ src, onClose }) => {
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-5xl">
         <div className="flex justify-center">
-          <img src={src} alt="Document preview" className="max-h-[80vh] w-auto rounded" />
+          <img
+            src={src}
+            alt="Document preview"
+            width={1200}
+            height={800}
+            className="max-h-[80vh] w-auto rounded"
+          />
         </div>
       </DialogContent>
     </Dialog>

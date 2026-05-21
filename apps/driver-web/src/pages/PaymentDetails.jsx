@@ -101,7 +101,7 @@ const PaymentDetails = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {loading ? (
-              <p className="text-sm text-gray-600">Loading payment fields...</p>
+              <p className="text-sm text-gray-600">Loading payment fields…</p>
             ) : (
               (schema?.fields || []).map((field) => (
                 <DynamicFormField
@@ -116,7 +116,7 @@ const PaymentDetails = () => {
           </CardContent>
           <CardFooter>
             <Button onClick={handleSubmit} disabled={loading || submitting}>
-              {submitting ? "Submitting..." : "Submit Payment Details"}
+              {submitting ? "Submitting…" : "Submit Payment Details"}
             </Button>
           </CardFooter>
         </Card>

@@ -49,7 +49,7 @@ const ScreeningLanding = () => {
           </p>
           <p className="text-sm text-gray-500 mt-3">
             {isLoadingScreening
-              ? "Loading progress..."
+              ? "Loading progress…"
               : `${summary?.completedSteps || 0} of ${summary?.totalSteps || SCREENING_STEP_ORDER.length} completed`}
           </p>
         </section>

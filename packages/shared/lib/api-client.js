@@ -28,6 +28,10 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
+    if (axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
+
     const status = error.response?.status;
     const data = error.response?.data;
 

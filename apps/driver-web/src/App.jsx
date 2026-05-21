@@ -3,6 +3,7 @@ import { Toaster, TooltipProvider } from "@lh/shared";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { NetworkStatusProvider } from "./context/NetworkStatusContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScreeningGuard from "./components/ScreeningGuard";
 import DocumentsGuard from "./components/DocumentsGuard";
@@ -52,11 +53,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <NetworkStatusProvider>
           <AuthProvider>
             <OfflineBanner />
             <Toaster />
             <Suspense fallback={
-              <GlobalLoadingScreen message="Preparing your dashboard..." />
+              <GlobalLoadingScreen message="Preparing your dashboard…" />
             }>
               <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -130,6 +132,7 @@ function App() {
               </Routes>
             </Suspense>
           </AuthProvider>
+          </NetworkStatusProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

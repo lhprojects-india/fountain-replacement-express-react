@@ -35,6 +35,8 @@ export * from './hooks/useMinimumReadTime';
 
 // Export Libs
 export * from './lib/utils';
+export * from './lib/format';
+export * from './lib/pipelineSearchParams';
 export {
   PRODUCT_BYLINE,
   PRODUCT_DISPLAY_NAME,

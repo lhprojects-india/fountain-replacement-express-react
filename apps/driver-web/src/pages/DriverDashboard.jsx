@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useDriverDocuments } from "../hooks/useDriverQueries";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -29,38 +30,30 @@ const DriverDashboard = () => {
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [withdrawReason, setWithdrawReason] = useState("");
   const [withdrawing, setWithdrawing] = useState(false);
-  const [documentProgress, setDocumentProgress] = useState(null);
+  const { data: documentsData } = useDriverDocuments({
+    enabled: application?.currentStage === "documents_pending",
+  });
+  const documentProgress = useMemo(() => {
+    if (application?.currentStage !== "documents_pending") return null;
+    const completeness = documentsData?.completeness || {};
+    return {
+      done: Number(completeness.submitted || 0),
+      total: Number(completeness.totalRequired || 0),
+    };
+  }, [application?.currentStage, documentsData]);
 
   useEffect(() => {
     const load = async () => {
       try {
-        await getSession();
-        await loadDriverApplication();
+        const result = await getSession();
+        if (!result?.application) {
+          await loadDriverApplication();
+        }
       } catch (error) {
       }
     };
     load();
   }, [getSession, loadDriverApplication]);
-
-  useEffect(() => {
-    const loadDocumentProgress = async () => {
-      if (application?.currentStage !== "documents_pending") {
-        setDocumentProgress(null);
-        return;
-      }
-      try {
-        const result = await publicServices.getDriverDocuments();
-        const completeness = result?.completeness || {};
-        setDocumentProgress({
-          done: Number(completeness.submitted || 0),
-          total: Number(completeness.totalRequired || 0),
-        });
-      } catch (error) {
-        setDocumentProgress(null);
-      }
-    };
-    loadDocumentProgress();
-  }, [application?.currentStage]);
 
   const currentStage = application?.currentStage || "applied";
   const canWithdraw = !["rejected", "withdrawn", "active", "first_block_failed"].includes(currentStage);
@@ -265,7 +258,7 @@ const DriverDashboard = () => {
               Cancel
             </Button>
             <Button onClick={handleWithdraw} disabled={withdrawing} className="bg-red-600 hover:bg-red-700">
-              {withdrawing ? "Withdrawing..." : "Confirm Withdraw"}
+              {withdrawing ? "Withdrawing…" : "Confirm Withdraw"}
             </Button>
           </DialogFooter>
         </DialogContent>

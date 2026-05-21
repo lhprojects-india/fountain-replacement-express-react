@@ -153,7 +153,7 @@ body.admin-page {
   text-transform: uppercase;
   color: #64748b; /* slate-500 */
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: color 200ms ease, background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
   text-align: left;
   width: 100%;
   background: transparent;
@@ -281,7 +281,7 @@ body.admin-page {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all 150ms ease;
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
   box-shadow: 0 2px 8px rgba(0, 94, 161, 0.25);
   cursor: pointer;
   border: none;
@@ -301,7 +301,7 @@ body.admin-page {
   color: #0b72bd;
   border: 1px solid rgba(8, 144, 241, 0.25);
   border-radius: 0.75rem;
-  transition: all 150ms ease;
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .adm-btn-outline:hover {
@@ -375,7 +375,7 @@ body.admin-page {
   position: relative;
   color: #9fb1e7;
   border-radius: 0.625rem;
-  transition: all 150ms ease;
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .adm-sidebar-item:hover {
@@ -525,7 +525,7 @@ body.admin-page {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #64748b;
-  transition: all 200ms ease;
+  transition: color 200ms ease, background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
   border: none;
   background: transparent;
 }

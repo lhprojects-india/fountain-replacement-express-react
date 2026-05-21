@@ -1060,7 +1060,7 @@ export default function CityManager() {
               onClick={linkDocusealTemplate}
               disabled={docusealLinking || !docusealSelectedId}
             >
-              {docusealLinking ? "Linking..." : "Link template"}
+              {docusealLinking ? "Linking…" : "Link template"}
             </Button>
           </DialogFooter>
         </DialogContent>

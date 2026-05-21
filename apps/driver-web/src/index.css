@@ -115,6 +115,7 @@
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
   }
 
   /* Screenshot prevention styles */
@@ -196,7 +197,7 @@
 
 @layer components {
   .laundryheap-btn {
-    @apply flex items-center justify-between gap-2 px-6 py-3 bg-brand-yellow text-gray-900 font-semibold rounded-full hover:bg-brand-shadeYellow shadow-md hover:shadow-lg transition-all duration-300 animate-fade-in transform hover:scale-[1.02];
+    @apply flex items-center justify-between gap-2 px-6 py-3 bg-brand-yellow text-gray-900 font-semibold rounded-full hover:bg-brand-shadeYellow shadow-md hover:shadow-lg transition-[color,background-color,box-shadow,transform] duration-300 animate-fade-in transform hover:scale-[1.02];
   }
 
   .input-container {
@@ -204,15 +205,15 @@
   }
 
   .laundryheap-input {
-    @apply w-full p-3 text-left text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-shadeTeal focus:border-brand-shadeTeal transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply w-full p-3 text-left text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-shadeTeal focus-visible:border-brand-shadeTeal transition-[color,background-color,border-color,box-shadow] duration-200 shadow-sm hover:shadow-md;
   }
 
   .otp-input {
-    @apply w-12 h-12 text-center text-lg text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-shadeTeal focus:border-brand-shadeTeal transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply w-12 h-12 text-center text-lg text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-shadeTeal focus-visible:border-brand-shadeTeal transition-[color,background-color,border-color,box-shadow] duration-200 shadow-sm hover:shadow-md;
   }
 
   .laundryheap-switch {
-    @apply relative inline-flex h-7 w-12 items-center rounded-full border-2 border-transparent bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-shadeTeal shadow-sm;
+    @apply relative inline-flex h-7 w-12 items-center rounded-full border-2 border-transparent bg-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-shadeTeal shadow-sm;
   }
 
   .laundryheap-switch-checked {
@@ -224,7 +225,7 @@
   }
 
   .laundryheap-transition {
-    @apply transition-all duration-300 ease-in-out;
+    @apply transition-[color,opacity,transform] duration-300 ease-in-out;
   }
 
   .laundryheap-page {
@@ -254,7 +255,7 @@
   }
 
   .phone-input-wrapper .PhoneInputInput {
-    @apply flex-1 h-[48px] p-3 text-left text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-shadeTeal focus:border-brand-shadeTeal transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply flex-1 h-[48px] p-3 text-left text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-shadeTeal focus-visible:border-brand-shadeTeal transition-[color,background-color,border-color,box-shadow] duration-200 shadow-sm hover:shadow-md;
     flex: 1;
     text-align: left !important;
   }
@@ -267,7 +268,7 @@
   }
 
   .phone-input-wrapper .PhoneInputCountrySelect {
-    @apply h-[48px] min-w-[140px] px-3 bg-white border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-shadeTeal focus:border-brand-shadeTeal hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply h-[48px] min-w-[140px] px-3 bg-white border-2 border-gray-200 rounded-xl text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-shadeTeal focus-visible:border-brand-shadeTeal hover:bg-gray-50 transition-[color,background-color,border-color,box-shadow] duration-200 shadow-sm hover:shadow-md;
     display: flex !important;
     align-items: center !important;
     justify-content: flex-start !important;

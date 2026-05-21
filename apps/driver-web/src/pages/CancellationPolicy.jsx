@@ -24,6 +24,7 @@ import {
 import { useOptionalApplication } from "../context/ApplicationContext";
 import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
 import { publicServices } from "../lib/public-services";
+import { useAckOverride } from "../hooks/useAckOverride";
 
 const CancellationPolicy = () => {
   const navigate = useNavigate();
@@ -32,7 +33,9 @@ const CancellationPolicy = () => {
   const { currentUser, updateUserData, isLoading } = useAuth();
   const { toast } = useToast();
 
-  const [policyUnderstood, setPolicyUnderstood] = useState(false);
+  const [policyUnderstood, setPolicyUnderstood] = useAckOverride(
+    currentUser?.cancellationPolicyAcknowledged
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [currency, setCurrency] = useState('£'); // Default to £ (Birmingham)
@@ -76,13 +79,6 @@ const CancellationPolicy = () => {
       fetchCurrency();
     }
   }, [appContext, currentUser]);
-
-  // Load existing confirmation status
-  useEffect(() => {
-    if (currentUser?.cancellationPolicyAcknowledged) {
-      setPolicyUnderstood(true);
-    }
-  }, [currentUser]);
 
   const handleContinue = async () => {
     if (!policyUnderstood) {
@@ -271,7 +267,7 @@ const CancellationPolicy = () => {
                 className="w-full max-w-xs"
                 disabled={isSaving || isLoading || !canProceed}
               >
-                {isSaving ? "Saving..." : "Continue"}
+                {isSaving ? "Saving…" : "Continue"}
               </Button>
 
               <AlertDialog>
@@ -281,7 +277,7 @@ const CancellationPolicy = () => {
                     disabled={isSaving || isLoading || isWithdrawing}
                     showArrow={false}
                   >
-                    {isWithdrawing ? "Processing..." : "Withdraw my Application"}
+                    {isWithdrawing ? "Processing…" : "Withdraw my Application"}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="z-[200]">

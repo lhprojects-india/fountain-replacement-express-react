@@ -11,6 +11,23 @@ const DATE_PRESETS = [
   { value: "custom", label: "Custom", days: null },
 ];
 
+function resolveAnalyticsDates(preset, dateFrom, dateTo) {
+  if (preset === "custom") {
+    return { dateFrom: dateFrom || "", dateTo: dateTo || "" };
+  }
+  const now = new Date();
+  if (preset === "month") {
+    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+      .toISOString()
+      .slice(0, 10);
+    return { dateFrom: start, dateTo: now.toISOString().slice(0, 10) };
+  }
+  const presetDef = DATE_PRESETS.find((p) => p.value === preset);
+  const days = presetDef?.days || 30;
+  const from = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  return { dateFrom: from, dateTo: now.toISOString().slice(0, 10) };
+}
+
 function toStageLabel(stage) {
   return String(stage || "")
     .split("_")
@@ -45,19 +62,10 @@ const AnalyticsDashboard = () => {
     loadMeta();
   }, []);
 
-  useEffect(() => {
-    if (filters.preset === "custom") return;
-    const now = new Date();
-    if (filters.preset === "month") {
-      const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString().slice(0, 10);
-      setFilters((prev) => ({ ...prev, dateFrom: start, dateTo: now.toISOString().slice(0, 10) }));
-      return;
-    }
-    const preset = DATE_PRESETS.find((p) => p.value === filters.preset);
-    const days = preset?.days || 30;
-    const from = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    setFilters((prev) => ({ ...prev, dateFrom: from, dateTo: now.toISOString().slice(0, 10) }));
-  }, [filters.preset]);
+  const effectiveDates = useMemo(
+    () => resolveAnalyticsDates(filters.preset, filters.dateFrom, filters.dateTo),
+    [filters.preset, filters.dateFrom, filters.dateTo]
+  );
 
   useEffect(() => {
     const load = async () => {
@@ -66,8 +74,8 @@ const AnalyticsDashboard = () => {
         const payload = {
           cityId: filters.cityId || "",
           jobId: filters.jobId || "",
-          dateFrom: filters.dateFrom || "",
-          dateTo: filters.dateTo || "",
+          dateFrom: effectiveDates.dateFrom || "",
+          dateTo: effectiveDates.dateTo || "",
         };
         const [f, d, v, r, j] = await Promise.all([
           adminServices.getAnalyticsFunnel(payload),
@@ -86,7 +94,7 @@ const AnalyticsDashboard = () => {
       }
     };
     load();
-  }, [filters.dateFrom, filters.dateTo, filters.cityId, filters.jobId, period]);
+  }, [effectiveDates.dateFrom, effectiveDates.dateTo, filters.cityId, filters.jobId, period]);
 
   const funnelData = useMemo(
     () =>
@@ -266,7 +274,7 @@ const AnalyticsDashboard = () => {
         </Table>
       </div>
 
-      {loading ? <p className="text-sm text-gray-500">Loading analytics...</p> : null}
+      {loading ? <p className="text-sm text-gray-500">Loading analytics…</p> : null}
     </div>
   );
 };

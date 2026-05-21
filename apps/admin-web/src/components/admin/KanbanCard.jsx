@@ -1,6 +1,7 @@
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { GripVertical } from "lucide-react";
+import { formatRelativeTime } from "@lh/shared";
 
 function formatStageAge(ms) {
   if (ms == null) return "-";
@@ -12,22 +13,18 @@ function formatStageAge(ms) {
   return `${days}d ${remH}h`;
 }
 
-function formatAppliedDate(value) {
-  if (!value) return "-";
-  const createdAt = new Date(value);
-  if (Number.isNaN(createdAt.getTime())) return "-";
-  const diffMs = Date.now() - createdAt.getTime();
-  const hours = Math.floor(diffMs / (1000 * 60 * 60));
-  if (hours < 24) return `Applied ${Math.max(1, hours)}h ago`;
-  const days = Math.floor(hours / 24);
-  return `Applied ${days}d ago`;
-}
-
 const KanbanCard = ({ application, onClick, accentClass = "border-l-blue-400" }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: String(application.id),
     data: { type: "application", application },
   });
+
+  const appliedLabel = (() => {
+    if (!application.createdAt) return "-";
+    const createdAt = new Date(application.createdAt);
+    if (Number.isNaN(createdAt.getTime())) return "-";
+    return `Applied ${formatRelativeTime(createdAt.getTime())}`;
+  })();
 
   return (
     <div
@@ -54,16 +51,16 @@ const KanbanCard = ({ application, onClick, accentClass = "border-l-blue-400" })
         </button>
         <button
           type="button"
-          className="cursor-grab rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+          className="cursor-grab rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label={`Drag ${application.name || "application"}`}
           {...attributes}
           {...listeners}
         >
-          <GripVertical className="h-4 w-4" />
+          <GripVertical className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
       <div className="mt-2 border-t border-gray-100 pt-2 text-xs text-gray-500">
-        <p>{formatAppliedDate(application.createdAt)}</p>
+        <p>{appliedLabel}</p>
         <p>In stage: {formatStageAge(application.timeInCurrentStageMs)}</p>
       </div>
     </div>

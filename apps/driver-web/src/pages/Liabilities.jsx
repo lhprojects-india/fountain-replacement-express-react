@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { acknowledgementServices } from "@/lib/api-services";
@@ -12,6 +12,7 @@ import { useToast } from "@lh/shared";
 import { useMinimumReadTime } from "@lh/shared";
 import { useOptionalApplication } from "../context/ApplicationContext";
 import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
+import { useAckOverride } from "../hooks/useAckOverride";
 
 const Liabilities = () => {
   const navigate = useNavigate();
@@ -20,16 +21,11 @@ const Liabilities = () => {
   const { currentUser, updateUserData, isLoading } = useAuth();
   const { toast } = useToast();
 
-  const [liabilityConfirmed, setLiabilityConfirmed] = useState(false);
+  const [liabilityConfirmed, setLiabilityConfirmed] = useAckOverride(
+    currentUser?.progress_liabilities?.confirmed
+  );
   const [isSaving, setIsSaving] = useState(false);
   const { canProceed, timeRemaining } = useMinimumReadTime(30);
-
-  // Load existing confirmation status
-  useEffect(() => {
-    if (currentUser?.progress_liabilities) {
-      setLiabilityConfirmed(currentUser.progress_liabilities.confirmed || false);
-    }
-  }, [currentUser]);
 
   const handleContinue = async () => {
     if (!liabilityConfirmed) {
@@ -132,7 +128,7 @@ const Liabilities = () => {
               className="w-full max-w-xs"
               disabled={isSaving || isLoading || !canProceed}
             >
-              {isSaving ? "Saving..." : "Continue"}
+              {isSaving ? "Saving…" : "Continue"}
             </Button>
           )}
         </div>

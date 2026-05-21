@@ -44,7 +44,7 @@ const ScreeningGuard = () => {
   }, [location.pathname]);
 
   if (isLoading) {
-    return <GlobalLoadingScreen message="Loading screening..." />;
+    return <GlobalLoadingScreen message="Loading screening…" />;
   }
 
   if (!ALLOWED_STAGES.has(currentStage)) {

@@ -24,6 +24,7 @@ import {
 import { useOptionalApplication } from "../context/ApplicationContext";
 import { SCREENING_STEP_PATHS } from "../lib/screening-navigation";
 import { publicServices } from "../lib/public-services";
+import { useAckOverride } from "../hooks/useAckOverride";
 
 const PaymentCycleSchedule = () => {
   const navigate = useNavigate();
@@ -32,17 +33,12 @@ const PaymentCycleSchedule = () => {
   const { currentUser, updateUserData, isLoading } = useAuth();
   const { toast } = useToast();
 
-  const [policyUnderstood, setPolicyUnderstood] = useState(false);
+  const [policyUnderstood, setPolicyUnderstood] = useAckOverride(
+    currentUser?.paymentCycleScheduleAcknowledged
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const { canProceed, timeRemaining } = useMinimumReadTime(30);
-
-  // Load existing confirmation status
-  useEffect(() => {
-    if (currentUser?.paymentCycleScheduleAcknowledged) {
-      setPolicyUnderstood(true);
-    }
-  }, [currentUser]);
 
   const [cityConfig, setCityConfig] = useState(null);
   const city = appContext?.application?.city || currentUser?.city;
@@ -241,7 +237,7 @@ const PaymentCycleSchedule = () => {
                 className="w-full max-w-xs"
                 disabled={isSaving || isLoading || !canProceed}
               >
-                {isSaving ? "Saving..." : "Continue"}
+                {isSaving ? "Saving…" : "Continue"}
               </Button>
 
               <AlertDialog>
@@ -251,7 +247,7 @@ const PaymentCycleSchedule = () => {
                     disabled={isSaving || isLoading || isWithdrawing}
                     showArrow={false}
                   >
-                    {isWithdrawing ? "Processing..." : "Withdraw my Application"}
+                    {isWithdrawing ? "Processing…" : "Withdraw my Application"}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="z-[200]">

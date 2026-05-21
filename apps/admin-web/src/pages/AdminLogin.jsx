@@ -145,7 +145,7 @@ export default function AdminLogin() {
                 className="w-full h-11 bg-blue-700 hover:bg-blue-800 text-white"
                 disabled={isLoading}
               >
-                {isLoading ? "Signing in..." : "Sign in"}
+                {isLoading ? "Signing in…" : "Sign in"}
               </Button>
             </form>
 

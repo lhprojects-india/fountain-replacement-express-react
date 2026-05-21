@@ -1,4 +1,11 @@
-import heic2any from "heic2any";
+let heic2anyModule = null;
+
+async function getHeic2any() {
+  if (!heic2anyModule) {
+    heic2anyModule = (await import("heic2any")).default;
+  }
+  return heic2anyModule;
+}
 
 function toFile(blob, name, type = "image/jpeg") {
   return new File([blob], name, { type, lastModified: Date.now() });
@@ -13,6 +20,7 @@ export async function convertHeicToJpeg(file) {
     fileName.endsWith(".heif");
   if (!isHeic) return file;
 
+  const heic2any = await getHeic2any();
   const converted = await heic2any({
     blob: file,
     toType: "image/jpeg",

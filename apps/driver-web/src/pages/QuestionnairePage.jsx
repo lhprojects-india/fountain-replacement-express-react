@@ -141,7 +141,7 @@ const QuestionnairePage = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
             <Button onClick={handleSubmit} disabled={submitting}>
-              {submitting ? "Submitting..." : "Confirm Submit"}
+              {submitting ? "Submitting…" : "Confirm Submit"}
             </Button>
           </DialogFooter>
         </DialogContent>

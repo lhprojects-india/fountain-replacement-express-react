@@ -271,7 +271,7 @@ export default function EmailTemplateManager() {
             {loading ? (
               <tr>
                 <td className="px-3 py-4 text-gray-500" colSpan={6}>
-                  Loading templates...
+                  Loading templates…
                 </td>
               </tr>
             ) : sortedTemplates.length === 0 ? (
@@ -402,10 +402,10 @@ export default function EmailTemplateManager() {
                     {mobilePreview ? "Desktop" : "Mobile"}
                   </Button>
                   <Button size="sm" variant="outline" className="adm-btn-outline" onClick={handlePreview} disabled={previewing}>
-                    {previewing ? "Rendering..." : "Preview"}
+                    {previewing ? "Rendering…" : "Preview"}
                   </Button>
                   <Button size="sm" variant="outline" className="adm-btn-outline" onClick={handleTestSend} disabled={sendingTest}>
-                    {sendingTest ? "Sending..." : "Send Test"}
+                    {sendingTest ? "Sending…" : "Send Test"}
                   </Button>
                 </div>
               </div>
@@ -441,7 +441,7 @@ export default function EmailTemplateManager() {
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : "Save"}
+              {saving ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>

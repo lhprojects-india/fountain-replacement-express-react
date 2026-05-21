@@ -128,12 +128,15 @@ const ConfirmDetails = () => {
 
         <div className="w-full max-w-xs space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="confirm-first-name" className="block text-sm font-medium text-gray-700 mb-1">
               First Name <span className="text-brand-pink">*</span>
             </label>
             <Input
+              id="confirm-first-name"
+              name="firstName"
+              autoComplete="given-name"
               value={firstName}
-              placeholder="First name"
+              placeholder="First name…"
               type="text"
               onChange={(e) => setFirstName(e.target.value)}
             />
@@ -141,12 +144,15 @@ const ConfirmDetails = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="confirm-last-name" className="block text-sm font-medium text-gray-700 mb-1">
               Last Name <span className="text-brand-pink">*</span>
             </label>
             <Input
+              id="confirm-last-name"
+              name="lastName"
+              autoComplete="family-name"
               value={lastName}
-              placeholder="Last name"
+              placeholder="Last name…"
               type="text"
               onChange={(e) => setLastName(e.target.value)}
             />
@@ -167,12 +173,16 @@ const ConfirmDetails = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="confirm-phone" className="block text-sm font-medium text-gray-700 mb-1">
               Phone Number <span className="text-brand-pink">*</span>
             </label>
             <Input
+              id="confirm-phone"
+              name="phone"
+              autoComplete="tel"
+              inputMode="tel"
               value={phone}
-              placeholder="+353 12 345 6789"
+              placeholder="+353 12 345 6789…"
               type="tel"
               onChange={(e) => setPhone(e.target.value)}
             />
@@ -245,7 +255,7 @@ const ConfirmDetails = () => {
             disabled={isProcessing || isLoadingScreening}
           >
             <CheckCircle size={18} />
-            {isProcessing ? "Processing..." : "Save & Continue"}
+            {isProcessing ? "Processing…" : "Save & Continue"}
           </Button>
         </div>
 
