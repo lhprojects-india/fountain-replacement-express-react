@@ -3,7 +3,7 @@ import { PRODUCT_DISPLAY_NAME } from '../../lib/product-name.js';
 import { STAGES } from '../workflow/transition-matrix.js';
 import { transitionApplication, WorkflowError } from '../workflow/stage-engine.js';
 import { resendContract } from '../integrations/docuseal/contract.service.js';
-import { buildSigningUrl } from '../integrations/docuseal/docuseal.client.js';
+import { syncContractSigningLink } from '../integrations/docuseal/contract.service.js';
 import { REQUIRED_SCREENING_STEPS, SCREENING_STEP_LABELS } from './screening-requirements.js';
 
 export class DriverApplicationServiceError extends Error {
@@ -231,10 +231,13 @@ export async function getDriverApplication(applicationId, rawEmail) {
     stageConfig.driverActionRoute = '/screening/summary';
   }
 
-  const contractSigningUrl =
-    application.currentStage === STAGES.CONTRACT_SENT && application.docusealSubmitterSlug
-      ? buildSigningUrl(application.docusealSubmitterSlug)
-      : null;
+  let contractSigningUrl = null;
+  let contractMethod = null;
+  if (application.currentStage === STAGES.CONTRACT_SENT) {
+    const synced = await syncContractSigningLink(application, prisma);
+    contractSigningUrl = synced.signingUrl;
+    contractMethod = synced.method;
+  }
 
   return {
     id: application.id,
@@ -254,6 +257,7 @@ export async function getDriverApplication(applicationId, rawEmail) {
     firstBlockResult: application.firstBlockResult,
     contractStatus: application.contractStatus,
     contractSigningUrl,
+    contractMethod,
     onboardingCallScheduledAt: application.onboardingCallScheduledAt,
     onboardingCallCompletedAt: application.onboardingCallCompletedAt,
     onboardingCallNotes: application.onboardingCallNotes,
@@ -795,6 +799,7 @@ export async function getDriverContractSigningUrl(applicationId, rawEmail) {
       id: true,
       currentStage: true,
       contractStatus: true,
+      contractRequestId: true,
       docusealSubmitterSlug: true,
     },
   });
@@ -802,15 +807,27 @@ export async function getDriverContractSigningUrl(applicationId, rawEmail) {
   if (app.currentStage !== STAGES.CONTRACT_SENT) {
     throw new DriverApplicationServiceError('Contract is not available for signing yet.', 400);
   }
-  if (!app.docusealSubmitterSlug) {
+
+  const synced = await syncContractSigningLink(app, prisma);
+  if (synced.method === 'manual') {
+    return {
+      signingUrl: null,
+      contractStatus: app.contractStatus,
+      contractMethod: 'manual',
+    };
+  }
+  if (!synced.signingUrl) {
     throw new DriverApplicationServiceError(
-      'Signing link is not available yet. Please check your email or contact support.',
+      app.contractStatus === 'send_failed'
+        ? 'We could not generate your signing link. Use resend below or contact support.'
+        : 'Signing link is not available yet. Please check your email or contact support.',
       404
     );
   }
   return {
-    signingUrl: buildSigningUrl(app.docusealSubmitterSlug),
+    signingUrl: synced.signingUrl,
     contractStatus: app.contractStatus,
+    contractMethod: synced.method || 'docuseal',
   };
 }
 

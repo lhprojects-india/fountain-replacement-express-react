@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Button,
@@ -11,7 +11,7 @@ import {
   PageLayout,
   useToast,
 } from "@lh/shared";
-import { ExternalLink, FileSignature, Mail } from "lucide-react";
+import { AlertTriangle, ExternalLink, FileSignature, Mail } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { publicServices } from "../lib/public-services";
 
@@ -22,41 +22,49 @@ const ContractSigning = () => {
   const [resending, setResending] = useState(false);
   const [signingUrl, setSigningUrl] = useState(application?.contractSigningUrl || null);
   const [contractStatus, setContractStatus] = useState(application?.contractStatus || null);
+  const [contractMethod, setContractMethod] = useState(application?.contractMethod || null);
+
+  const refreshSigningLink = useCallback(async () => {
+    setLoading(true);
+    try {
+      if (application?.contractSigningUrl) {
+        setSigningUrl(application.contractSigningUrl);
+        setContractStatus(application.contractStatus || null);
+        setContractMethod(application.contractMethod || "docuseal");
+        return;
+      }
+      const result = await publicServices.getContractSigningUrl();
+      setSigningUrl(result?.signingUrl || null);
+      setContractStatus(result?.contractStatus || application?.contractStatus || null);
+      setContractMethod(result?.contractMethod || null);
+    } catch (error) {
+      setSigningUrl(null);
+      setContractStatus(application?.contractStatus || null);
+      setContractMethod(application?.contractMethod || null);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    application?.contractSigningUrl,
+    application?.contractStatus,
+    application?.contractMethod,
+  ]);
 
   useEffect(() => {
-    let active = true;
-    const load = async () => {
-      setLoading(true);
-      try {
-        if (application?.contractSigningUrl) {
-          if (!active) return;
-          setSigningUrl(application.contractSigningUrl);
-          setContractStatus(application.contractStatus || null);
-          return;
-        }
-        const result = await publicServices.getContractSigningUrl();
-        if (!active) return;
-        setSigningUrl(result?.signingUrl || null);
-        setContractStatus(result?.contractStatus || null);
-      } catch (error) {
-        if (!active) return;
-        setSigningUrl(null);
-        setContractStatus(application?.contractStatus || null);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-    load();
-    return () => {
-      active = false;
-    };
-  }, [application?.contractSigningUrl, application?.contractStatus]);
+    refreshSigningLink();
+  }, [refreshSigningLink]);
 
   const handleResend = async () => {
     setResending(true);
     try {
-      await publicServices.resendContract();
+      const result = await publicServices.resendContract();
       await loadDriverApplication();
+      if (result?.signingUrl) {
+        setSigningUrl(result.signingUrl);
+        setContractMethod("docuseal");
+      } else {
+        await refreshSigningLink();
+      }
       toast({
         title: "Contract resent",
         description: `Check your inbox at ${application?.email || "your email"} for the signing link.`,
@@ -73,6 +81,8 @@ const ContractSigning = () => {
   };
 
   const email = application?.email || "your email";
+  const isManual = contractMethod === "manual" || contractStatus === "sent_manual";
+  const isSendFailed = contractStatus === "send_failed";
 
   return (
     <PageLayout title="Sign Your Contract">
@@ -84,8 +94,18 @@ const ContractSigning = () => {
               Employment contract
             </CardTitle>
             <CardDescription>
-              Review and sign your contract to continue onboarding. We also sent a copy to{" "}
-              <span className="font-medium text-gray-800">{email}</span>.
+              {isManual ? (
+                <>
+                  Your contract was sent to{" "}
+                  <span className="font-medium text-gray-800">{email}</span>. Use the link in that
+                  email to sign.
+                </>
+              ) : (
+                <>
+                  Review and sign your contract to continue onboarding. We also sent a copy to{" "}
+                  <span className="font-medium text-gray-800">{email}</span>.
+                </>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -106,13 +126,28 @@ const ContractSigning = () => {
                   The signing page opens in a new tab. Return here when you are finished.
                 </p>
               </div>
+            ) : isManual ? (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-2">
+                <p className="text-sm text-blue-900 flex items-start gap-2">
+                  <Mail className="h-4 w-4 shrink-0 mt-0.5" aria-hidden />
+                  <span>
+                    This contract is delivered by email only. Check {email} (including spam) for
+                    your signing instructions.
+                  </span>
+                </p>
+              </div>
             ) : (
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
                 <p className="text-sm text-amber-900 flex items-start gap-2">
-                  <Mail className="h-4 w-4 shrink-0 mt-0.5" aria-hidden />
+                  {isSendFailed ? (
+                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden />
+                  ) : (
+                    <Mail className="h-4 w-4 shrink-0 mt-0.5" aria-hidden />
+                  )}
                   <span>
-                    Your signing link is not ready yet. Check your inbox at {email} (including spam),
-                    or request a new email below.
+                    {isSendFailed
+                      ? "We could not create your online signing link. Try resending the contract email below, or contact support if this continues."
+                      : `Your signing link is not ready yet. Check your inbox at ${email} (including spam), or request a new email below.`}
                   </span>
                 </p>
                 <Button

@@ -91,6 +91,26 @@ export function buildSigningUrl(slug) {
 }
 
 /**
+ * Prefer a full https signing URL from Docuseal; otherwise build from slug/embed token.
+ */
+export function resolveSigningUrl({ slug, embedSrc } = {}) {
+  const embed = String(embedSrc || '').trim();
+  if (embed && /^https?:\/\//i.test(embed)) return embed;
+  const key = String(slug || embed || '').trim();
+  if (!key) return null;
+  return buildSigningUrl(key);
+}
+
+export function pickPrimarySubmitter(submission) {
+  const submitters = Array.isArray(submission)
+    ? submission
+    : Array.isArray(submission?.submitters)
+      ? submission.submitters
+      : [];
+  return submitters[0] || null;
+}
+
+/**
  * Build the URL of the in-Docuseal template editor (for admin shortcut links).
  */
 export function buildTemplateEditUrl(templateId) {
@@ -158,13 +178,14 @@ export async function createSubmission({
     json?.submission?.id ||
     null;
   const slug = primary.slug || null;
+  const embedSrc = primary.embed_src || null;
 
   return {
     submissionId: submissionId != null ? String(submissionId) : null,
     submitterId: primary.id != null ? String(primary.id) : null,
     slug,
-    embedSrc: primary.embed_src || (slug ? buildSigningUrl(slug) : null),
-    signingUrl: slug ? buildSigningUrl(slug) : primary.embed_src || null,
+    embedSrc,
+    signingUrl: resolveSigningUrl({ slug, embedSrc }),
     raw: json,
   };
 }

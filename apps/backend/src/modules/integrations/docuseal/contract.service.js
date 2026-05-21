@@ -9,7 +9,9 @@ import {
   createSubmission,
   getSubmission,
   hasClientConfig,
+  pickPrimarySubmitter,
   resendSubmitterInvite,
+  resolveSigningUrl,
 } from './docuseal.client.js';
 
 export class ContractError extends Error {
@@ -36,6 +38,53 @@ function buildPrefillValues(application) {
     job_title: application.job?.title || '',
     city_name: application.job?.city?.city || '',
   };
+}
+
+/**
+ * Resolve (and backfill) the driver's Docuseal signing link when possible.
+ */
+export async function syncContractSigningLink(application, prisma) {
+  if (!application?.id) {
+    return { slug: null, signingUrl: null, method: null };
+  }
+
+  if (application.contractStatus === 'sent_manual') {
+    return { slug: null, signingUrl: null, method: 'manual' };
+  }
+
+  let slug = application.docusealSubmitterSlug || null;
+  let embedSrc = null;
+
+  if (!slug && application.contractRequestId && hasClientConfig()) {
+    try {
+      const submission = await getSubmission(application.contractRequestId);
+      const submitter = pickPrimarySubmitter(submission);
+      slug = submitter?.slug || null;
+      embedSrc = submitter?.embed_src || null;
+      if (slug && slug !== application.docusealSubmitterSlug) {
+        await prisma.application.update({
+          where: { id: application.id },
+          data: { docusealSubmitterSlug: slug, updatedAt: new Date() },
+        });
+      }
+    } catch (error) {
+      logger.warn({
+        msg: '[contract] unable to sync submitter slug from provider',
+        applicationId: application.id,
+        error: error?.message || error,
+      });
+    }
+  }
+
+  const signingUrl = resolveSigningUrl({ slug, embedSrc });
+  const method =
+    application.contractStatus === 'sent_manual'
+      ? 'manual'
+      : signingUrl || slug || application.contractRequestId
+        ? 'docuseal'
+        : null;
+
+  return { slug, signingUrl, method };
 }
 
 async function loadApplication(applicationId, prisma) {
@@ -370,7 +419,7 @@ export async function getContractStatus(applicationId, prisma) {
   }
 
   const method = app.contractStatus === 'sent_manual' ? 'manual' : 'docuseal';
-  const signingUrl = app.docusealSubmitterSlug ? buildSigningUrl(app.docusealSubmitterSlug) : null;
+  const { signingUrl } = await syncContractSigningLink(app, prisma);
 
   return {
     applicationId: app.id,
@@ -403,10 +452,11 @@ export async function resendContract(applicationId, prisma) {
           status: 'sent',
           sentAt: new Date(),
         });
+        const synced = await syncContractSigningLink(app, prisma);
         return {
           application: app,
           contractRequestId: app.contractRequestId,
-          signingUrl: app.docusealSubmitterSlug ? buildSigningUrl(app.docusealSubmitterSlug) : null,
+          signingUrl: synced.signingUrl,
           method: 'docuseal',
           resent: true,
         };
@@ -494,10 +544,11 @@ export async function getSigningUrlForApplication(applicationId, prisma) {
     select: {
       id: true,
       contractStatus: true,
+      contractRequestId: true,
       docusealSubmitterSlug: true,
     },
   });
   if (!app) return null;
-  if (!app.docusealSubmitterSlug) return null;
-  return buildSigningUrl(app.docusealSubmitterSlug);
+  const synced = await syncContractSigningLink(app, prisma);
+  return synced.signingUrl;
 }
