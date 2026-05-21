@@ -9,6 +9,7 @@ import ScreeningGuard from "./components/ScreeningGuard";
 import DocumentsGuard from "./components/DocumentsGuard";
 import PaymentGuard from "./components/PaymentGuard";
 import QuestionnaireGuard from "./components/QuestionnaireGuard";
+import ContractGuard from "./components/ContractGuard";
 import GlobalLoadingScreen from "./components/GlobalLoadingScreen";
 import OfflineBanner from "./components/OfflineBanner";
 
@@ -36,6 +37,7 @@ const ScreeningLanding = lazy(() => import("./pages/ScreeningLanding"));
 const DocumentUpload = lazy(() => import("./pages/DocumentUpload"));
 const PaymentDetails = lazy(() => import("./pages/PaymentDetails"));
 const QuestionnairePage = lazy(() => import("./pages/QuestionnairePage"));
+const ContractSigning = lazy(() => import("./pages/ContractSigning"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -124,6 +126,16 @@ function App() {
                       <QuestionnaireGuard>
                         <QuestionnairePage />
                       </QuestionnaireGuard>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/contract"
+                  element={
+                    <ProtectedRoute>
+                      <ContractGuard>
+                        <ContractSigning />
+                      </ContractGuard>
                     </ProtectedRoute>
                   }
                 />

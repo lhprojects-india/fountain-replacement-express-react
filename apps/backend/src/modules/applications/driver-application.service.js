@@ -40,8 +40,10 @@ const STAGE_CONFIG = {
   },
   [STAGES.CONTRACT_SENT]: {
     label: 'Contract Sent',
-    description: 'Open the signing link sent to your email (or use the button below) to sign your contract.',
-    driverActionRequired: false,
+    description: 'Review and sign your contract using the link in the app or the email we sent you.',
+    driverActionRequired: true,
+    driverActionLabel: 'Review & Sign Contract',
+    driverActionRoute: '/contract',
   },
   [STAGES.CONTRACT_SIGNED]: {
     label: 'Contract Signed',

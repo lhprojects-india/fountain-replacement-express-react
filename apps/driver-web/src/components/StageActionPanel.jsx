@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@lh/shared";
-import { publicServices } from "../lib/public-services";
-import { ArrowRight, CalendarClock, CircleCheckBig, FileText, PhoneCall, Wallet } from "lucide-react";
+import { ArrowRight, CalendarClock, CircleCheckBig, FileSignature, FileText, PhoneCall, Wallet } from "lucide-react";
 
 const StageActionPanel = ({ application, documentProgress = null }) => {
   const navigate = useNavigate();
@@ -36,21 +35,13 @@ const StageActionPanel = ({ application, documentProgress = null }) => {
         : {
             text: "Your screening has been submitted. Our team is reviewing your responses. You'll be notified about next steps.",
           },
-    contract_sent: application?.contractSigningUrl
-      ? {
-          text: `Your contract is ready to review and sign. We've also emailed you a copy at ${application?.email || "your email"}.`,
-          buttonLabel: "Review & Sign Contract",
-          action: () => {
-            window.open(application.contractSigningUrl, "_blank", "noopener,noreferrer");
-          },
-        }
-      : {
-          text: `A contract has been sent to ${application?.email || "your email"}. Please check your inbox (including spam) and sign it.`,
-          buttonLabel: "Request Contract Resend",
-          action: async () => {
-            await publicServices.resendContract();
-          },
-        },
+    contract_sent: {
+      text: application?.contractSigningUrl
+        ? `Your contract is ready to review and sign. We've also emailed you a copy at ${application?.email || "your email"}.`
+        : `A contract has been sent to ${application?.email || "your email"}. Please check your inbox (including spam) and sign it.`,
+      buttonLabel: application?.contractSigningUrl ? "Review & Sign Contract" : "Open Contract Page",
+      route: "/contract",
+    },
     contract_signed: {
       text: "Your contract has been signed! We will let you know about next steps.",
     },
@@ -101,6 +92,7 @@ const StageActionPanel = ({ application, documentProgress = null }) => {
 
   const iconMap = {
     screening: <ArrowRight className="h-4 w-4" />,
+    contract_sent: <FileSignature className="h-4 w-4" />,
     documents_pending: <FileText className="h-4 w-4" />,
     payment_details_pending: <Wallet className="h-4 w-4" />,
     onboarding_call: <PhoneCall className="h-4 w-4" />,
